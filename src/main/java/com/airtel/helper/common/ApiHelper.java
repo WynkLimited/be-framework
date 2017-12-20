@@ -24,7 +24,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.airtel.helper.constants.HomesApiConstants;
 import com.airtel.helper.report.FileHelper;
 import com.airtel.helper.report.ReportHelper;
 import com.google.gson.Gson;
@@ -149,7 +148,7 @@ public class ApiHelper {
 			Map<String, String> queryParams = new HashMap<String, String>();
 			queryParams.put("id", requestId);
 			Thread.sleep(waitTime);
-			return getResponse(queryParams, HomesApiConstants.FEASIBILITY_ES_LOGS_PATH);
+			return getResponse(queryParams, "data");
 
 		} catch (InterruptedException e) {
 			Reporter.log("Unable to wait for thread(ES logs not formed)");

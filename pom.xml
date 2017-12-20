@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.airtel.api.automation</groupId>
+	<groupId>com.airtel.api-automation</groupId>
 	<artifactId>api-automation-framework</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.2</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -26,6 +26,16 @@
 	</build>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.9.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>2.9.0</version>
+		</dependency>
 		<!-- Extent Report dependency -->
 		<dependency>
 			<groupId>com.relevantcodes</groupId>
@@ -124,4 +134,9 @@
 			<version>0.1.53</version>
 		</dependency>
 	</dependencies>
+	<!-- <distributionManagement> <repository> <id>deployment</id> <name>Releases</name> 
+		<url>http://build.airtelworld.in:8081/nexus/content/repositories/releases/</url> 
+		</repository> <snapshotRepository> <id>deployment</id> <name>Snapshots</name> 
+		<url>http://build.airtelworld.in:8081/nexus/content/repositories/snapshots/</url> 
+		</snapshotRepository> </distributionManagement> -->
 </project>
