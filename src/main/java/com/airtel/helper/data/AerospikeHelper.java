@@ -70,6 +70,28 @@ public class AerospikeHelper {
 
     }
 
+    public  static List<Map<String,Object>> parseMultipleRecord(Record [] record)
+    {
+
+        List<Map<String,Object>> queryData =new ArrayList<Map<String, Object>>();
+
+        for (int i=0 ;i <record.length;i++)
+        {
+            if (record[i]!=null)
+            queryData.add(record[i].bins);
+        }
+
+        return  queryData;
+    }
+
+    public static  Map<String,Object> parseSingleRecord(Record record)
+    {
+        if (record !=null)
+            return  record.bins;
+        else
+            return  null;
+    }
+
 
 
 }

@@ -2,7 +2,6 @@ package com.airtel.helper.data;
 
 import java.io.File;
 import java.lang.reflect.Method;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -13,7 +12,7 @@ import org.testng.annotations.Test;
 
 import com.airtel.helper.common.CommonBaseClass;
 
-public class TestDataHelper extends CommonBaseClass{
+public class TestDataHelper extends CommonBaseClass {
 
 	@DataProvider(name = "dbDataProvider")
 	protected Iterator<Object[]> getDataFromDB(Method method) {
@@ -31,8 +30,8 @@ public class TestDataHelper extends CommonBaseClass{
 		String query = queryData.get(0);
 		String dbEnvironment = queryData.get(1);
 		String sid = queryData.get(2);
-		Connection testCon = DbHelper.createDbConnection(dbEnvironment, sid);
-		queryResultData = DbHelper.fetchDatafromDb(testCon, query);
+		connection = DbHelper.createDbConnection(dbEnvironment, sid);
+		queryResultData = DbHelper.fetchDatafromDb(connection, query);
 		// List<Object[]> collect = tempQueryData.stream().map(temp -> new Object[]
 		// {temp}).collect(Collectors.toList());
 
