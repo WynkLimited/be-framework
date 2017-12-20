@@ -1,0 +1,142 @@
+package com.airtel.helper.report;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.UUID;
+
+import javax.crypto.SecretKey;
+
+import org.testng.Reporter;
+import org.testng.asserts.SoftAssert;
+
+public class FileHelper {
+
+	public static final String DESEDE_ENCRYPTION_SCHEME = "DESede";
+	byte[] keyAsBytes;
+	SecretKey key;
+
+	public static SoftAssert softAssert = new SoftAssert();
+
+	public void writeToFile(String str, String fileName, boolean appendToFile) {
+		File file = null;
+
+		file = new File(fileName);
+
+		try {
+			FileWriter writer = new FileWriter(file, appendToFile);
+			writer.write(str);
+			writer.close();
+
+		} catch (IOException e) {
+			softAssert.assertTrue(false, "Error in writng to file..");
+			e.printStackTrace();
+		}
+	}
+
+	public String getFileAbsolutePath(String partialFilePath, String filename) {
+
+		String path = null;
+
+		File file = new File(partialFilePath + "/" + filename);
+
+		path = file.getAbsolutePath();
+
+		return path;
+
+	}
+
+	public String readOutputFromFile(String fileName) {
+
+		BufferedReader br = null;
+
+		String finalStr = "";
+		StringBuilder str = new StringBuilder();
+
+		try {
+
+			String sCurrentLine;
+
+			br = new BufferedReader(new FileReader(fileName));
+
+			while ((sCurrentLine = br.readLine()) != null) {
+				str.append(sCurrentLine);
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (br != null)
+					br.close();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
+		finalStr = str.toString();
+		return finalStr;
+	}
+
+	public String createRequestJsonFile(String jsonMsg, String fileName) {
+		String requestFilePath = null;
+		ReportHelper report = new ReportHelper();
+		try {
+			String resultFolder = report.getResultFolderpath();
+			resultFolder = resultFolder + "/Requests";
+			File resultFileFolder = new File(resultFolder);
+			resultFileFolder.delete();
+			resultFileFolder.mkdir();
+
+			UUID randNo = UUID.randomUUID();
+
+			requestFilePath = resultFolder + "/Requests_" + fileName + "_" + randNo + ".json";
+			BufferedWriter resultFile = new BufferedWriter(new FileWriter(requestFilePath, true));
+			resultFile.append(jsonMsg);
+			resultFile.close();
+		} catch (Exception e) {
+			Reporter.log("<br>" + e.getMessage() + "<br>");
+		}
+		requestFilePath = "." + requestFilePath.split(report.getResultFolderpath())[1];
+		Reporter.log("<br><a href='" + requestFilePath + "'>Request_" + fileName + "</a><br>");
+		return requestFilePath;
+	}
+
+	public String createResponseJsonFile(String jsonMsg, String fileName) {
+		String responseFilePath = null;
+		ReportHelper report = new ReportHelper();
+		try {
+			String resultFolder = report.getResultFolderpath();
+			resultFolder = resultFolder + "/Responses";
+			File resultFileFolder = new File(resultFolder);
+			resultFileFolder.delete();
+			resultFileFolder.mkdir();
+
+			UUID randNo = UUID.randomUUID();
+
+			responseFilePath = resultFolder + "/Responses_" + fileName + "_" + randNo + ".json";
+			BufferedWriter resultFile = new BufferedWriter(new FileWriter(responseFilePath, true));
+			resultFile.append(jsonMsg);
+			resultFile.close();
+		} catch (Exception e) {
+			Reporter.log("<br>" + e.getMessage() + "<br>");
+		}
+		responseFilePath = "." + responseFilePath.split(report.getResultFolderpath())[1];
+		Reporter.log("<br><a href='" + responseFilePath + "'>Response_" + fileName + "</a><br>");
+		return responseFilePath;
+	}
+
+	public static void emptyFile(String path) {
+		File file;
+		file = new File(path);
+		file.delete();
+		try {
+			file.createNewFile();
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+	}
+}
