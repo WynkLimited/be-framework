@@ -20,7 +20,9 @@ import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
-public class ReportHelper {
+import com.airtel.helper.common.CommonBaseClass;
+
+public class ReportHelper extends CommonBaseClass {
 
 	static int count = 0;
 	static int passCount = 0;

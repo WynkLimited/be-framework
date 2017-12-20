@@ -11,7 +11,9 @@ import java.util.Map;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-public class TestDataHelper {
+import com.airtel.helper.common.CommonBaseClass;
+
+public class TestDataHelper extends CommonBaseClass{
 
 	@DataProvider(name = "dbDataProvider")
 	protected Iterator<Object[]> getDataFromDB(Method method) {
