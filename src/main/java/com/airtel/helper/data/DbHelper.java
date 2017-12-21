@@ -47,7 +47,7 @@ public class DbHelper {
 		List<Map<String, String>> resultData = new ArrayList<Map<String, String>>();
 		ResultSet result = executeQuery(connection, query);
 		resultData = convertResultToMap(result);
-		closeConnection(connection);
+		//closeConnection(connection);
 		return resultData;
 	}
 
