@@ -79,7 +79,7 @@ public class ApiHelper {
 		Response response = request.relaxedHTTPSValidation().headers(requestHeader).get(url);
 		long responseTime = response.getTime();
 		logRequestResponse(queryParams.toString().replace(", ", "&"), response.asString(), url, responseTime);
-		if (response.getStatusCode() != 200 || response.getStatusCode() != 204) {
+		if (response.getStatusCode() != 200 && response.getStatusCode() != 204) {
 			ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
 					Integer.toString(response.getStatusCode()), "HTTP status check failure");
 			Reporter.log("Response has failed with HTTP status code - " + response.getStatusCode()
@@ -272,6 +272,12 @@ public class ApiHelper {
 
 	public static String[] getCommaSeperatedValues(String value) {
 		return value.split(",");
+	}
+
+	public static boolean validateObject(Object obj) {
+		if (obj != null && obj != "")
+			return true;
+		return false;
 	}
 
 	public static String getValueFromXLResponse(String xmlResponse, String tagName, int index) {
