@@ -61,7 +61,12 @@ public class ApiHelper {
 		RequestSpecification request = prepareGetRequest(queryParams);
 		Response response = request.get(url);
 		long responseTime = response.getTime();
-		logRequestResponse(queryParams.toString().replace(", ", "&"), response.asString(), url, responseTime);
+		if (queryParams != null) {
+			logRequestResponse(queryParams.toString().replace(", ", "&"), response.asString(), url, responseTime);
+		} else {
+			logRequestResponse(null, response.asString(), url, responseTime);
+		}
+
 		if (response.getStatusCode() != 200) {
 			ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
 					Integer.toString(response.getStatusCode()), "HTTP status check failure");
@@ -207,6 +212,18 @@ public class ApiHelper {
 		}
 	}
 
+	public static void setValueOfProperty(String filePath, String keyName, String value) {
+		try {
+			Properties prop = new Properties();
+			InputStream inpStream = null;
+			inpStream = new FileInputStream(filePath);
+			prop.load(inpStream);
+			prop.setProperty(keyName, value);
+		} catch (IOException e) {
+			Reporter.log("Filepath mentioned is not correct and method breaks with exception " + e);
+		}
+	}
+
 	public static boolean validateString(String strVal) {
 		if (strVal != null && !strVal.trim().isEmpty())
 			return true;
@@ -266,7 +283,11 @@ public class ApiHelper {
 
 	public static String generateAPIUrl(String configFile, String serverInitials, String endpoint) {
 		String serverIp = getValueOfProperty(configFile, serverInitials);
-		String serviceUrl = serverIp + endpoint;
+		String serviceUrl;
+		if (endpoint != null)
+			serviceUrl = serverIp + endpoint;
+		else
+			serviceUrl = serverIp;
 		return serviceUrl;
 	}
 
