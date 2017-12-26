@@ -19,7 +19,7 @@ import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import com.github.fge.jsonschema.main.JsonValidator;
 
 /**
- * This method have the functions to validate API response. It constitutes of 3
+ * This class have the functions to validate API response. It constitutes of 3
  * functions: 1. json comparator - compare 2 jsons 2. schema validator -
  * validate the schema against a pre-defined value 3. empty response - check if
  * the response is empty
@@ -28,16 +28,50 @@ import com.github.fge.jsonschema.main.JsonValidator;
  */
 public class ApiResponseValidator {
 
+	/**
+	 * This method compares two json and log the difference b/w those JSON. This
+	 * comparator has a limitation of logging difference when the position of node
+	 * has also changed, so it's recommended to do object to object comparison
+	 * before using this.
+	 * 
+	 * @param responseExpected
+	 * @param responseActual
+	 * @param propFilePath
+	 * @return
+	 */
 	public static boolean compareJson(String responseExpected, String responseActual, String propFilePath) {
+		boolean comparisonResult = compareJsonWithRequest(responseExpected, responseActual, null, propFilePath);
+		return comparisonResult;
+	}
+
+	/**
+	 * This method compares two json and log the difference b/w those JSON along with the request. This
+	 * comparator has a limitation of logging difference when the position of node
+	 * has also changed, so it's recommended to do object to object comparison
+	 * before using this.
+	 * 
+	 * @param responseExpected
+	 * @param responseActual
+	 * @param request
+	 * @param propFilePath
+	 * @return
+	 */
+	public static boolean compareJsonWithRequest(String responseExpected, String responseActual, String request,
+			String propFilePath) {
 		ReportHelper reporter = new ReportHelper();
 		ComparatorReportGenerator compareHtmlObj = new ComparatorReportGenerator();
 		try {
 			String compareFilePath = null;
 			String linkCompareFilePath = null;
-			compareFilePath = compareHtmlObj.createinitialHTMLReport();
+
+			if (request == null) {
+				compareFilePath = compareHtmlObj.createCompartarReport();
+			} else {
+				compareFilePath = compareHtmlObj.createCompartarReportWithReq(request);
+			}
 			linkCompareFilePath = "./comparatorReport/" + compareFilePath.split("comparatorReport")[1];
 
-			Integer differenceCounter = 0;
+			int differenceCounter = 0;
 			// Extracting JSON data to JSON node and comparing them
 			ObjectMapper objMapper = new ObjectMapper();
 			JsonNode responseExp = objMapper.readTree(responseExpected);
@@ -86,7 +120,7 @@ public class ApiResponseValidator {
 		try {
 			String compareFilePath = null;
 			String linkCompareFilePath = null;
-			compareFilePath = compareHtmlObj.createinitialHTMLReport();
+			compareFilePath = compareHtmlObj.createCompartarReport();
 			linkCompareFilePath = "./comparatorReport/" + compareFilePath.split("comparatorReport")[1];
 			JsonNode jsonSchema = JsonLoader.fromString(responseSchema);
 			JsonNode jsonResponse = JsonLoader.fromString(response);
