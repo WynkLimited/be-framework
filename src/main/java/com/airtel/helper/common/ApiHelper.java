@@ -1,10 +1,11 @@
 package com.airtel.helper.common;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringReader;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -140,27 +141,6 @@ public class ApiHelper {
 		}
 	}
 
-	/**
-	 * 
-	 * @param requestId
-	 *            - This is used to get data for a particular request
-	 * @param waitTime
-	 *            - This is used for specifying the wait time so that complete data
-	 *            is populated in ES
-	 */
-	public static Response getEsLogsData(String requestId, int waitTime) {
-		try {
-			Map<String, String> queryParams = new HashMap<String, String>();
-			queryParams.put("id", requestId);
-			Thread.sleep(waitTime);
-			return getResponse(queryParams, "data");
-
-		} catch (InterruptedException e) {
-			Reporter.log("Unable to wait for thread(ES logs not formed)");
-		}
-		return null;
-	}
-
 	public static String convertToJson(Object obj) {
 		Gson gsonConverter = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 		String jsonData = gsonConverter.toJson(obj);
@@ -215,10 +195,16 @@ public class ApiHelper {
 	public static void setValueOfProperty(String filePath, String keyName, String value) {
 		try {
 			Properties prop = new Properties();
-			InputStream inpStream = null;
-			inpStream = new FileInputStream(filePath);
-			prop.load(inpStream);
+
+			FileInputStream in = new FileInputStream(filePath);
+			prop.load(in);
+			in.close();
+
+			OutputStream outStream = null;
+			outStream = new FileOutputStream(filePath);
 			prop.setProperty(keyName, value);
+			prop.store(outStream, null);
+			outStream.close();
 		} catch (IOException e) {
 			Reporter.log("Filepath mentioned is not correct and method breaks with exception " + e);
 		}

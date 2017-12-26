@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.airtel.api-automation</groupId>
 	<artifactId>api-automation-framework</artifactId>
-	<version>1.0.5</version>
+	<version>1.0.7</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -134,16 +134,9 @@
 			<version>0.1.53</version>
 		</dependency>
 	</dependencies>
-	<distributionManagement>
-		<repository>
-			<id>deployment</id>
-			<name>Releases</name>
-			<url>http://build.airtelworld.in:8081/nexus/content/repositories/releases/</url>
-		</repository>
-		<snapshotRepository>
-			<id>deployment</id>
-			<name>Snapshots</name>
-			<url>http://build.airtelworld.in:8081/nexus/content/repositories/snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
+	<!-- <distributionManagement> <repository> <id>deployment</id> <name>Releases</name> 
+		<url>http://build.airtelworld.in:8081/nexus/content/repositories/releases/</url> 
+		</repository> <snapshotRepository> <id>deployment</id> <name>Snapshots</name> 
+		<url>http://build.airtelworld.in:8081/nexus/content/repositories/snapshots/</url> 
+		</snapshotRepository> </distributionManagement> -->
 </project>
