@@ -10,9 +10,9 @@ import java.util.Map;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import com.airtel.helper.common.CommonBaseClass;
+import com.airtel.helper.common.BaseTestClass;
 
-public class TestDataHelper extends CommonBaseClass {
+public class TestDataHelper extends BaseTestClass {
 
 	@DataProvider(name = "dbDataProvider")
 	protected Iterator<Object[]> getDataFromDB(Method method) {
@@ -41,7 +41,6 @@ public class TestDataHelper extends CommonBaseClass {
 		for (Map<String, String> queryResult : queryResultData) {
 			testData.add(new Object[] { queryResult });
 		}
-
 		Iterator<Object[]> finalData = testData.iterator();
 		return finalData;
 	}
@@ -52,12 +51,8 @@ public class TestDataHelper extends CommonBaseClass {
 		packageName = packageName.split("RestAssured.")[1];
 
 		packageName = packageName.replace(".", "/");
-
 		String pathName = "src" + File.separator + "test" + File.separator + "resources" + File.separator + "test_data"
 				+ File.separator + packageName + File.separator + method.getName() + ".xlsx";
-
-		// System.out.println("packageName >>>>>" + packageName + " pathName >>>>>>>" +
-		// pathName);
 
 		Object[][] testDataObject = ExcelHelper.getDataFromExcel(pathName);
 		return testDataObject;

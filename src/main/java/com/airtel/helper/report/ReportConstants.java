@@ -11,7 +11,7 @@ public interface ReportConstants {
 	final static String SUMMARY_REPORT_ROW_START = "<tr><td width=300  align=\"center\" bgcolor=\"#e63d00\"><FONT COLOR=\"#E0E0E0\" FACE=\"Arial\" SIZE=2><b>";
 	final static String SUMMARY_REPORT_VALUE_TEMPLATE = "<td width=150 align=\"center\"><FONT COLOR=\"#385daa\" FACE=\"Arial\" SIZE=2.75><b>";
 
-	final static String REQ_RESP_LOG_TEMPLATE = "<html></head><body><title>API Test Report</title><table style=table-layout:fixed; width:40px border = '1'><tr>\" + \"<th>API URL</th><th>Request</th><th>Response</th><th>Message</th><th>Status</th><th>Calling Method</th></tr>";
+	final static String REQ_RESP_LOG_TEMPLATE = "<html></head><body><title>API Test Report</title><table style=table-layout:fixed; width:40px border = '1'><tr><th>API URL</th><th>Request</th><th>Response</th><th>Message</th><th>Status</th><th>Calling Method</th></tr>";
 	final static String TEST_PASS_TAG = "<td bgcolor='#00FF7F'>";
 	final static String TEST_FAIL_TAG = "<td bgcolor='#FF4500'>";
 

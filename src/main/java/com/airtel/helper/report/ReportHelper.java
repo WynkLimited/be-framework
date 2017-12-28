@@ -20,9 +20,9 @@ import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
-import com.airtel.helper.common.CommonBaseClass;
+import com.airtel.helper.common.BaseTestClass;
 
-public class ReportHelper extends CommonBaseClass implements ReportConstants {
+public class ReportHelper extends BaseTestClass implements ReportConstants {
 
 	static int count = 0;
 	static int passCount = 0;
@@ -158,6 +158,13 @@ public class ReportHelper extends CommonBaseClass implements ReportConstants {
 		String status = "Pass";
 		String scenario = "";
 
+		if(result.getParameters().length > 0) {
+			Object[] data = result.getParameters();
+			for(int i = 0; i < result.getParameters().length; i++) {
+				System.out.println("Parameters are: " + data[i]);
+			}
+		}
+		
 		if (result.getStatus() == ITestResult.FAILURE) {
 			status = "Fail";
 			failCount = failCount + 1;
