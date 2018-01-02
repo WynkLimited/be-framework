@@ -145,10 +145,9 @@ public class ApiHelper {
 		return jsonData;
 	}
 
-	public static Object convertFromJson(String jsonData, Class<?> classType) {
+	public static <T> T convertFromJson(String jsonData, Class<T> classType) {
 		Gson gsonConverter = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
-
-		Object objFromJson = gsonConverter.fromJson(jsonData, classType);
+		T objFromJson = gsonConverter.fromJson(jsonData, classType);
 		return objFromJson;
 	}
 
