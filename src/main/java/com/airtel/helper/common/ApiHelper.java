@@ -58,66 +58,64 @@ public class ApiHelper {
 		return request;
 	}
 
+	/**
+	 * This method will be used for getting response of GET request w/o headers.
+	 * 
+	 * @param queryParams
+	 * @param url
+	 * @return response
+	 */
 	public static Response getResponse(Map<String, String> queryParams, String url) {
-		RequestSpecification request = prepareGetRequest(queryParams);
-		Response response = request.get(url);
+		Response response = getResponseWithHeaders(queryParams, null, url);
+		return response;
+	}
+
+	public static Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url) {
+
+		RequestSpecification request = prepareGetRequest(queryParams).relaxedHTTPSValidation();
+		Response response = null;
+		if (headers != null && headers.size() == 0) {
+			Headers requestHeader = new Headers(headers);
+			request.headers(requestHeader);
+		}
+		response = request.get(url);
 		long responseTime = response.getTime();
+
 		if (queryParams != null) {
 			logRequestResponse(queryParams.toString().replace(", ", "&"), response.asString(), url, responseTime);
 		} else {
 			logRequestResponse(null, response.asString(), url, responseTime);
 		}
 
-		if (response.getStatusCode() != 200) {
-			ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
-					Integer.toString(response.getStatusCode()), "HTTP status check failure");
-			Reporter.log("Response has failed with HTTP status code - " + response.getStatusCode()
-					+ " & Response Message -" + response.asString());
-			Assert.assertTrue(false);
-		}
-		return response;
-	}
-
-	public static Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url) {
-		Headers requestHeader = new Headers(headers);
-		RequestSpecification request = prepareGetRequest(queryParams);
-
-		Response response = request.relaxedHTTPSValidation().headers(requestHeader).get(url);
-		long responseTime = response.getTime();
-		logRequestResponse(queryParams.toString().replace(", ", "&"), response.asString(), url, responseTime);
 		if (response.getStatusCode() != 200 && response.getStatusCode() != 204) {
 			ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
 					Integer.toString(response.getStatusCode()), "HTTP status check failure");
-			Reporter.log("Response has failed with HTTP status code - " + response.getStatusCode()
-					+ " & Response Message -" + response.asString());
 			Assert.assertTrue(false);
 		}
 		return response;
 	}
 
-	public static Response postResponse(String body, String contentType, String url) {
-		Response apiResp = RestAssured.given().contentType(contentType).body(body).post(url);
-		long responseTime = apiResp.getTime();
-		logRequestResponse(body, apiResp.asString(), url, responseTime);
-
-		if (apiResp.getStatusCode() != 200) {
-			ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
-					Integer.toString(apiResp.getStatusCode()), "HTTP status check failure");
-			Reporter.log("Response has failed with HTTP status code - " + apiResp.getStatusCode());
-			Assert.assertTrue(false);
-		}
+	public static Response postResponse(String body, ContentType contentType, String url) {
+		Response apiResp = postResponseWithHeaders(body, null, contentType, url);
 		return apiResp;
 	}
 
 	public static Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
 			String url) {
-		Headers requestHeader = new Headers(headers);
+		RequestSpecification request = RestAssured.given().relaxedHTTPSValidation();
+		Response apiResp = null;
 
-		Response apiResp = RestAssured.given().relaxedHTTPSValidation().headers(requestHeader).contentType(contentType)
-				.body(body).post(url);
+		if (headers != null && headers.size() != 0) {
+			Headers requestHeader = new Headers(headers);
+			request.headers(requestHeader);
+		}
+		if (body != null && !body.isEmpty()) {
+			request.body(body);
+		}
+		apiResp = request.contentType(contentType).post(url);
 		long responseTime = apiResp.getTime();
-		System.out.println("Api response time ==>" + responseTime);
 		logRequestResponse(body, apiResp.asString(), url, responseTime);
+
 		if (apiResp.getStatusCode() != 200) {
 			ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
 					Integer.toString(apiResp.getStatusCode()), "HTTP status check failure");
@@ -310,4 +308,7 @@ public class ApiHelper {
 		return value;
 	}
 
+	public static void main(String[] args) {
+
+	}
 }

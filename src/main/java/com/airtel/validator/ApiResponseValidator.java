@@ -27,6 +27,9 @@ import com.github.fge.jsonschema.main.JsonValidator;
  * @author b0202849
  */
 public class ApiResponseValidator {
+	final static String OPERATION = "op";
+	final static String DIFFERENCE_PATH = "path";
+	final static String DIFFERENCE_VALUE = "value";
 
 	/**
 	 * This method compares two json and log the difference b/w those JSON. This
@@ -45,10 +48,10 @@ public class ApiResponseValidator {
 	}
 
 	/**
-	 * This method compares two json and log the difference b/w those JSON along with the request. This
-	 * comparator has a limitation of logging difference when the position of node
-	 * has also changed, so it's recommended to do object to object comparison
-	 * before using this.
+	 * This method compares two json and log the difference b/w those JSON along
+	 * with the request. This comparator has a limitation of logging difference when
+	 * the position of node has also changed, so it's recommended to do object to
+	 * object comparison before using this.
 	 * 
 	 * @param responseExpected
 	 * @param responseActual
@@ -81,25 +84,29 @@ public class ApiResponseValidator {
 			if (propFilePath != null && !propFilePath.isEmpty()) {
 				dndCompareValues = ApiHelper.getAllProperty(propFilePath);
 			}
+			
 			for (int diffCount = 0; diffCount < jsonDiff.size(); diffCount++) {
-				String diffPath = jsonDiff.get(diffCount).get("path").asText();
+				String diffPath = jsonDiff.get(diffCount).get(DIFFERENCE_PATH).asText();
 
 				if (dndCompareValues == null || !dndCompareValues.contains(diffPath)) {
 					differenceCounter++;
-					String operationType = jsonDiff.get(diffCount).get("op").asText();
-					JsonNode diffValueJsonNode = jsonDiff.get(diffCount).get("value");
+					String operationType = jsonDiff.get(diffCount).get(OPERATION).asText();
+					JsonNode diffValueJsonNode = jsonDiff.get(diffCount).get(DIFFERENCE_VALUE);
 					String diffValue = null;
 					if (diffValueJsonNode != null)
-						diffValue = jsonDiff.get(diffCount).get("value").asText();
+						diffValue = jsonDiff.get(diffCount).get(DIFFERENCE_VALUE).asText();
 					String parentValue = "";
-					if (operationType.equalsIgnoreCase("replace") || operationType.equalsIgnoreCase("remove")) {
+					
+					if (responseExp.at(diffPath) != null) {
 						parentValue = responseExp.at(diffPath).asText();
 					}
+					
 					logFailure(operationType.toUpperCase(), diffPath, diffValue, parentValue);
 					logFailureInReporter(compareFilePath, operationType.toUpperCase(), diffPath, diffValue,
 							parentValue);
 				}
 			}
+			
 			if (differenceCounter > 0) {
 				compareHtmlObj.appendFinalHTMLReport(compareFilePath);
 				String differenceHTMLLink = "<a href='" + linkCompareFilePath + "'>Differences Link</a>";
