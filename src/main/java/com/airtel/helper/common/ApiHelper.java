@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -70,6 +71,14 @@ public class ApiHelper {
 		return response;
 	}
 
+	/**
+	 * This method will be used for getting response of GET request with headers.
+	 * 
+	 * @param queryParams
+	 * @param headers
+	 * @param url
+	 * @return
+	 */
 	public static Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url) {
 
 		RequestSpecification request = prepareGetRequest(queryParams).relaxedHTTPSValidation();
@@ -95,11 +104,28 @@ public class ApiHelper {
 		return response;
 	}
 
+	/**
+	 * This method will be used for getting response of POST request w/o headers.
+	 * 
+	 * @param body
+	 * @param contentType
+	 * @param url
+	 * @return
+	 */
 	public static Response postResponse(String body, ContentType contentType, String url) {
 		Response apiResp = postResponseWithHeaders(body, null, contentType, url);
 		return apiResp;
 	}
 
+	/**
+	 * This method will be used for getting response of GET request with headers.
+	 * 
+	 * @param body
+	 * @param headers
+	 * @param contentType
+	 * @param url
+	 * @return
+	 */
 	public static Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
 			String url) {
 		RequestSpecification request = RestAssured.given().relaxedHTTPSValidation();
@@ -112,7 +138,11 @@ public class ApiHelper {
 		if (body != null && !body.isEmpty()) {
 			request.body(body);
 		}
-		apiResp = request.contentType(contentType).post(url);
+
+		if (contentType != null)
+			request.contentType(contentType);
+
+		apiResp = request.post(url);
 		long responseTime = apiResp.getTime();
 		logRequestResponse(body, apiResp.asString(), url, responseTime);
 
@@ -139,16 +169,44 @@ public class ApiHelper {
 		}
 	}
 
+	/**
+	 * This method convert a particular object to JSON. This is mostly used for
+	 * comparator.
+	 * 
+	 * @param obj
+	 * @return
+	 */
 	public static String convertToJson(Object obj) {
 		Gson gsonConverter = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 		String jsonData = gsonConverter.toJson(obj);
 		return jsonData;
 	}
 
+	/**
+	 * This method convert a json string to a particular DTO type specified as
+	 * input. This method returns object of a generic type and therefore casting is
+	 * not required with this method.
+	 * 
+	 * @param jsonData
+	 * @param classType
+	 * @return Object of type specified as input class
+	 */
 	public static <T> T convertFromJson(String jsonData, Class<T> classType) {
 		Gson gsonConverter = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 		T objFromJson = gsonConverter.fromJson(jsonData, classType);
 		return objFromJson;
+	}
+
+	/**
+	 * Returns list of object converted from a JSON array string. Input of this method is the Type of list and JSON Array string.
+	 * 
+	 * @param jsonArray
+	 * @param listType
+	 * @return
+	 */
+	public static <T> List<T> convertFromJsonArray(String jsonArray, Type listType) {
+		Gson gsonConverter = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
+		return gsonConverter.fromJson(jsonArray, listType);
 	}
 
 	public static String convertToXml(Object obj) {
@@ -176,6 +234,12 @@ public class ApiHelper {
 		}
 	}
 
+	/**
+	 * This method retrieves name of all properties present in a property file.
+	 * 
+	 * @param filePath
+	 * @return Set<String> - containing all properties
+	 */
 	public static Set<String> getAllProperty(String filePath) {
 		try {
 			Properties prop = new Properties();
@@ -189,6 +253,13 @@ public class ApiHelper {
 		}
 	}
 
+	/**
+	 * This method is used to set a property in a property file.
+	 * 
+	 * @param filePath
+	 * @param keyName
+	 * @param value
+	 */
 	public static void setValueOfProperty(String filePath, String keyName, String value) {
 		try {
 			Properties prop = new Properties();
@@ -264,6 +335,15 @@ public class ApiHelper {
 			return false;
 	}
 
+	/**
+	 * Returns a generated URL based on the input parameters. This will be used by
+	 * the method that fetch data for a particular API.
+	 * 
+	 * @param configFile
+	 * @param serverInitials
+	 * @param endpoint
+	 * @return
+	 */
 	public static String generateAPIUrl(String configFile, String serverInitials, String endpoint) {
 		String serverIp = getValueOfProperty(configFile, serverInitials);
 		String serviceUrl;

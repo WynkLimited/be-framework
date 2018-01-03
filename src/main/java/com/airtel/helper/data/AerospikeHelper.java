@@ -78,4 +78,10 @@ public class AerospikeHelper extends BaseTestClass {
 			return null;
 	}
 
+	public static Record getAllBinsForAKey(AerospikeClient client, String namespace, String setName, String value) {
+		Key key = new Key(namespace, setName, value);
+		Record record = client.get(null, key);
+		return record;
+	}
+
 }
