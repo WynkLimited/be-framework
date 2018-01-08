@@ -83,7 +83,7 @@ public class ApiHelper {
 
 		RequestSpecification request = prepareGetRequest(queryParams).relaxedHTTPSValidation();
 		Response response = null;
-		if (headers != null && headers.size() == 0) {
+		if (headers != null && headers.size() != 0) {
 			Headers requestHeader = new Headers(headers);
 			request.headers(requestHeader);
 		}
