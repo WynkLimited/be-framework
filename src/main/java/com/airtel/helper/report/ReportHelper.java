@@ -12,6 +12,7 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.testng.ITestNGMethod;
 import org.testng.ITestResult;
 import org.testng.Reporter;
@@ -54,9 +55,7 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 	public void beforeSuite() throws IOException {
 		String resultsFolderPath = "./Results";
 		File resultFolder = new File(resultsFolderPath);
-		if (resultFolder.delete()) {
-			System.out.println("Content of folder deleted successfully");
-		}
+		FileUtils.deleteDirectory(resultFolder);
 		resultFolder.mkdir();
 
 		startTime = new Date();
@@ -106,15 +105,6 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 
 		resultFile.append("</table></body></html>");
 		resultFile.close();
-		// String zipFileName = "./ResultArchive.zip";
-		// FileOutputStream fos = new FileOutputStream(zipFileName);
-		// ZipOutputStream zos = new ZipOutputStream(fos);
-		// reporter.addDirToZipArchive(zos, new File(resultFolderpath), null);
-		// reporter.addDirToZipArchive(zos, new File(suiteFileStringPath), null);
-		// zos.flush();
-		// fos.flush();
-		// zos.close();
-		// fos.close();
 	}
 
 	public void appendMethodInformationInSuite(String scenarioName, String methodName, String methodFilePath,
@@ -158,13 +148,13 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 		String status = "Pass";
 		String scenario = "";
 
-		if(result.getParameters().length > 0) {
+		if (result.getParameters().length > 0) {
 			Object[] data = result.getParameters();
-			for(int i = 0; i < result.getParameters().length; i++) {
+			for (int i = 0; i < result.getParameters().length; i++) {
 				System.out.println("Parameters are: " + data[i]);
 			}
 		}
-		
+
 		if (result.getStatus() == ITestResult.FAILURE) {
 			status = "Fail";
 			failCount = failCount + 1;
@@ -185,25 +175,29 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 
 	public void appendresultHTMLReport(String resultFileStringPath, String apiURL, String requestFile,
 			String responseFile, String message, String status, String comment) throws IOException {
-		BufferedWriter resultFile = new BufferedWriter(new FileWriter(resultFileStringPath, true));
-		String statusTag = null;
-		if (status.equalsIgnoreCase("True") || status.equalsIgnoreCase("Pass")) {
-			statusTag = TEST_PASS_TAG;
-		} else if (status.equalsIgnoreCase("false") || status.equalsIgnoreCase("Fail")) {
-			statusTag = TEST_FAIL_TAG;
-		} else {
-			statusTag = "<td>";
-		}
+		if (resultFileStringPath != null) {
+			BufferedWriter resultFile = new BufferedWriter(new FileWriter(resultFileStringPath, true));
+			String statusTag = null;
+			if (status.equalsIgnoreCase("True") || status.equalsIgnoreCase("Pass")) {
+				statusTag = TEST_PASS_TAG;
+			} else if (status.equalsIgnoreCase("false") || status.equalsIgnoreCase("Fail")) {
+				statusTag = TEST_FAIL_TAG;
+			} else {
+				statusTag = "<td>";
+			}
 
-		resultFile.append("<tr>");
-		resultFile.append("<td width=30% style=WORD-break:BREAK-all>" + apiURL + "</td>");
-		resultFile.append("<td width=20% style=WORD-break:BREAK-all>" + requestFile + "</td>");
-		resultFile.append("<td width=20% style=WORD-break:BREAK-all>" + responseFile + "</td>");
-		resultFile.append("<td width=10% style=WORD-break:BREAK-all>" + message + "</td>");
-		resultFile.append(statusTag + status + "</td>");
-		resultFile.append("<td style=word-wrap: break-word>" + comment + "</td>");
-		resultFile.append("</tr>");
-		resultFile.close();
+			resultFile.append("<tr>");
+			resultFile.append("<td width=30% style=WORD-break:BREAK-all>" + apiURL + "</td>");
+			resultFile.append("<td width=20% style=WORD-break:BREAK-all>" + requestFile + "</td>");
+			resultFile.append("<td width=20% style=WORD-break:BREAK-all>" + responseFile + "</td>");
+			resultFile.append("<td width=10% style=WORD-break:BREAK-all>" + message + "</td>");
+			resultFile.append(statusTag + status + "</td>");
+			resultFile.append("<td style=word-wrap: break-word>" + comment + "</td>");
+			resultFile.append("</tr>");
+			resultFile.close();
+		} else {
+			Reporter.log("Not able to log data");
+		}
 	}
 
 	public void addDirToZipArchive(ZipOutputStream zos, File fileToZip, String parrentDirectoryName) throws Exception {

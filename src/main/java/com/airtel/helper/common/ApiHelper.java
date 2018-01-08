@@ -159,8 +159,9 @@ public class ApiHelper {
 		try {
 			String requestFilePath = fileHelper.createRequestJsonFile(request, "");
 			String responseFilePath = fileHelper.createResponseJsonFile(response, "");
+			String reportFolder = reporter.getResultFileStringPath();
 
-			reporter.appendresultHTMLReport(reporter.getResultFileStringPath(), url,
+			reporter.appendresultHTMLReport(reportFolder, url,
 					"<a href='" + requestFilePath + "'>Request Data" + "</a>",
 					"<a href='" + responseFilePath + "'>Response Data" + "</a>",
 					"Response Time(in msec) :- " + String.valueOf(responseTime), "", "");

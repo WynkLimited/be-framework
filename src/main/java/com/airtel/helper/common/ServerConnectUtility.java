@@ -19,7 +19,8 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
 public class ServerConnectUtility {
-	static ReportHelper reporter = new ReportHelper();
+	private static ReportHelper reporter = new ReportHelper();
+	private static String HOST_CHECK = "StrictHostKeyChecking";
 
 	/**
 	 * This method executes a Unix command on unix server
@@ -72,7 +73,7 @@ public class ServerConnectUtility {
 			session = jsch.getSession(userName, serverIp);
 
 			java.util.Properties config = new java.util.Properties();
-			config.put("StrictHostKeyChecking", "no");
+			config.put(HOST_CHECK, "no");
 
 			session.setConfig(config);
 			session.setPassword(password);
