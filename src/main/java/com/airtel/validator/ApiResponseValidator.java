@@ -61,7 +61,6 @@ public class ApiResponseValidator {
 	 */
 	public static boolean compareJsonWithRequest(String responseExpected, String responseActual, String request,
 			String propFilePath) {
-		ReportHelper reporter = new ReportHelper();
 		ComparatorReportGenerator compareHtmlObj = new ComparatorReportGenerator();
 		try {
 			String compareFilePath = null;
@@ -84,7 +83,7 @@ public class ApiResponseValidator {
 			if (propFilePath != null && !propFilePath.isEmpty()) {
 				dndCompareValues = ApiHelper.getAllProperty(propFilePath);
 			}
-			
+
 			for (int diffCount = 0; diffCount < jsonDiff.size(); diffCount++) {
 				String diffPath = jsonDiff.get(diffCount).get(DIFFERENCE_PATH).asText();
 
@@ -96,22 +95,22 @@ public class ApiResponseValidator {
 					if (diffValueJsonNode != null)
 						diffValue = jsonDiff.get(diffCount).get(DIFFERENCE_VALUE).asText();
 					String parentValue = "";
-					
+
 					if (responseExp.at(diffPath) != null) {
 						parentValue = responseExp.at(diffPath).asText();
 					}
-					
+
 					logFailure(operationType.toUpperCase(), diffPath, diffValue, parentValue);
 					logFailureInReporter(compareFilePath, operationType.toUpperCase(), diffPath, diffValue,
 							parentValue);
 				}
 			}
-			
+
 			if (differenceCounter > 0) {
 				compareHtmlObj.appendFinalHTMLReport(compareFilePath);
 				String differenceHTMLLink = "<a href='" + linkCompareFilePath + "'>Differences Link</a>";
 
-				reporter.reporterLogging(false, differenceHTMLLink);
+				ReportHelper.reporterLogging(false, differenceHTMLLink);
 				return false;
 			}
 		} catch (IOException e) {
@@ -122,7 +121,6 @@ public class ApiResponseValidator {
 
 	public static boolean validateJsonSchema(String response, String responseSchema, String esFieldName) {
 		boolean schemaValidationFlag = false;
-		ReportHelper reporter = new ReportHelper();
 		ComparatorReportGenerator compareHtmlObj = new ComparatorReportGenerator();
 		try {
 			String compareFilePath = null;
@@ -146,7 +144,7 @@ public class ApiResponseValidator {
 				logFailureInReporter(compareFilePath, "ES log comparison", "-", errorText, "-");
 				compareHtmlObj.appendFinalHTMLReport(compareFilePath);
 				String differenceHTMLLink = "<a href='" + linkCompareFilePath + "'>Differences Link</a>";
-				reporter.reporterLogging(false, differenceHTMLLink);
+				ReportHelper.reporterLogging(false, differenceHTMLLink);
 			} else
 				schemaValidationFlag = true;
 

@@ -20,13 +20,17 @@ public class DbHelper {
 	final static String CONFIGURATION_FILE_PATH = "config/envConfig.properties";
 
 	public static Connection createDbConnection(String environment, String sid) {
+		return createDbConnection(environment, sid, "1521");
+	}
+
+	public static Connection createDbConnection(String environment, String sid, String port) {
 		Connection con = null;
 		String dbServerIp = ApiHelper.getValueOfProperty(CONFIGURATION_FILE_PATH, environment + "_IP");
 		String userName = ApiHelper.getValueOfProperty(CONFIGURATION_FILE_PATH, environment + "_USER");
 		String password = ApiHelper.getValueOfProperty(CONFIGURATION_FILE_PATH, environment + "_PASSWORD");
 		try {
 			Class.forName("oracle.jdbc.driver.OracleDriver");
-			String connectionString = "jdbc:oracle:thin:@" + dbServerIp + ":1521:" + sid;
+			String connectionString = "jdbc:oracle:thin:@" + dbServerIp + ":" + port + ":" + sid;
 			con = DriverManager.getConnection(connectionString, userName, password);
 		} catch (Exception e) {
 			Reporter.log(e.getLocalizedMessage());
@@ -47,7 +51,7 @@ public class DbHelper {
 		List<Map<String, String>> resultData = new ArrayList<Map<String, String>>();
 		ResultSet result = executeQuery(connection, query);
 		resultData = convertResultToMap(result);
-		//closeConnection(connection);
+		// closeConnection(connection);
 		return resultData;
 	}
 
@@ -106,7 +110,7 @@ public class DbHelper {
 				sb.setLength(sb.length() - 3);
 				sb.append(System.getProperty("line.separator"));
 				rowData = sb.toString();
-				fileHelper.writeToFile(rowData, fileName,true);
+				fileHelper.writeToFile(rowData, fileName, true);
 			}
 
 		} catch (SQLException e) {

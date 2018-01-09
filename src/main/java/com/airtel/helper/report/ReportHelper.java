@@ -227,7 +227,7 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 		}
 	}
 
-	public boolean reporterLogging(Boolean status, String sMessage) {
+	public static boolean reporterLogging(Boolean status, String sMessage) {
 		ReportHelper reportHelper = new ReportHelper();
 		try {
 			// softAssert.assertTrue( status, sMessage);
@@ -282,7 +282,6 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 	 */
 	public static void logValidationFailureWithRequest(String fieldName, String expectedValue, String actualValue,
 			String failureType, String request) {
-		ReportHelper reporter = new ReportHelper();
 		ComparatorReportGenerator compareHtmlObj = new ComparatorReportGenerator();
 		String compareFilePath = null;
 		String linkCompareFilePath = null;
@@ -301,7 +300,7 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 					"<textarea disabled rows='7' cols='55'>" + actualValue + "</textarea>");
 			compareHtmlObj.appendFinalHTMLReport(compareFilePath);
 			String differenceHTMLLink = "<a href='" + linkCompareFilePath + "'>" + failureType + "</a>";
-			reporter.reporterLogging(false, differenceHTMLLink);
+			ReportHelper.reporterLogging(false, differenceHTMLLink);
 		} catch (IOException e) {
 
 			e.printStackTrace();

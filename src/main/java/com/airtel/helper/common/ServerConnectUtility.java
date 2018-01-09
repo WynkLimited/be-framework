@@ -19,7 +19,6 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
 public class ServerConnectUtility {
-	private static ReportHelper reporter = new ReportHelper();
 	private static String HOST_CHECK = "StrictHostKeyChecking";
 
 	/**
@@ -164,7 +163,7 @@ public class ServerConnectUtility {
 			output.close();
 
 		} catch (Exception e) {
-			reporter.reporterLogging(false,
+			ReportHelper.reporterLogging(false,
 					"Exception Caught while updating property file" + "<br>Stacktrace-<br>" + e.getMessage());
 		} finally {
 			sftpChannel.disconnect();
@@ -202,7 +201,7 @@ public class ServerConnectUtility {
 			br.close();
 			commandOutput.close();
 		} catch (Exception e) {
-			reporter.reporterLogging(false,
+			ReportHelper.reporterLogging(false,
 					"Exception Caught while reading data from log File" + "<br>Stacktrace-<br>" + e.getMessage());
 		} finally {
 			channel.disconnect();
