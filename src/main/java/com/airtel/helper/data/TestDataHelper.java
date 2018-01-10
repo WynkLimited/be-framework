@@ -58,4 +58,17 @@ public class TestDataHelper extends BaseTestClass {
 		return testDataObject;
 	}
 
+	@DataProvider(name = "ExcelData")
+	public static Iterator<Object[]> getDataFromExcel(Method method) {
+		Test classInfo = method.getAnnotation(Test.class);
+		List<Object[]> testData = new ArrayList<Object[]>();
+		String pathName = classInfo.description();
+		List<Map<String, String>> excelData = ExcelHelper.fetchDataExcel(pathName, 0);
+		for (Map<String, String> rowData : excelData) {
+			testData.add(new Object[] { rowData });
+		}
+		Iterator<Object[]> dataProviderIterator = testData.iterator();
+		return dataProviderIterator;
+	}
+
 }
