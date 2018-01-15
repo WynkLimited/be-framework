@@ -93,7 +93,7 @@ public class ApiHelper {
 		if (queryParams != null) {
 			logRequestResponse(queryParams.toString().replace(", ", "&"), response.asString(), url, responseTime);
 		} else {
-			logRequestResponse(null, response.asString(), url, responseTime);
+			logRequestResponse(null, response.prettyPrint(), url, responseTime);
 		}
 
 		if (response.getStatusCode() != 200 && response.getStatusCode() != 204) {
@@ -144,7 +144,7 @@ public class ApiHelper {
 
 		apiResp = request.post(url);
 		long responseTime = apiResp.getTime();
-		logRequestResponse(body, apiResp.asString(), url, responseTime);
+		logRequestResponse(body, apiResp.prettyPrint(), url, responseTime);
 
 		if (apiResp.getStatusCode() != 200) {
 			ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
@@ -199,7 +199,8 @@ public class ApiHelper {
 	}
 
 	/**
-	 * Returns list of object converted from a JSON array string. Input of this method is the Type of list and JSON Array string.
+	 * Returns list of object converted from a JSON array string. Input of this
+	 * method is the Type of list and JSON Array string.
 	 * 
 	 * @param jsonArray
 	 * @param listType
@@ -287,7 +288,7 @@ public class ApiHelper {
 
 	public static boolean verifyObject(JSONObject responseObj, String esFieldName) {
 		if (responseObj.get(esFieldName) != null) {
-			Reporter.log("<br/><font size='2'>ES Logs field " + esFieldName + " is null.</font>");
+			ReportHelper.logValidationFailure("ES LOG " + esFieldName, "object", "null", "ES LOG Field Found Null");
 			return false;
 		}
 		return true;

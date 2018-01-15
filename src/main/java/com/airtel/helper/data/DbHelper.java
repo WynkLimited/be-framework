@@ -68,7 +68,7 @@ public class DbHelper {
 		return result;
 	}
 
-	private static void closeConnection(Connection conn) {
+	public static void closeConnection(Connection conn) {
 		try {
 			conn.close();
 		} catch (SQLException e) {
