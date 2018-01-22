@@ -16,15 +16,13 @@ public class TestDataHelper extends BaseTestClass {
 
 	@DataProvider(name = "dbDataProvider")
 	protected Iterator<Object[]> getDataFromDB(Method method) {
-		List<String> queryData = new ArrayList<String>();
+		List<String> queryData = new ArrayList<>();
 		List<Map<String, String>> queryResultData = new ArrayList<Map<String, String>>();
-		List<Object[]> testData = new ArrayList<Object[]>();
+		List<Object[]> testData = new ArrayList<>();
 		Test tstData = method.getAnnotation(Test.class);
-		if (tstData != null) {
-			if (tstData.groups() != null) {
-				for (String queryGroup : tstData.groups()) {
-					queryData.add(queryGroup);
-				}
+		if (tstData != null && tstData.groups() != null) {
+			for (String queryGroup : tstData.groups()) {
+				queryData.add(queryGroup);
 			}
 		}
 		String query = queryData.get(0);
@@ -41,8 +39,7 @@ public class TestDataHelper extends BaseTestClass {
 		for (Map<String, String> queryResult : queryResultData) {
 			testData.add(new Object[] { queryResult });
 		}
-		Iterator<Object[]> finalData = testData.iterator();
-		return finalData;
+		return testData.iterator();
 	}
 
 	@DataProvider(name = "ExcelDataProvider")
@@ -54,21 +51,19 @@ public class TestDataHelper extends BaseTestClass {
 		String pathName = "src" + File.separator + "test" + File.separator + "resources" + File.separator + "test_data"
 				+ File.separator + packageName + File.separator + method.getName() + ".xlsx";
 
-		Object[][] testDataObject = ExcelHelper.getDataFromExcel(pathName);
-		return testDataObject;
+		return ExcelHelper.getDataFromExcel(pathName);
 	}
 
 	@DataProvider(name = "ExcelData")
 	public static Iterator<Object[]> getDataFromExcel(Method method) {
 		Test classInfo = method.getAnnotation(Test.class);
-		List<Object[]> testData = new ArrayList<Object[]>();
+		List<Object[]> testData = new ArrayList<>();
 		String pathName = classInfo.description();
 		List<Map<String, String>> excelData = ExcelHelper.fetchDataExcel(pathName, 0);
 		for (Map<String, String> rowData : excelData) {
 			testData.add(new Object[] { rowData });
 		}
-		Iterator<Object[]> dataProviderIterator = testData.iterator();
-		return dataProviderIterator;
+		return testData.iterator();
 	}
 
 }

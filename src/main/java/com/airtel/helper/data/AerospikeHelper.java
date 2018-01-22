@@ -1,13 +1,18 @@
 package com.airtel.helper.data;
 
-import com.aerospike.client.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.Bin;
+import com.aerospike.client.Host;
+import com.aerospike.client.Key;
+import com.aerospike.client.Record;
 import com.aerospike.client.policy.BatchPolicy;
 import com.aerospike.client.policy.ClientPolicy;
 import com.aerospike.client.policy.WritePolicy;
 import com.airtel.helper.common.BaseTestClass;
-import com.airtel.helper.report.ReportHelper;
-
-import java.util.*;
 
 /**
  * Created by b0200202 on 12/6/17.
@@ -49,24 +54,26 @@ public class AerospikeHelper extends BaseTestClass {
 		Record record = client.get(null, key, binName);
 		return record;
 	}
-	public  static  void writeRecordForAKey(AerospikeClient client,String namespace,String setName,String value,List<Bin> binList)
-    {
-        WritePolicy writePolicy= new WritePolicy();
-        Key key = new Key(namespace, setName, value);
 
-        if (binList.size()!=0)
-        try{
-            client.put(writePolicy,key,binList.toArray(new Bin[] {}));
-        }catch (Exception e)
-        {
-            ReportHelper.logValidationFailure("Aerospike BinListException","done","undone","Aerospike Write Exception");
-        }
-        else
-            ReportHelper.logValidationFailure("BinListEmpty","size >1",String.valueOf(binList.size()),"Empty bin List   inserted");
+	public static void writeRecordForAKey(AerospikeClient client, String namespace, String setName, String value,
+			List<Bin> binList) {
+		WritePolicy writePolicy = new WritePolicy();
+		Key key = new Key(namespace, setName, value);
 
-    }
+		if (!binList.isEmpty())
+			client.put(writePolicy, key, binList.toArray(new Bin[] {}));
 
+	}
 
+	public static Boolean deleteRecordForAkey(AerospikeClient client, String namespace, String setName, String value) {
+
+		Key key = new Key(namespace, setName, value);
+		WritePolicy writePolicy = new WritePolicy();
+
+		boolean deleteStatus = client.delete(writePolicy, key);
+		return deleteStatus;
+
+	}
 
 	public static List<Map<String, Object>> parseAerospikeRecordForaBin(Record[] record) {
 

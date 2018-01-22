@@ -10,6 +10,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.testng.Reporter;
+
 import com.airtel.helper.report.ReportHelper;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
@@ -19,7 +21,8 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
 public class ServerConnectUtility {
-	private static String HOST_CHECK = "StrictHostKeyChecking";
+
+	private static String hostCheck = "StrictHostKeyChecking";
 
 	/**
 	 * This method executes a Unix command on unix server
@@ -30,29 +33,28 @@ public class ServerConnectUtility {
 	 * @param port
 	 */
 	public static void executeUnixCommandWithSudo(Session session, String command, String password) {
-
 		Channel channel = null;
 		try {
-
 			channel = session.openChannel("exec");
-
+			ChannelExec execChannel = (ChannelExec) channel;
 			// Execute sudo command so that user can restart the server
-			((ChannelExec) channel).setCommand("sudo -S -p '' " + command);
-			OutputStream out = channel.getOutputStream();
-			((ChannelExec) channel).setErrStream(System.err);
-			channel.connect();
-			out.write((password + "\n").getBytes());
-			out.flush();
+			execChannel.setCommand("sudo -S " + command);
+			execChannel.setErrStream(System.err);
 
-			// Execute restart command
-			((ChannelExec) channel).setCommand(command);
-			channel.connect();
-			Thread.sleep(120000);
-
+			if (password != null) {
+				OutputStream out = channel.getOutputStream();
+				channel.connect();
+				out.write((password + "\n").getBytes());
+				out.flush();
+				Thread.sleep(1000);
+			} else
+				channel.connect();
+			execChannel.disconnect();
 		} catch (Exception e) {
-			e.printStackTrace();
+			Reporter.log(e.getLocalizedMessage());
 		} finally {
-			channel.disconnect();
+			if (channel != null)
+				channel.disconnect();
 		}
 	}
 
@@ -72,14 +74,13 @@ public class ServerConnectUtility {
 			session = jsch.getSession(userName, serverIp);
 
 			java.util.Properties config = new java.util.Properties();
-			config.put(HOST_CHECK, "no");
+			config.put(hostCheck, "no");
 
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
 		} catch (JSchException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Reporter.log(e.getLocalizedMessage());
 		}
 
 		return session;
@@ -101,7 +102,7 @@ public class ServerConnectUtility {
 		String line = null;
 		Channel channel = null;
 		ChannelSftp sftpChannel = null;
-		ByteArrayInputStream obj_InputStream = null;
+		ByteArrayInputStream objInputStream = null;
 
 		try {
 			channel = session.openChannel("sftp");
@@ -151,14 +152,14 @@ public class ServerConnectUtility {
 			}
 
 			byte[] bytes = baos.toByteArray();
-			obj_InputStream = new ByteArrayInputStream(bytes);
+			objInputStream = new ByteArrayInputStream(bytes);
 
 			// Put updated file to server
-			sftpChannel.put(obj_InputStream, absFileName);
+			sftpChannel.put(objInputStream, absFileName);
 
 			br.close();
 			input.close();
-			obj_InputStream.close();
+			objInputStream.close();
 			baos.close();
 			output.close();
 
@@ -204,8 +205,10 @@ public class ServerConnectUtility {
 			ReportHelper.reporterLogging(false,
 					"Exception Caught while reading data from log File" + "<br>Stacktrace-<br>" + e.getMessage());
 		} finally {
-			channel.disconnect();
+			if (channel != null)
+				channel.disconnect();
 		}
 		return logData;
 	}
+
 }

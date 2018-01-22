@@ -15,7 +15,6 @@ import java.util.Set;
 import javax.xml.bind.JAXB;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -24,7 +23,6 @@ import org.testng.Reporter;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 import com.airtel.helper.report.FileHelper;
 import com.airtel.helper.report.ReportHelper;
@@ -67,8 +65,7 @@ public class ApiHelper {
 	 * @return response
 	 */
 	public static Response getResponse(Map<String, String> queryParams, String url) {
-		Response response = getResponseWithHeaders(queryParams, null, url);
-		return response;
+		return getResponseWithHeaders(queryParams, null, url);
 	}
 
 	/**
@@ -83,7 +80,7 @@ public class ApiHelper {
 
 		RequestSpecification request = prepareGetRequest(queryParams).relaxedHTTPSValidation();
 		Response response = null;
-		if (headers != null && headers.size() != 0) {
+		if (headers != null && !headers.isEmpty()) {
 			Headers requestHeader = new Headers(headers);
 			request.headers(requestHeader);
 		}
@@ -113,8 +110,7 @@ public class ApiHelper {
 	 * @return
 	 */
 	public static Response postResponse(String body, ContentType contentType, String url) {
-		Response apiResp = postResponseWithHeaders(body, null, contentType, url);
-		return apiResp;
+		return postResponseWithHeaders(body, null, contentType, url);
 	}
 
 	/**
@@ -131,7 +127,7 @@ public class ApiHelper {
 		RequestSpecification request = RestAssured.given().relaxedHTTPSValidation();
 		Response apiResp = null;
 
-		if (headers != null && headers.size() != 0) {
+		if (headers != null && !headers.isEmpty()) {
 			Headers requestHeader = new Headers(headers);
 			request.headers(requestHeader);
 		}
@@ -179,8 +175,7 @@ public class ApiHelper {
 	 */
 	public static String convertToJson(Object obj) {
 		Gson gsonConverter = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
-		String jsonData = gsonConverter.toJson(obj);
-		return jsonData;
+		return gsonConverter.toJson(obj);
 	}
 
 	/**
@@ -194,8 +189,7 @@ public class ApiHelper {
 	 */
 	public static <T> T convertFromJson(String jsonData, Class<T> classType) {
 		Gson gsonConverter = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
-		T objFromJson = gsonConverter.fromJson(jsonData, classType);
-		return objFromJson;
+		return gsonConverter.fromJson(jsonData, classType);
 	}
 
 	/**
@@ -281,9 +275,7 @@ public class ApiHelper {
 	}
 
 	public static boolean validateString(String strVal) {
-		if (strVal != null && !strVal.trim().isEmpty())
-			return true;
-		return false;
+		return (strVal != null && !strVal.trim().isEmpty());
 	}
 
 	public static boolean verifyObject(JSONObject responseObj, String esFieldName) {
@@ -296,45 +288,20 @@ public class ApiHelper {
 
 	public boolean isStringFeildNotBlankInsideJSONObject(JSONObject jsonObject, String feild) {
 
-		if (!jsonObject.getString(feild).isEmpty() && jsonObject.getString(feild) != null)
-			return true;
-		else
-			return false;
+		return (!jsonObject.getString(feild).isEmpty() && jsonObject.getString(feild) != null);
 	}
 
 	public boolean isJsonObjectInsideJsonObjectNotBlank(JSONObject jsonObject, String feild) {
-
-		if (jsonObject.getJSONObject(feild) != null && jsonObject.getJSONObject(feild).length() != 0)
-			return true;
-		else
-			return false;
-
-	}
-
-	public boolean isJsonArrayNotEmpty(JSONArray jsonArray) {
-
-		if (jsonArray.length() != 0)
-			return true;
-		else
-			return false;
-
+		return (jsonObject.getJSONObject(feild) != null && jsonObject.getJSONObject(feild).length() != 0);
 	}
 
 	public boolean isJsonArrayNotBlank(JSONArray jsonArray) {
-
-		if (!jsonArray.equals(null) && jsonArray.length() > 0)
-			return true;
-		else
-			return false;
+		return ((jsonArray != null) && jsonArray.length() > 0);
 
 	}
 
 	public boolean isListFieldBlank(JSONObject jsonObject, String feild) {
-
-		if ((jsonObject.getJSONArray(feild).length() != 0) && jsonObject.getJSONArray(feild) != null)
-			return true;
-		else
-			return false;
+		return ((jsonObject.getJSONArray(feild).length() != 0) && (jsonObject.getJSONArray(feild) != null));
 	}
 
 	/**
@@ -361,14 +328,11 @@ public class ApiHelper {
 	}
 
 	public static boolean validateObject(Object obj) {
-		if (obj != null && obj != "")
-			return true;
-		return false;
+		return (obj != null && obj != "");
 	}
 
 	public static String getValueFromXLResponse(String xmlResponse, String tagName, int index) {
 		String value = "";
-
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder documentBuilder;
 		InputSource inputSource;
@@ -377,19 +341,12 @@ public class ApiHelper {
 			inputSource = new InputSource(new StringReader(xmlResponse));
 			Document doc = documentBuilder.parse(inputSource);
 			NodeList list = doc.getElementsByTagName(tagName);
-			System.out.println(list.item(index).getTextContent());
 			value = list.item(index).getTextContent();
-		} catch (ParserConfigurationException e) {
-			Reporter.log("Exception In processing XML Response");
-		} catch (SAXException e) {
-			Reporter.log("Exception In processing XML Response");
-		} catch (IOException e) {
-			Reporter.log("Exception In processing XML Response");
+		} catch (Exception e) {
+			ReportHelper.logValidationFailure("xml response parse failure", "attribute Value", e.getMessage(),
+					"Exception In  XML Response");
+
 		}
 		return value;
-	}
-
-	public static void main(String[] args) {
-
 	}
 }
