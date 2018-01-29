@@ -19,7 +19,7 @@ import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import com.github.fge.jsonschema.main.JsonValidator;
 
 /**
- * This method have the functions to validate API response. It constitutes of 3
+ * This class have the functions to validate API response. It constitutes of 3
  * functions: 1. json comparator - compare 2 jsons 2. schema validator -
  * validate the schema against a pre-defined value 3. empty response - check if
  * the response is empty
@@ -27,17 +27,63 @@ import com.github.fge.jsonschema.main.JsonValidator;
  * @author b0202849
  */
 public class ApiResponseValidator {
+	 static final String OPERATION = "op";
+	 static final String DIFFERENCE_PATH = "path";
+	 static final String DIFFERENCE_VALUE = "value";
 
+	/**
+	 * This method compares two json and log the difference b/w those JSON. This
+	 * comparator has a limitation of logging difference when the position of node
+	 * has also changed, so it's recommended to do object to object comparison
+	 * before using this.
+	 * 
+	 * @param responseExpected
+	 * @param responseActual
+	 * @param propFilePath
+	 * @return
+	 */
 	public static boolean compareJson(String responseExpected, String responseActual, String propFilePath) {
-		ReportHelper reporter = new ReportHelper();
+		return compareJsonWithRequest(responseExpected, responseActual, null, propFilePath);
+	}
+
+	/**
+	 * This method will compare 2 JSON and log difference b/w those JSON.
+	 * 
+	 * @param responseExpected
+	 * @param responseActual
+	 * @return
+	 */
+	public static boolean compareJson(String responseExpected, String responseActual) {
+		return compareJsonWithRequest(responseExpected, responseActual, null, null);
+	}
+
+	/**
+	 * This method compares two json and log the difference b/w those JSON along
+	 * with the request. This comparator has a limitation of logging difference when
+	 * the position of node has also changed, so it's recommended to do object to
+	 * object comparison before using this.
+	 * 
+	 * @param responseExpected
+	 * @param responseActual
+	 * @param request
+	 * @param propFilePath
+	 * @return
+	 */
+	public static boolean compareJsonWithRequest(String responseExpected, String responseActual, String request,
+			String propFilePath) {
 		ComparatorReportGenerator compareHtmlObj = new ComparatorReportGenerator();
 		try {
 			String compareFilePath = null;
 			String linkCompareFilePath = null;
-			compareFilePath = compareHtmlObj.createinitialHTMLReport();
+
+			if (request == null) {
+				compareFilePath = compareHtmlObj.createCompartarReport();
+			} else {
+				compareFilePath = compareHtmlObj.createCompartarReportWithReq(request);
+			}
 			linkCompareFilePath = "./comparatorReport/" + compareFilePath.split("comparatorReport")[1];
 
-			Integer differenceCounter = 0;
+			int differenceCounter = 0;
 			// Extracting JSON data to JSON node and comparing them
 			ObjectMapper objMapper = new ObjectMapper();
 			JsonNode responseExp = objMapper.readTree(responseExpected);
@@ -47,46 +93,49 @@ public class ApiResponseValidator {
 			if (propFilePath != null && !propFilePath.isEmpty()) {
 				dndCompareValues = ApiHelper.getAllProperty(propFilePath);
 			}
+
 			for (int diffCount = 0; diffCount < jsonDiff.size(); diffCount++) {
-				String diffPath = jsonDiff.get(diffCount).get("path").asText();
+				String diffPath = jsonDiff.get(diffCount).get(DIFFERENCE_PATH).asText();
 
 				if (dndCompareValues == null || !dndCompareValues.contains(diffPath)) {
 					differenceCounter++;
-					String operationType = jsonDiff.get(diffCount).get("op").asText();
-					JsonNode diffValueJsonNode = jsonDiff.get(diffCount).get("value");
+					String operationType = jsonDiff.get(diffCount).get(OPERATION).asText();
+					JsonNode diffValueJsonNode = jsonDiff.get(diffCount).get(DIFFERENCE_VALUE);
 					String diffValue = null;
 					if (diffValueJsonNode != null)
-						diffValue = jsonDiff.get(diffCount).get("value").asText();
+						diffValue = jsonDiff.get(diffCount).get(DIFFERENCE_VALUE).asText();
 					String parentValue = "";
-					if (operationType.equalsIgnoreCase("replace") || operationType.equalsIgnoreCase("remove")) {
+
+					if (responseExp.at(diffPath) != null) {
 						parentValue = responseExp.at(diffPath).asText();
 					}
+
 					logFailure(operationType.toUpperCase(), diffPath, diffValue, parentValue);
 					logFailureInReporter(compareFilePath, operationType.toUpperCase(), diffPath, diffValue,
 							parentValue);
 				}
 			}
+
 			if (differenceCounter > 0) {
 				compareHtmlObj.appendFinalHTMLReport(compareFilePath);
 				String differenceHTMLLink = "<a href='" + linkCompareFilePath + "'>Differences Link</a>";
 
-				reporter.reporterLogging(false, differenceHTMLLink);
+				ReportHelper.reporterLogging(false, differenceHTMLLink);
 				return false;
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			ReportHelper.logValidationFailure("Exception in comparison", "", e.getMessage(), "Exception");
 		}
 		return true;
 	}
 
 	public static boolean validateJsonSchema(String response, String responseSchema, String esFieldName) {
 		boolean schemaValidationFlag = false;
-		ReportHelper reporter = new ReportHelper();
 		ComparatorReportGenerator compareHtmlObj = new ComparatorReportGenerator();
 		try {
 			String compareFilePath = null;
 			String linkCompareFilePath = null;
-			compareFilePath = compareHtmlObj.createinitialHTMLReport();
+			compareFilePath = compareHtmlObj.createCompartarReport();
 			linkCompareFilePath = "./comparatorReport/" + compareFilePath.split("comparatorReport")[1];
 			JsonNode jsonSchema = JsonLoader.fromString(responseSchema);
 			JsonNode jsonResponse = JsonLoader.fromString(response);
@@ -105,7 +154,7 @@ public class ApiResponseValidator {
 				logFailureInReporter(compareFilePath, "ES log comparison", "-", errorText, "-");
 				compareHtmlObj.appendFinalHTMLReport(compareFilePath);
 				String differenceHTMLLink = "<a href='" + linkCompareFilePath + "'>Differences Link</a>";
-				reporter.reporterLogging(false, differenceHTMLLink);
+				ReportHelper.reporterLogging(false, differenceHTMLLink);
 			} else
 				schemaValidationFlag = true;
 
@@ -119,7 +168,7 @@ public class ApiResponseValidator {
 	}
 
 	public static boolean validateJsonObject(Object responseObj, String esFieldName) {
-		if (responseObj.equals(null)) {
+		if (responseObj == null) {
 			Reporter.log("<br/><font size='2'>ES Logs field " + esFieldName + " is null.</font>");
 			return false;
 		}
