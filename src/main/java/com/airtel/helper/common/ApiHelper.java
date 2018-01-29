@@ -38,7 +38,7 @@ import io.restassured.specification.RequestSpecification;
 
 /**
  * This class contains methods for generic functions over the API that includes
- * fetching response for GET/POST Request, marshalling & unmarshalling between
+ * fetching response for GET/POST Request, marshaling & unmarshalling between
  * object & XML/JSON.
  * 
  * @author b0202849

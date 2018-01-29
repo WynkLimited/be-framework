@@ -27,9 +27,9 @@ import com.github.fge.jsonschema.main.JsonValidator;
  * @author b0202849
  */
 public class ApiResponseValidator {
-	final static String OPERATION = "op";
-	final static String DIFFERENCE_PATH = "path";
-	final static String DIFFERENCE_VALUE = "value";
+	 static final String OPERATION = "op";
+	 static final String DIFFERENCE_PATH = "path";
+	 static final String DIFFERENCE_VALUE = "value";
 
 	/**
 	 * This method compares two json and log the difference b/w those JSON. This
@@ -43,8 +43,18 @@ public class ApiResponseValidator {
 	 * @return
 	 */
 	public static boolean compareJson(String responseExpected, String responseActual, String propFilePath) {
-		boolean comparisonResult = compareJsonWithRequest(responseExpected, responseActual, null, propFilePath);
-		return comparisonResult;
+		return compareJsonWithRequest(responseExpected, responseActual, null, propFilePath);
+	}
+
+	/**
+	 * This method will compare 2 JSON and log difference b/w those JSON.
+	 * 
+	 * @param responseExpected
+	 * @param responseActual
+	 * @return
+	 */
+	public static boolean compareJson(String responseExpected, String responseActual) {
+		return compareJsonWithRequest(responseExpected, responseActual, null, null);
 	}
 
 	/**
@@ -114,7 +124,7 @@ public class ApiResponseValidator {
 				return false;
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			ReportHelper.logValidationFailure("Exception in comparison", "", e.getMessage(), "Exception");
 		}
 		return true;
 	}
@@ -158,7 +168,7 @@ public class ApiResponseValidator {
 	}
 
 	public static boolean validateJsonObject(Object responseObj, String esFieldName) {
-		if (responseObj.equals(null)) {
+		if (responseObj == null) {
 			Reporter.log("<br/><font size='2'>ES Logs field " + esFieldName + " is null.</font>");
 			return false;
 		}

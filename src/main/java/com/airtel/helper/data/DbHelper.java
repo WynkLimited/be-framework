@@ -14,10 +14,11 @@ import org.testng.Reporter;
 
 import com.airtel.helper.common.ApiHelper;
 import com.airtel.helper.report.FileHelper;
+import com.airtel.helper.report.ReportHelper;
 
 public class DbHelper {
 
-	final static String CONFIGURATION_FILE_PATH = "config/envConfig.properties";
+	 static final String CONFIGURATION_FILE_PATH = "config/envConfig.properties";
 
 	public static Connection createDbConnection(String environment, String sid) {
 		return createDbConnection(environment, sid, "1521");
@@ -48,11 +49,8 @@ public class DbHelper {
 	 *         that row
 	 */
 	public static List<Map<String, String>> fetchDatafromDb(Connection connection, String query) {
-		List<Map<String, String>> resultData = new ArrayList<Map<String, String>>();
 		ResultSet result = executeQuery(connection, query);
-		resultData = convertResultToMap(result);
-		// closeConnection(connection);
-		return resultData;
+		return convertResultToMap(result);
 	}
 
 	private static ResultSet executeQuery(Connection connection, String query) {
@@ -63,8 +61,10 @@ public class DbHelper {
 				result = stmt.executeQuery(query);
 			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			ReportHelper.logValidationFailure("Couldn't get db connection", "DB connection", e.getMessage(),
+					"DB connection failure");
 		}
+
 		return result;
 	}
 
@@ -77,11 +77,11 @@ public class DbHelper {
 	}
 
 	private static List<Map<String, String>> convertResultToMap(ResultSet resultSet) {
-		List<Map<String, String>> queryData = new ArrayList<Map<String, String>>();
+		List<Map<String, String>> queryData = new ArrayList<>();
 		try {
 			int columnLength = resultSet.getMetaData().getColumnCount();
 			while (resultSet.next()) {
-				HashMap<String, String> rowData = new HashMap<String, String>();
+				HashMap<String, String> rowData = new HashMap<>();
 				for (int colIterator = 1; colIterator <= columnLength; colIterator++) {
 					String colName = resultSet.getMetaData().getColumnLabel(colIterator);
 					String colValue = resultSet.getString(colName);
