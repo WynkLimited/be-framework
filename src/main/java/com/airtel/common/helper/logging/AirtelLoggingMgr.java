@@ -41,7 +41,7 @@ public class AirtelLoggingMgr {
 		try {
 			configureAndWatch();
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e.getStackTrace());
 		}
 	}
 
@@ -49,13 +49,11 @@ public class AirtelLoggingMgr {
 	 * @throws IOException
 	 * @throws ConfigServiceException
 	 */
-	private synchronized static void configureAndWatch() throws IOException, ConfigServiceException {
+	private static synchronized void configureAndWatch() throws IOException, ConfigServiceException {
 		String logFileName = AirtelConfigService.getProperty(Constants.AIRTEL_COMMON_CONFIG, Constants.LOG_NAME_KEY);
 		if (logFileName != null) {
 			File f = new File(Constants.CONFIG_FOLDER + logFileName);
 			setLoggerContext(f);
-
-		} else {
 		}
 	}
 
@@ -79,20 +77,15 @@ public class AirtelLoggingMgr {
 	}
 
 	public static void setLoggerContext(File configFile) throws IOException {
-			loggerContext = (LoggerContext) org.apache.logging.log4j.LogManager.getContext(false);
-			InputStream in = new FileInputStream(configFile);
-			ConfigurationSource source = new ConfigurationSource(in);
-			Configuration updated = ConfigurationFactory.getInstance().getConfiguration(loggerContext, source);
-			loggerContext.start(updated);
-		
+		loggerContext = (LoggerContext) org.apache.logging.log4j.LogManager.getContext(false);
+		InputStream in = new FileInputStream(configFile);
+		ConfigurationSource source = new ConfigurationSource(in);
+		Configuration updated = ConfigurationFactory.getInstance().getConfiguration(loggerContext, source);
+		loggerContext.start(updated);
 
 	}
 
-	
-
 	public static void main(String args[]) {
-//		 Log log = AirtelLoggingMgr.getLogger(AirtelLoggingMgr.class.getName());
-//		 log.info("Saurabh");
-//		 log.debug("Saurabh debug");
+		//logger.info("This is working for me");
 	}
 }
