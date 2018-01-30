@@ -58,18 +58,33 @@ public class ApiHelper {
 	}
 
 	/**
-	 * This method will be used for getting response of GET request w/o headers.
+	 * This method will be used for getting response of GET request w/o headers. This method will always fail non 200 HTTP response.
 	 * 
 	 * @param queryParams
 	 * @param url
 	 * @return response
 	 */
 	public static Response getResponse(Map<String, String> queryParams, String url) {
-		return getResponseWithHeaders(queryParams, null, url);
+		return getResponseWithHeaders(queryParams, null, url, true);
 	}
 
 	/**
+	 * This method will be used for getting response of GET request w/o headers.
+	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
+	 * value as false/true.
+	 * @param queryParams
+	 * @param url
+	 * @param checkStatus
+	 * @return
+	 */
+	public static Response getResponse(Map<String, String> queryParams, String url, boolean checkStatus) {
+		return getResponseWithHeaders(queryParams, null, url, checkStatus);
+	}
+	
+	/**
 	 * This method will be used for getting response of GET request with headers.
+	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
+	 * value as false/true.
 	 * 
 	 * @param queryParams
 	 * @param headers
@@ -77,6 +92,21 @@ public class ApiHelper {
 	 * @return
 	 */
 	public static Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url) {
+		return getResponseWithHeaders(queryParams, headers, url, true);
+	}
+
+	/**
+	 * This method will be used for getting response of GET request with headers.
+	 * This method will fail non 200 HTTP response.
+	 * 
+	 * @param queryParams
+	 * @param headers
+	 * @param url
+	 * @param checkStatus
+	 * @return
+	 */
+	public static Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url,
+			boolean checkStatus) {
 
 		RequestSpecification request = prepareGetRequest(queryParams).relaxedHTTPSValidation();
 		Response response = null;
@@ -93,7 +123,7 @@ public class ApiHelper {
 			logRequestResponse(null, response.prettyPrint(), url, responseTime);
 		}
 
-		if (response.getStatusCode() != 200 && response.getStatusCode() != 204) {
+		if (checkStatus && response.getStatusCode() != 200 && response.getStatusCode() != 204) {
 			ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
 					Integer.toString(response.getStatusCode()), "HTTP status check failure");
 			Assert.assertTrue(false);
@@ -103,6 +133,7 @@ public class ApiHelper {
 
 	/**
 	 * This method will be used for getting response of POST request w/o headers.
+	 * This method will always fail non 200 response.
 	 * 
 	 * @param body
 	 * @param contentType
@@ -110,11 +141,27 @@ public class ApiHelper {
 	 * @return
 	 */
 	public static Response postResponse(String body, ContentType contentType, String url) {
-		return postResponseWithHeaders(body, null, contentType, url);
+		return postResponseWithHeaders(body, null, contentType, url, true);
 	}
 
 	/**
-	 * This method will be used for getting response of GET request with headers.
+	 * This method will be used for getting response of POST request w/o headers.
+	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
+	 * value as false/true.
+	 * 
+	 * @param body
+	 * @param contentType
+	 * @param url
+	 * @param checkStatus
+	 * @return
+	 */
+	public static Response postResponse(String body, ContentType contentType, String url, boolean checkStatus) {
+		return postResponseWithHeaders(body, null, contentType, url, checkStatus);
+	}
+
+	/**
+	 * This method will be used for getting response of POST request with headers.
+	 * This method will always fail non 200 response.
 	 * 
 	 * @param body
 	 * @param headers
@@ -124,6 +171,23 @@ public class ApiHelper {
 	 */
 	public static Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
 			String url) {
+		return postResponseWithHeaders(body, headers, contentType, url, true);
+	}
+
+	/**
+	 * This method will be used for getting response of POST request with headers.
+	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
+	 * value as false/true.
+	 * 
+	 * @param body
+	 * @param headers
+	 * @param contentType
+	 * @param url
+	 * @param checkStatus
+	 * @return
+	 */
+	public static Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
+			String url, boolean checkStatus) {
 		RequestSpecification request = RestAssured.given().relaxedHTTPSValidation();
 		Response apiResp = null;
 
@@ -142,7 +206,7 @@ public class ApiHelper {
 		long responseTime = apiResp.getTime();
 		logRequestResponse(body, apiResp.prettyPrint(), url, responseTime);
 
-		if (apiResp.getStatusCode() != 200) {
+		if (checkStatus && apiResp.getStatusCode() != 200) {
 			ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
 					Integer.toString(apiResp.getStatusCode()), "HTTP status check failure");
 			Reporter.log("Response has failed with HTTP status code - " + apiResp.getStatusCode());

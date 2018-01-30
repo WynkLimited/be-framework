@@ -1,5 +1,8 @@
 package com.airtel.helper.data;
 
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -18,7 +21,7 @@ import com.airtel.helper.report.ReportHelper;
 
 public class DbHelper {
 
-	 static final String CONFIGURATION_FILE_PATH = "config/envConfig.properties";
+	static final String CONFIGURATION_FILE_PATH = "config/envConfig.properties";
 
 	public static Connection createDbConnection(String environment, String sid) {
 		return createDbConnection(environment, sid, "1521");
@@ -76,6 +79,11 @@ public class DbHelper {
 		}
 	}
 
+	/**
+	 * This method converts the data returned from DB to List<Map>.
+	 * @param resultSet
+	 * @return
+	 */
 	private static List<Map<String, String>> convertResultToMap(ResultSet resultSet) {
 		List<Map<String, String>> queryData = new ArrayList<>();
 		try {
@@ -84,17 +92,37 @@ public class DbHelper {
 				HashMap<String, String> rowData = new HashMap<>();
 				for (int colIterator = 1; colIterator <= columnLength; colIterator++) {
 					String colName = resultSet.getMetaData().getColumnLabel(colIterator);
-					String colValue = resultSet.getString(colName);
-					rowData.put(colName, colValue);
+					String colValue = null;
+					if (resultSet.getObject(colName) == null) {
+						rowData.put(colName, colValue);
+					} else if (resultSet.getObject(colName).getClass().getName().contains("BLOB")) {
+						Blob blob = resultSet.getBlob(colName);
+						InputStream is = blob.getBinaryStream();
+						ObjectInputStream ois = new ObjectInputStream(is);
+						Object obj = ois.readObject();
+						colValue = obj.toString();
+						rowData.put(colName, colValue);
+						ois.close();
+					} else {
+						colValue = resultSet.getString(colName);
+						rowData.put(colName, colValue);
+					}
 				}
 				queryData.add(rowData);
 			}
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			Reporter.log(e.getMessage());
 		}
 		return queryData;
 	}
-
+	
+	
+	/**
+	 * 
+	 * @param connection
+	 * @param query
+	 * @param fileName
+	 */
 	public static void fetchDBDataToFile(Connection connection, String query, String fileName) {
 		try {
 			FileHelper fileHelper = new FileHelper();
