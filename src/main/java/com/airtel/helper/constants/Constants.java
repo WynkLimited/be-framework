@@ -1,5 +1,5 @@
 
-package com.airtel.common.helper.constants;
+package com.airtel.helper.constants;
 
 public interface Constants {
 

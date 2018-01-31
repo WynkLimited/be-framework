@@ -1,4 +1,4 @@
-package com.airtel.common.helper.resourceloader;
+package com.airtel.helper.logging;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,10 +9,10 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Properties;
 
-import com.airtel.common.helper.constants.Constants;
-import com.airtel.common.helper.exception.resourceloader.ConfigServiceException;
-import com.airtel.common.helper.exception.resourceloader.EmptyConfigFileException;
-import com.airtel.common.helper.exception.resourceloader.ResourceNotFoundException;
+import com.airtel.helper.constants.Constants;
+import com.airtel.helper.exception.resourceloader.ConfigServiceException;
+import com.airtel.helper.exception.resourceloader.EmptyConfigFileException;
+import com.airtel.helper.exception.resourceloader.ResourceNotFoundException;
 
 /**
  *

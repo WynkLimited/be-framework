@@ -1,5 +1,5 @@
 
-package com.airtel.common.helper.logging;
+package com.airtel.helper.logging;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,9 +14,8 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 
-import com.airtel.common.helper.constants.Constants;
-import com.airtel.common.helper.exception.resourceloader.ConfigServiceException;
-import com.airtel.common.helper.resourceloader.AirtelConfigService;
+import com.airtel.helper.constants.Constants;
+import com.airtel.helper.exception.resourceloader.ConfigServiceException;
 
 public class AirtelLoggingMgr {
 

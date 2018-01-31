@@ -1,4 +1,4 @@
-package com.airtel.common.helper.exception.resourceloader;
+package com.airtel.helper.exception.resourceloader;
 
 /**
  *

@@ -84,7 +84,7 @@ public class ApiHelper {
 	/**
 	 * This method will be used for getting response of GET request with headers.
 	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
-	 * value as false/true.
+	 * value as false/true.	
 	 * 
 	 * @param queryParams
 	 * @param headers

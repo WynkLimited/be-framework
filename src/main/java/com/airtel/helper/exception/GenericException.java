@@ -1,4 +1,4 @@
-package com.airtel.common.helper.exception;
+package com.airtel.helper.exception;
 
 public class GenericException extends Exception{
 	
