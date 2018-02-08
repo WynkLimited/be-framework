@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.airtel.api-automation</groupId>
 	<artifactId>api-automation-framework</artifactId>
-	<version>1.2</version>
+	<version>1.2.2</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -35,12 +35,6 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
 			<version>2.9.0</version>
-		</dependency>
-		<!-- Extent Report dependency -->
-		<dependency>
-			<groupId>com.relevantcodes</groupId>
-			<artifactId>extentreports</artifactId>
-			<version>2.41.2</version>
 		</dependency>
 
 		<dependency>
@@ -79,12 +73,6 @@
 			<version>3.11</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/javax.xml/jaxb-api -->
-		<dependency>
-			<groupId>javax.xml</groupId>
-			<artifactId>jaxb-api</artifactId>
-			<version>2.1</version>
-		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.flipkart.zjsonpatch/zjsonpatch -->
 		<dependency>
@@ -139,5 +127,11 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.5</version>
 		</dependency>
+		<dependency>
+			<groupId>com.jayway.jsonpath</groupId>
+			<artifactId>json-path</artifactId>
+			<version>2.4.0</version>
+		</dependency>
 	</dependencies>
+
 </project>

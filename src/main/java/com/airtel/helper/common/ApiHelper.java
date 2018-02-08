@@ -7,8 +7,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -58,7 +60,8 @@ public class ApiHelper {
 	}
 
 	/**
-	 * This method will be used for getting response of GET request w/o headers. This method will always fail non 200 HTTP response.
+	 * This method will be used for getting response of GET request w/o headers.
+	 * This method will always fail non 200 HTTP response.
 	 * 
 	 * @param queryParams
 	 * @param url
@@ -72,6 +75,7 @@ public class ApiHelper {
 	 * This method will be used for getting response of GET request w/o headers.
 	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
 	 * value as false/true.
+	 * 
 	 * @param queryParams
 	 * @param url
 	 * @param checkStatus
@@ -80,11 +84,11 @@ public class ApiHelper {
 	public static Response getResponse(Map<String, String> queryParams, String url, boolean checkStatus) {
 		return getResponseWithHeaders(queryParams, null, url, checkStatus);
 	}
-	
+
 	/**
 	 * This method will be used for getting response of GET request with headers.
 	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
-	 * value as false/true.	
+	 * value as false/true.
 	 * 
 	 * @param queryParams
 	 * @param headers
@@ -311,6 +315,21 @@ public class ApiHelper {
 			Reporter.log("Filepath mentioned is not correct and method breaks with exception " + e);
 			return null;
 		}
+	}
+
+	/**
+	 * This method will load all properties and it's value to a map.
+	 * 
+	 * @param filePath
+	 * @return
+	 */
+	public static Map<String, String> fetchAllProperties(String filePath) {
+		Map<String, String> propData = new HashMap<>();
+		Set<String> propertyName = getAllProperty(filePath);
+		for (String prop : propertyName) {
+			propData.put(prop, Optional.ofNullable(getValueOfProperty(filePath, prop)).orElse(null));
+		}
+		return propData;
 	}
 
 	/**

@@ -27,9 +27,9 @@ import com.github.fge.jsonschema.main.JsonValidator;
  * @author b0202849
  */
 public class ApiResponseValidator {
-	 static final String OPERATION = "op";
-	 static final String DIFFERENCE_PATH = "path";
-	 static final String DIFFERENCE_VALUE = "value";
+	static final String OPERATION = "op";
+	static final String DIFFERENCE_PATH = "path";
+	static final String DIFFERENCE_VALUE = "value";
 
 	/**
 	 * This method compares two json and log the difference b/w those JSON. This
@@ -71,6 +71,11 @@ public class ApiResponseValidator {
 	 */
 	public static boolean compareJsonWithRequest(String responseExpected, String responseActual, String request,
 			String propFilePath) {
+		return compareJson(responseExpected, responseActual, request, propFilePath, null);
+	}
+
+	public static boolean compareJson(String responseExpected, String responseActual, String request,
+			String propFilePath, String ignoreOperation) {
 		ComparatorReportGenerator compareHtmlObj = new ComparatorReportGenerator();
 		try {
 			String compareFilePath = null;
@@ -81,6 +86,7 @@ public class ApiResponseValidator {
 			} else {
 				compareFilePath = compareHtmlObj.createCompartarReportWithReq(request);
 			}
+
 			linkCompareFilePath = "./comparatorReport/" + compareFilePath.split("comparatorReport")[1];
 
 			int differenceCounter = 0;
@@ -90,27 +96,26 @@ public class ApiResponseValidator {
 			JsonNode responseAct = objMapper.readTree(responseActual);
 			JsonNode jsonDiff = JsonDiff.asJson(responseExp, responseAct);
 			Set<String> dndCompareValues = null;
+
 			if (propFilePath != null && !propFilePath.isEmpty()) {
 				dndCompareValues = ApiHelper.getAllProperty(propFilePath);
 			}
 
 			for (int diffCount = 0; diffCount < jsonDiff.size(); diffCount++) {
 				String diffPath = jsonDiff.get(diffCount).get(DIFFERENCE_PATH).asText();
-
-				if (dndCompareValues == null || !dndCompareValues.contains(diffPath)) {
+				String operationType = jsonDiff.get(diffCount).get(OPERATION).asText();
+				if ((dndCompareValues == null || !dndCompareValues.contains(diffPath))
+						&& !(ignoreOperation != null && operationType.equalsIgnoreCase(ignoreOperation))) {
 					differenceCounter++;
-					String operationType = jsonDiff.get(diffCount).get(OPERATION).asText();
 					JsonNode diffValueJsonNode = jsonDiff.get(diffCount).get(DIFFERENCE_VALUE);
 					String diffValue = null;
 					if (diffValueJsonNode != null)
 						diffValue = jsonDiff.get(diffCount).get(DIFFERENCE_VALUE).asText();
-					String parentValue = "";
 
+					String parentValue = "";
 					if (responseExp.at(diffPath) != null) {
 						parentValue = responseExp.at(diffPath).asText();
 					}
-
-					logFailure(operationType.toUpperCase(), diffPath, diffValue, parentValue);
 					logFailureInReporter(compareFilePath, operationType.toUpperCase(), diffPath, diffValue,
 							parentValue);
 				}
@@ -146,7 +151,6 @@ public class ApiResponseValidator {
 			if (!errorReport.isSuccess()) {
 				for (ProcessingMessage msg : errorReport) {
 					if (msg.getLogLevel().toString().equalsIgnoreCase("error")) {
-						schemaValidationFlag = false;
 						errorText += msg.getMessage() + "<br/>";
 					}
 				}
@@ -189,11 +193,4 @@ public class ApiResponseValidator {
 		}
 	}
 
-	private static void logFailure(String operationType, String path, String qaEnvValue, String liveEnvValue) {
-		Reporter.log("<font size='2'><b>Difference Type - </b>" + operationType + "</font>");
-		Reporter.log("<font size='1'><b>Jpath - </b>" + path + "</font>");
-		Reporter.log("<font size='1'><b>QA Env value - </b>" + qaEnvValue + "</font>");
-		Reporter.log("<font size='1'><b>Live Env value - </b>" + liveEnvValue + "</font>");
-		Reporter.log("<br/>");
-	}
 }
