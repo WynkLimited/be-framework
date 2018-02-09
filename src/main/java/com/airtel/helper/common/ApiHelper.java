@@ -18,6 +18,10 @@ import javax.xml.bind.JAXB;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.logging.Log;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -46,6 +50,7 @@ import io.restassured.specification.RequestSpecification;
  * @author b0202849
  */
 public class ApiHelper {
+	private static Logger apiHelperLog = LogManager.getLogger(ApiHelper.class);
 	private static ReportHelper reporter = new ReportHelper();
 	private static FileHelper fileHelper = new FileHelper();
 
@@ -221,7 +226,10 @@ public class ApiHelper {
 
 	private static void logRequestResponse(String request, String response, String url, long responseTime) {
 		try {
-			String requestFilePath = fileHelper.createRequestJsonFile(request, "");
+			String requestFilePath = "";
+			if (request != null)
+				requestFilePath = fileHelper.createRequestJsonFile(request, "");
+
 			String responseFilePath = fileHelper.createResponseJsonFile(response, "");
 			String reportFolder = reporter.getResultFileStringPath();
 
@@ -230,7 +238,7 @@ public class ApiHelper {
 					"<a href='" + responseFilePath + "'>Response Data" + "</a>",
 					"Response Time(in msec) :- " + String.valueOf(responseTime), "", "");
 		} catch (IOException e) {
-			e.printStackTrace();
+			apiHelperLog.log(Level.ERROR, "Not able to log request/response");
 		}
 	}
 
@@ -273,6 +281,27 @@ public class ApiHelper {
 		return gsonConverter.fromJson(jsonArray, listType);
 	}
 
+	/**
+	 * Method to fetch logs from ES for a particular request ID. This method will be
+	 * used before comparison of logs in ES & api response. Collection name will be
+	 * the name of es logs collections where logs will be present.
+	 * 
+	 * @param server
+	 * @param collectionName
+	 * @param keyName
+	 * @param value
+	 * @return
+	 */
+	public static String fetchEsLogsResponse(String server, String collectionName, String keyName, String value) {
+		StringBuilder urlBuilder = new StringBuilder();
+		String url = urlBuilder.append("http://").append(server).append(":9200/").append(collectionName)
+				.append("_search").toString();
+		Map<String, String> queryParams = new HashMap<>();
+		queryParams.put("q", keyName + ":" + value);
+		Response esResponse = getResponse(queryParams, url);
+		return esResponse.asString();
+	}
+
 	public static String convertToXml(Object obj) {
 		String xmlData = null;
 		JAXB.marshal(obj, xmlData);
@@ -285,6 +314,14 @@ public class ApiHelper {
 		return objFromXml;
 	}
 
+	/**
+	 * This method helps in retrieving value of a particular property in a property
+	 * file.
+	 * 
+	 * @param filePath
+	 * @param keyName
+	 * @return
+	 */
 	public static String getValueOfProperty(String filePath, String keyName) {
 		try {
 			Properties prop = new Properties();
@@ -293,7 +330,7 @@ public class ApiHelper {
 			prop.load(inpStream);
 			return prop.getProperty(keyName);
 		} catch (IOException e) {
-			Reporter.log("Filepath mentioned is not correct and method breaks with exception " + e);
+			apiHelperLog.log(Level.ERROR, "Filepath mentioned is not correct and method breaks with exception " + e.getStackTrace());
 			return null;
 		}
 	}

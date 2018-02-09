@@ -4,15 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import org.testng.annotations.Test;
-
 import com.airtel.helper.common.ApiHelper;
 import com.airtel.helper.report.ReportHelper;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
-
-import junit.framework.Assert;
 
 /**
  * This class contains methods relevant for comparison of two different JSON
@@ -27,12 +23,28 @@ public class GenericComparator extends ReportHelper {
 	private static String defFieldName = "baseObjField";
 	private static int fieldCounter = 0;
 
+	/**
+	 * This method will fetch value from JSON at a particular JSON path. Value be
+	 * returned as an Object as the class type is not defined
+	 * 
+	 * @param inputJson
+	 * @param keyName
+	 * @return
+	 */
 	private static Object fetchJPathVal(String inputJson, String keyName) {
 		Configuration config = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
 		return Optional.ofNullable(inputJson).map(body -> JsonPath.using(config).parse(body).read(keyName))
 				.orElse(null);
 	}
 
+	/**
+	 * This method is used for mapping the values of 2 different JSON into a parent
+	 * JSON of same structure. This will help in comparison of those JSON.
+	 * 
+	 * @param apiResp
+	 * @param logData
+	 * @param mapperProperties
+	 */
 	public static void fieldMapper(String apiResp, String logData, Map<String, String> mapperProperties) {
 		for (Map.Entry<String, String> mapperProp : mapperProperties.entrySet()) {
 			Object expectedVal = fetchJPathVal(apiResp, mapperProp.getKey());
@@ -65,7 +77,6 @@ public class GenericComparator extends ReportHelper {
 		fieldMapper(expectedJson, actualJson, mapperProperties);
 		return ApiResponseValidator.compareJson(ApiHelper.convertToJson(expectedResp),
 				ApiHelper.convertToJson(actualResp), null, null, "move");
-
 	}
 
 }

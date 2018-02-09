@@ -85,6 +85,6 @@ public class AirtelLoggingMgr {
 	}
 
 	public static void main(String args[]) {
-		//logger.info("This is working for me");
+		logger.info("This is working for me");
 	}
 }

@@ -1,6 +1,7 @@
 package com.airtel.validator;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.Set;
 
 import org.testng.Reporter;
@@ -107,15 +108,12 @@ public class ApiResponseValidator {
 				if ((dndCompareValues == null || !dndCompareValues.contains(diffPath))
 						&& !(ignoreOperation != null && operationType.equalsIgnoreCase(ignoreOperation))) {
 					differenceCounter++;
-					JsonNode diffValueJsonNode = jsonDiff.get(diffCount).get(DIFFERENCE_VALUE);
-					String diffValue = null;
-					if (diffValueJsonNode != null)
-						diffValue = jsonDiff.get(diffCount).get(DIFFERENCE_VALUE).asText();
 
-					String parentValue = "";
-					if (responseExp.at(diffPath) != null) {
-						parentValue = responseExp.at(diffPath).asText();
-					}
+					JsonNode diffValueJsonNode = jsonDiff.get(diffCount).get(DIFFERENCE_VALUE);
+					
+					String diffValue = Optional.ofNullable(diffValueJsonNode).map(dataValue -> diffValueJsonNode.asText()).orElse(null);
+					String parentValue = Optional.ofNullable(responseExp.at(diffPath)).map(value -> responseExp.at(diffPath).asText()).orElse(null);
+
 					logFailureInReporter(compareFilePath, operationType.toUpperCase(), diffPath, diffValue,
 							parentValue);
 				}

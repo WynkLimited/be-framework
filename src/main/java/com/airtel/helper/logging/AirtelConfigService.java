@@ -125,7 +125,6 @@ public class AirtelConfigService {
 		//Getting properties from .config or .properties file
 		Properties prop = new Properties();
 		FileInputStream fis = null;
-		System.out.println(Constants.CONFIG_FOLDER + serviceName);
 		File f = new File(Constants.CONFIG_FOLDER + serviceName);
 		try{
 			//get file 
@@ -183,7 +182,7 @@ public class AirtelConfigService {
 		return true;
 	}
 	
-	public static void main(String args[]) {
+/*	public static void main(String args[]) {
 		System.out.println("test");
 		String serviceName = "config_prod.properties";
 		try {
@@ -199,5 +198,5 @@ public class AirtelConfigService {
 		}
 
 	}
-	
+*/	
 }
