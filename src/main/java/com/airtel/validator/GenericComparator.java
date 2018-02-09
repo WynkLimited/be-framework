@@ -52,6 +52,7 @@ public class GenericComparator extends ReportHelper {
 			String fieldName = defFieldName + fieldCounter;
 			expectedResp.put(fieldName, expectedVal);
 			actualResp.put(fieldName, actualVal);
+			fieldCounter++;
 		}
 	}
 
