@@ -10,16 +10,17 @@ import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.testng.Reporter;
-import org.testng.asserts.SoftAssert;
 
 public class FileHelper {
 
-	public static final String DESEDE_ENCRYPTION_SCHEME = "DESede";
+	static final String DESEDE_ENCRYPTION_SCHEME = "DESede";
+	private static Logger logger = LogManager.getLogger(FileHelper.class);
 	byte[] keyAsBytes;
 	SecretKey key;
-
-	public static SoftAssert softAssert = new SoftAssert();
 
 	public void writeToFile(String str, String fileName, boolean appendToFile) {
 		File file = null;
@@ -32,16 +33,13 @@ public class FileHelper {
 			writer.close();
 
 		} catch (IOException e) {
-			softAssert.assertTrue(false, "Error in writng to file..");
-			e.printStackTrace();
+			logger.log(Level.ERROR, "Not able to write to a file - " + e);
 		}
 	}
 
 	public String getFileAbsolutePath(String partialFilePath, String filename) {
-
 		String path = null;
-
-		File file = new File(partialFilePath + "/" + filename);
+		File file = new File(partialFilePath + File.separator + filename);
 
 		path = file.getAbsolutePath();
 
@@ -67,13 +65,13 @@ public class FileHelper {
 			}
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.log(Level.ERROR, "Error while reading from a file - " + e);
 		} finally {
 			try {
 				if (br != null)
 					br.close();
 			} catch (IOException ex) {
-				ex.printStackTrace();
+				logger.log(Level.ERROR, "Error while closing file to read - " + ex);
 			}
 		}
 		finalStr = str.toString();
@@ -97,7 +95,7 @@ public class FileHelper {
 			resultFile.append(jsonMsg);
 			resultFile.close();
 		} catch (Exception e) {
-			Reporter.log("<br>" + e.getMessage() + "<br>");
+			logger.log(Level.ERROR, "Error while creating JSON file - " + e);
 		}
 		requestFilePath = "." + requestFilePath.split(report.getResultFolderpath())[1];
 		Reporter.log("<br><a href='" + requestFilePath + "'>Request_" + fileName + "</a><br>");
@@ -121,7 +119,7 @@ public class FileHelper {
 			resultFile.append(jsonMsg);
 			resultFile.close();
 		} catch (Exception e) {
-			Reporter.log("<br>" + e.getMessage() + "<br>");
+			logger.log(Level.ERROR, "Error while creating reponse JSON file - " + e);
 		}
 		responseFilePath = "." + responseFilePath.split(report.getResultFolderpath())[1];
 		Reporter.log("<br><a href='" + responseFilePath + "'>Response_" + fileName + "</a><br>");

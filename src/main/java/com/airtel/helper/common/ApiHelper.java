@@ -18,7 +18,6 @@ import javax.xml.bind.JAXB;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.commons.logging.Log;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -55,7 +54,7 @@ public class ApiHelper {
 	private static FileHelper fileHelper = new FileHelper();
 
 	private static RequestSpecification prepareGetRequest(Map<String, String> queryParams) {
-		RequestSpecification request = RestAssured.given();
+		RequestSpecification request = RestAssured.given().redirects().follow(false);
 		if (null != queryParams) {
 			for (Map.Entry<String, String> keyValue : queryParams.entrySet()) {
 				request.param(keyValue.getKey(), keyValue.getValue());
@@ -127,7 +126,7 @@ public class ApiHelper {
 		long responseTime = response.getTime();
 
 		if (queryParams != null) {
-			logRequestResponse(queryParams.toString().replace(", ", "&"), response.asString(), url, responseTime);
+			logRequestResponse(queryParams.toString().replace(", ", "&"), response.prettyPrint(), url, responseTime);
 		} else {
 			logRequestResponse(null, response.prettyPrint(), url, responseTime);
 		}
@@ -225,21 +224,16 @@ public class ApiHelper {
 	}
 
 	private static void logRequestResponse(String request, String response, String url, long responseTime) {
-		try {
-			String requestFilePath = "";
-			if (request != null)
-				requestFilePath = fileHelper.createRequestJsonFile(request, "");
+		String requestFilePath = "";
+		if (request != null)
+			requestFilePath = fileHelper.createRequestJsonFile(request, "");
 
-			String responseFilePath = fileHelper.createResponseJsonFile(response, "");
-			String reportFolder = reporter.getResultFileStringPath();
+		String responseFilePath = fileHelper.createResponseJsonFile(response, "");
+		String reportFolder = reporter.getResultFileStringPath();
 
-			reporter.appendresultHTMLReport(reportFolder, url,
-					"<a href='" + requestFilePath + "'>Request Data" + "</a>",
-					"<a href='" + responseFilePath + "'>Response Data" + "</a>",
-					"Response Time(in msec) :- " + String.valueOf(responseTime), "", "");
-		} catch (IOException e) {
-			apiHelperLog.log(Level.ERROR, "Not able to log request/response");
-		}
+		reporter.appendresultHTMLReport(reportFolder, url, "<a href='" + requestFilePath + "'>Request Data" + "</a>",
+				"<a href='" + responseFilePath + "'>Response Data" + "</a>",
+				"Response Time(in msec) :- " + String.valueOf(responseTime), "", "");
 	}
 
 	/**
@@ -330,7 +324,8 @@ public class ApiHelper {
 			prop.load(inpStream);
 			return prop.getProperty(keyName);
 		} catch (IOException e) {
-			apiHelperLog.log(Level.ERROR, "Filepath mentioned is not correct and method breaks with exception " + e.getStackTrace());
+			apiHelperLog.log(Level.ERROR,
+					"Filepath mentioned is not correct and method breaks with exception " + e.getStackTrace());
 			return null;
 		}
 	}

@@ -13,6 +13,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.testng.ITestNGMethod;
 import org.testng.ITestResult;
 import org.testng.Reporter;
@@ -28,9 +30,10 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 	static int count = 0;
 	static int passCount = 0;
 	static int failCount = 0;
-	static String newDate = null;
-	static Date startTime = null;
+	String newDate = null;
+	Date startTime = null;
 	private static String resultFolderpath;
+	private static Logger logger = LogManager.getLogger(ReportHelper.class);
 
 	public String getResultFolderpath() {
 		return resultFolderpath;
@@ -52,78 +55,88 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 	}
 
 	@BeforeSuite(alwaysRun = true)
-	public void beforeSuite() throws IOException {
+	public void beforeSuite() {
 		String resultsFolderPath = "./Results";
-		File resultFolder = new File(resultsFolderPath);
-		FileUtils.deleteDirectory(resultFolder);
-		resultFolder.mkdir();
+		try {
+			File resultFolder = new File(resultsFolderPath);
+			FileUtils.deleteDirectory(resultFolder);
+			resultFolder.mkdir();
 
-		startTime = new Date();
-		SimpleDateFormat oDateFormat = new SimpleDateFormat("dd_MM_YY");
-		newDate = oDateFormat.format(startTime);
+			startTime = new Date();
+			SimpleDateFormat oDateFormat = new SimpleDateFormat("dd_MM_YY");
+			newDate = oDateFormat.format(startTime);
 
-		resultFolderpath = resultsFolderPath + "/Result_" + newDate;
-		File resultFileFolder = new File(resultFolderpath);
-		resultFileFolder.mkdir();
+			resultFolderpath = resultsFolderPath + "/Result_" + newDate;
+			File resultFileFolder = new File(resultFolderpath);
+			resultFileFolder.mkdir();
 
-		suiteFileStringPath = resultsFolderPath + "/AirtelTestResult_" + newDate + ".html";
-		BufferedWriter resultFile = new BufferedWriter(new FileWriter(suiteFileStringPath, false));
-		resultFile.append(REPORT_START_TEMPLATE);
-		resultFile.append(DETAILED_REPORT_TITLE);
-		resultFile.append(DETAILED_REPORT_BODY_START + "Test Scenario" + REPORT_COLUMN_END);
-		resultFile.append(DETAILED_REPORT_BODY_START + "Test Scenario File" + REPORT_COLUMN_END);
-		resultFile.append(DETAILED_REPORT_BODY_START + "Status" + REPORT_COLUMN_END);
-		resultFile.close();
-		setResultFolderpath(resultFolderpath);
-
+			suiteFileStringPath = resultsFolderPath + "/AirtelTestResult_" + newDate + ".html";
+			BufferedWriter resultFile = new BufferedWriter(new FileWriter(suiteFileStringPath, false));
+			resultFile.append(REPORT_START_TEMPLATE);
+			resultFile.append(DETAILED_REPORT_TITLE);
+			resultFile.append(DETAILED_REPORT_BODY_START + "Test Scenario" + REPORT_COLUMN_END);
+			resultFile.append(DETAILED_REPORT_BODY_START + "Test Scenario File" + REPORT_COLUMN_END);
+			resultFile.append(DETAILED_REPORT_BODY_START + "Status" + REPORT_COLUMN_END);
+			resultFile.close();
+			setResultFolderpath(resultFolderpath);
+		} catch (IOException ex) {
+			logger.error("Result file creation failed with exception - " + ex);
+		}
 	}
 
 	@AfterSuite(alwaysRun = true)
-	public void afterSuite() throws Exception {
-		// ReportHelper reporter = new ReportHelper();
-		BufferedWriter resultFile = new BufferedWriter(new FileWriter(suiteFileStringPath, true));
-		Date date = new Date();
-		SimpleDateFormat oDateFormat = new SimpleDateFormat("dd/MMM/yyyy hh:mm:s");
-		String sRunEndTime = oDateFormat.format(date);
-		String sRunStartTime = oDateFormat.format(startTime);
+	public void afterSuite() {
+		try {
+			BufferedWriter resultFile = new BufferedWriter(new FileWriter(suiteFileStringPath, true));
+			Date date = new Date();
+			SimpleDateFormat oDateFormat = new SimpleDateFormat("dd/MMM/yyyy hh:mm:s");
+			String sRunEndTime = oDateFormat.format(date);
+			String sRunStartTime = oDateFormat.format(startTime);
 
-		resultFile.append("</table>");
-		resultFile.append(SUMMARY_REPORT_TEMPLATE);
-		resultFile.append(SUMMARY_REPORT_ROW_START + "Run Start Time" + REPORT_COLUMN_END);
-		resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + sRunStartTime + "</b></td></tr>");
+			resultFile.append("</table>");
+			resultFile.append(SUMMARY_REPORT_TEMPLATE);
+			resultFile.append(SUMMARY_REPORT_ROW_START + "Run Start Time" + REPORT_COLUMN_END);
+			resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + sRunStartTime + "</b></td></tr>");
 
-		resultFile.append(SUMMARY_REPORT_ROW_START + "Run End Time" + REPORT_COLUMN_END);
-		resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + sRunEndTime + "</b></td></tr>");
-		resultFile.append(SUMMARY_REPORT_ROW_START + "Total Tests executed" + REPORT_COLUMN_END);
-		resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + String.valueOf(passCount + failCount) + "</b></td></tr>");
+			resultFile.append(SUMMARY_REPORT_ROW_START + "Run End Time" + REPORT_COLUMN_END);
+			resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + sRunEndTime + "</b></td></tr>");
+			resultFile.append(SUMMARY_REPORT_ROW_START + "Total Tests executed" + REPORT_COLUMN_END);
+			resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + String.valueOf(passCount + failCount) + "</b></td></tr>");
 
-		resultFile.append(SUMMARY_REPORT_ROW_START + "Total Pass Test count" + REPORT_COLUMN_END);
-		resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + String.valueOf(passCount) + "</b></td></tr>");
+			resultFile.append(SUMMARY_REPORT_ROW_START + "Total Pass Test count" + REPORT_COLUMN_END);
+			resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + String.valueOf(passCount) + "</b></td></tr>");
 
-		resultFile.append(SUMMARY_REPORT_ROW_START + "Total Fail Test count" + REPORT_COLUMN_END);
-		resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + String.valueOf(failCount) + "</b></td></tr>");
+			resultFile.append(SUMMARY_REPORT_ROW_START + "Total Fail Test count" + REPORT_COLUMN_END);
+			resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + String.valueOf(failCount) + "</b></td></tr>");
 
-		resultFile.append("</table></body></html>");
-		resultFile.close();
+			resultFile.append("</table></body></html>");
+			resultFile.close();
+		} catch (Exception ex) {
+			logger.error("Unable to close result file - " + ex);
+		}
 	}
 
 	public void appendMethodInformationInSuite(String scenarioName, String methodName, String methodFilePath,
-			String status) throws IOException {
-		BufferedWriter resultFile = new BufferedWriter(new FileWriter(suiteFileStringPath, true));
-		String statusTag = null;
-		if (status.equalsIgnoreCase("Pass")) {
-			statusTag = TEST_PASS_TAG;
-		} else if (status.equalsIgnoreCase("Fail")) {
-			statusTag = TEST_FAIL_TAG;
-		} else {
-			statusTag = "<td>";
+			String status) {
+		try {
+			String statusTag = null;
+			if (status.equalsIgnoreCase("Pass")) {
+				statusTag = TEST_PASS_TAG;
+			} else if (status.equalsIgnoreCase("Fail")) {
+				statusTag = TEST_FAIL_TAG;
+			} else {
+				statusTag = "<td>";
+			}
+			BufferedWriter resultFile = new BufferedWriter(new FileWriter(suiteFileStringPath, true));
+			resultFile.append("<tr>");
+			resultFile.append("<td>" + scenarioName + "</td>");
+			resultFile.append("<td><a href='" + methodFilePath + "' />" + methodName + "</td>");
+			resultFile.append(statusTag + status + "</td>");
+			resultFile.append("</tr>");
+			resultFile.close();
+		} catch (IOException e) {
+			logger.error("Error in appending information to suite - " + e);
 		}
-		resultFile.append("<tr>");
-		resultFile.append("<td>" + scenarioName + "</td>");
-		resultFile.append("<td><a href='" + methodFilePath + "' />" + methodName + "</td>");
-		resultFile.append(statusTag + status + "</td>");
-		resultFile.append("</tr>");
-		resultFile.close();
 	}
 
 	@BeforeMethod(alwaysRun = true)
@@ -138,65 +151,68 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 			setResultFileStringPath(resultFileStringPath);
 		} catch (Exception e) {
 			resultFileStringPath = null;
+			logger.error("Initial error report not created - " + e);
 		}
 	}
 
 	@AfterMethod(alwaysRun = true)
-	public void appendFinalHTMLReport(ITestResult result) throws IOException {
+	public void appendFinalHTMLReport(ITestResult result) {
+
 		ITestNGMethod testNGMethod = result.getMethod();
-		int number = testNGMethod.getCurrentInvocationCount();
-		String status = "Pass";
-		String scenario = "";
+		try {
+			int number = testNGMethod.getCurrentInvocationCount();
+			String status = "Pass";
+			String scenario = "";
 
-		if (result.getParameters().length > 0) {
-			Object[] data = result.getParameters();
-			for (int i = 0; i < result.getParameters().length; i++) {
-				System.out.println("Parameters are: " + data[i]);
+			if (result.getStatus() == ITestResult.FAILURE) {
+				status = "Fail";
+				failCount = failCount + 1;
+			} else {
+				passCount = passCount + 1;
 			}
+			count = count + 1;
+			String resultFilePath = resultFileStringPath.split("/Results")[1];
+			resultFilePath = "." + resultFilePath;
+
+			appendMethodInformationInSuite(scenario, result.getMethod().getMethodName() + "_" + String.valueOf(number),
+					resultFilePath, status);
+			BufferedWriter resultFile = new BufferedWriter(new FileWriter(resultFileStringPath, true));
+
+			resultFile.append("</table></body></html>");
+			resultFile.close();
+		} catch (IOException e) {
+			logger.error("Report not completed - " + e);
 		}
-
-		if (result.getStatus() == ITestResult.FAILURE) {
-			status = "Fail";
-			failCount = failCount + 1;
-		} else {
-			passCount = passCount + 1;
-		}
-		count = count + 1;
-		String resultFilePath = resultFileStringPath.split("/Results")[1];
-		resultFilePath = "." + resultFilePath;
-
-		appendMethodInformationInSuite(scenario, result.getMethod().getMethodName() + "_" + String.valueOf(number),
-				resultFilePath, status);
-		BufferedWriter resultFile = new BufferedWriter(new FileWriter(resultFileStringPath, true));
-
-		resultFile.append("</table></body></html>");
-		resultFile.close();
 	}
 
 	public void appendresultHTMLReport(String resultFileStringPath, String apiURL, String requestFile,
-			String responseFile, String message, String status, String comment) throws IOException {
-		if (resultFileStringPath != null) {
-			BufferedWriter resultFile = new BufferedWriter(new FileWriter(resultFileStringPath, true));
-			String statusTag = null;
-			if (status.equalsIgnoreCase("True") || status.equalsIgnoreCase("Pass")) {
-				statusTag = TEST_PASS_TAG;
-			} else if (status.equalsIgnoreCase("false") || status.equalsIgnoreCase("Fail")) {
-				statusTag = TEST_FAIL_TAG;
-			} else {
-				statusTag = "<td>";
-			}
+			String responseFile, String message, String status, String comment) {
+		try {
+			if (resultFileStringPath != null) {
+				BufferedWriter resultFile = new BufferedWriter(new FileWriter(resultFileStringPath, true));
+				String statusTag = null;
+				if (status.equalsIgnoreCase("True") || status.equalsIgnoreCase("Pass")) {
+					statusTag = TEST_PASS_TAG;
+				} else if (status.equalsIgnoreCase("false") || status.equalsIgnoreCase("Fail")) {
+					statusTag = TEST_FAIL_TAG;
+				} else {
+					statusTag = "<td>";
+				}
 
-			resultFile.append("<tr>");
-			resultFile.append("<td width=30% style=WORD-break:BREAK-all>" + apiURL + "</td>");
-			resultFile.append("<td width=20% style=WORD-break:BREAK-all>" + requestFile + "</td>");
-			resultFile.append("<td width=20% style=WORD-break:BREAK-all>" + responseFile + "</td>");
-			resultFile.append("<td width=10% style=WORD-break:BREAK-all>" + message + "</td>");
-			resultFile.append(statusTag + status + "</td>");
-			resultFile.append("<td style=word-wrap: break-word>" + comment + "</td>");
-			resultFile.append("</tr>");
-			resultFile.close();
-		} else {
-			Reporter.log("Not able to log data");
+				resultFile.append("<tr>");
+				resultFile.append("<td width=30% style=WORD-break:BREAK-all>" + apiURL + "</td>");
+				resultFile.append("<td width=20% style=WORD-break:BREAK-all>" + requestFile + "</td>");
+				resultFile.append("<td width=20% style=WORD-break:BREAK-all>" + responseFile + "</td>");
+				resultFile.append("<td width=10% style=WORD-break:BREAK-all>" + message + "</td>");
+				resultFile.append(statusTag + status + "</td>");
+				resultFile.append("<td style=word-wrap: break-word>" + comment + "</td>");
+				resultFile.append("</tr>");
+				resultFile.close();
+			} else {
+				logger.error("Path of result file is not correct");
+			}
+		} catch (IOException e) {
+			logger.error("Append to HTML failed - " + e);
 		}
 	}
 
@@ -230,7 +246,6 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 	public static boolean reporterLogging(Boolean status, String sMessage) {
 		ReportHelper reportHelper = new ReportHelper();
 		try {
-			// softAssert.assertTrue( status, sMessage);
 			reportHelper.appendresultHTMLReport(reportHelper.getResultFileStringPath(), "", "", "", sMessage,
 					String.valueOf(status), Thread.currentThread().getStackTrace()[2].getMethodName());
 			Reporter.log("<br>");
@@ -240,7 +255,7 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 				Reporter.log("<Font Color=red> FAIL </Font> " + sMessage);
 			}
 		} catch (Exception e) {
-			e.getMessage();
+			logger.error("Not able to log in report - " + e);
 		}
 		return status;
 	}
@@ -285,26 +300,22 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 		ComparatorReportGenerator compareHtmlObj = new ComparatorReportGenerator();
 		String compareFilePath = null;
 		String linkCompareFilePath = null;
-		try {
-			if (request == null) {
-				compareFilePath = compareHtmlObj.createCompartarReport();
-			} else {
-				compareFilePath = compareHtmlObj.createCompartarReportWithReq(request);
-			}
-
-			linkCompareFilePath = "./comparatorReport/" + compareFilePath.split("comparatorReport")[1];
-			compareHtmlObj.appendresultHTMLReport(compareFilePath,
-					"<textarea disabled rows='7' cols='55'>" + failureType + "</textarea>",
-					"<textarea disabled rows='7' cols='55'>" + fieldName + "</textarea>",
-					"<textarea disabled rows='7' cols='55'>" + expectedValue + "</textarea>",
-					"<textarea disabled rows='7' cols='55'>" + actualValue + "</textarea>");
-			compareHtmlObj.appendFinalHTMLReport(compareFilePath);
-			String differenceHTMLLink = "<a href='" + linkCompareFilePath + "'>" + failureType + "</a>";
-			ReportHelper.reporterLogging(false, differenceHTMLLink);
-		} catch (IOException e) {
-
-			e.printStackTrace();
+		if (request == null) {
+			compareFilePath = compareHtmlObj.createCompartarReport();
+		} else {
+			compareFilePath = compareHtmlObj.createCompartorReport(request);
 		}
+
+		linkCompareFilePath = "./comparatorReport/" + compareFilePath.split("comparatorReport")[1];
+		compareHtmlObj.appendresultHTMLReport(compareFilePath,
+				"<textarea disabled rows='7' cols='55'>" + failureType + "</textarea>",
+				"<textarea disabled rows='7' cols='55'>" + fieldName + "</textarea>",
+				"<textarea disabled rows='7' cols='55'>" + expectedValue + "</textarea>",
+				"<textarea disabled rows='7' cols='55'>" + actualValue + "</textarea>");
+		compareHtmlObj.appendFinalHTMLReport(compareFilePath);
+		String differenceHTMLLink = "<a href='" + linkCompareFilePath + "'>" + failureType + "</a>";
+		ReportHelper.reporterLogging(false, differenceHTMLLink);
+
 	}
 
 }

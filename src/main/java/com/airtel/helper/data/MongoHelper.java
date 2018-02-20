@@ -1,5 +1,11 @@
 package com.airtel.helper.data;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.json.JSONObject;
+
 import com.airtel.helper.common.ApiHelper;
 import com.airtel.helper.common.BaseTestClass;
 import com.mongodb.BasicDBObject;
@@ -8,11 +14,6 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Created by b0200202 on 12/6/17.

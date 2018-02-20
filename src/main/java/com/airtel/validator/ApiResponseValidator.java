@@ -3,6 +3,7 @@ package com.airtel.validator;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.testng.Reporter;
 
@@ -28,9 +29,12 @@ import com.github.fge.jsonschema.main.JsonValidator;
  * @author b0202849
  */
 public class ApiResponseValidator {
+
 	static final String OPERATION = "op";
 	static final String DIFFERENCE_PATH = "path";
 	static final String DIFFERENCE_VALUE = "value";
+	static final String FAILURE_LOG_START = "";
+	static final String FAILURE_LOG_END = "";
 
 	/**
 	 * This method compares two json and log the difference b/w those JSON. This
@@ -85,13 +89,14 @@ public class ApiResponseValidator {
 			if (request == null) {
 				compareFilePath = compareHtmlObj.createCompartarReport();
 			} else {
-				compareFilePath = compareHtmlObj.createCompartarReportWithReq(request);
+				compareFilePath = compareHtmlObj.createCompartorReport(request);
 			}
 
 			linkCompareFilePath = "./comparatorReport/" + compareFilePath.split("comparatorReport")[1];
 
 			int differenceCounter = 0;
 			// Extracting JSON data to JSON node and comparing them
+
 			ObjectMapper objMapper = new ObjectMapper();
 			JsonNode responseExp = objMapper.readTree(responseExpected);
 			JsonNode responseAct = objMapper.readTree(responseActual);
@@ -105,14 +110,16 @@ public class ApiResponseValidator {
 			for (int diffCount = 0; diffCount < jsonDiff.size(); diffCount++) {
 				String diffPath = jsonDiff.get(diffCount).get(DIFFERENCE_PATH).asText();
 				String operationType = jsonDiff.get(diffCount).get(OPERATION).asText();
-				if ((dndCompareValues == null || !dndCompareValues.contains(diffPath))
+				if ((dndCompareValues == null || !ignoreFieldOperation(dndCompareValues, diffPath))
 						&& !(ignoreOperation != null && operationType.equalsIgnoreCase(ignoreOperation))) {
 					differenceCounter++;
 
 					JsonNode diffValueJsonNode = jsonDiff.get(diffCount).get(DIFFERENCE_VALUE);
-					
-					String diffValue = Optional.ofNullable(diffValueJsonNode).map(dataValue -> diffValueJsonNode.asText()).orElse(null);
-					String parentValue = Optional.ofNullable(responseExp.at(diffPath)).map(value -> responseExp.at(diffPath).asText()).orElse(null);
+
+					String diffValue = Optional.ofNullable(diffValueJsonNode)
+							.map(dataValue -> diffValueJsonNode.asText()).orElse(null);
+					String parentValue = Optional.ofNullable(responseExp.at(diffPath))
+							.map(value -> responseExp.at(diffPath).asText()).orElse(null);
 
 					logFailureInReporter(compareFilePath, operationType.toUpperCase(), diffPath, diffValue,
 							parentValue);
@@ -180,15 +187,22 @@ public class ApiResponseValidator {
 	private static void logFailureInReporter(String compareFilePath, String operationType, String differencePath,
 			String differenceValue, String parentValue) {
 		ComparatorReportGenerator compareObj = new ComparatorReportGenerator();
-		try {
-			compareObj.appendresultHTMLReport(compareFilePath,
-					"<textarea disabled rows='7' cols='55'>" + operationType + "</textarea>",
-					"<textarea disabled rows='7' cols='55'>" + differencePath + "</textarea>",
-					"<textarea disabled rows='7' cols='55'>" + parentValue + "</textarea>",
-					"<textarea disabled rows='7' cols='55'>" + differenceValue + "</textarea>");
-		} catch (IOException e) {
-			e.printStackTrace();
+
+			compareObj.appendresultHTMLReport(compareFilePath, FAILURE_LOG_START + operationType + FAILURE_LOG_END,
+					FAILURE_LOG_START + differencePath + FAILURE_LOG_END,
+					FAILURE_LOG_START + parentValue + FAILURE_LOG_END,
+					FAILURE_LOG_START + differenceValue + FAILURE_LOG_END);
+	}
+
+	private static boolean ignoreFieldOperation(Set<String> ignoreProps, String field) {
+		boolean ignoreField = false;
+		for (String ignoreProperty : ignoreProps) {
+			if (Pattern.matches(ignoreProperty, field)) {
+				ignoreField = true;
+				break;
+			}
 		}
+		return ignoreField;
 	}
 
 }
