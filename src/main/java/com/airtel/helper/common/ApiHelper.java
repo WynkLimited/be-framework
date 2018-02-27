@@ -33,6 +33,8 @@ import com.airtel.helper.report.FileHelper;
 import com.airtel.helper.report.ReportHelper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -61,6 +63,10 @@ public class ApiHelper {
 			}
 		}
 		return request;
+	}
+
+	public static void main(String[] args) {
+		getResponse(null, "http://www.airtel.in");
 	}
 
 	/**
@@ -126,9 +132,10 @@ public class ApiHelper {
 		long responseTime = response.getTime();
 
 		if (queryParams != null) {
-			logRequestResponse(queryParams.toString().replace(", ", "&"), response.prettyPrint(), url, responseTime);
+			logRequestResponse(queryParams.toString().replace(", ", "&"), formatJson(response.body().asString()), url,
+					responseTime);
 		} else {
-			logRequestResponse(null, response.prettyPrint(), url, responseTime);
+			logRequestResponse(null, formatJson(response.body().asString()), url, responseTime);
 		}
 
 		if (checkStatus && response.getStatusCode() != 200 && response.getStatusCode() != 204) {
@@ -212,7 +219,7 @@ public class ApiHelper {
 
 		apiResp = request.post(url);
 		long responseTime = apiResp.getTime();
-		logRequestResponse(body, apiResp.prettyPrint(), url, responseTime);
+		logRequestResponse(body, formatJson(apiResp.body().asString()), url, responseTime);
 
 		if (checkStatus && apiResp.getStatusCode() != 200) {
 			ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
@@ -294,6 +301,13 @@ public class ApiHelper {
 		queryParams.put("q", keyName + ":" + value);
 		Response esResponse = getResponse(queryParams, url);
 		return esResponse.asString();
+	}
+
+	private static String formatJson(String jsonString) {
+		JsonParser parser = new JsonParser();
+		JsonObject json = parser.parse(jsonString).getAsJsonObject();
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		return gson.toJson(json);
 	}
 
 	public static String convertToXml(Object obj) {

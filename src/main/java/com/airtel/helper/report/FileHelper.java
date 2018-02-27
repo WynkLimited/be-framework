@@ -94,11 +94,11 @@ public class FileHelper {
 			BufferedWriter resultFile = new BufferedWriter(new FileWriter(requestFilePath, true));
 			resultFile.append(jsonMsg);
 			resultFile.close();
+			requestFilePath = "." + requestFilePath.split(report.getResultFolderpath())[1];
+			Reporter.log("<br><a href='" + requestFilePath + "'>Request_" + fileName + "</a><br>");
 		} catch (Exception e) {
 			logger.log(Level.ERROR, "Error while creating JSON file - " + e);
 		}
-		requestFilePath = "." + requestFilePath.split(report.getResultFolderpath())[1];
-		Reporter.log("<br><a href='" + requestFilePath + "'>Request_" + fileName + "</a><br>");
 		return requestFilePath;
 	}
 
@@ -118,11 +118,11 @@ public class FileHelper {
 			BufferedWriter resultFile = new BufferedWriter(new FileWriter(responseFilePath, true));
 			resultFile.append(jsonMsg);
 			resultFile.close();
+			responseFilePath = "." + responseFilePath.split(report.getResultFolderpath())[1];
+			Reporter.log("<br><a href='" + responseFilePath + "'>Response_" + fileName + "</a><br>");
 		} catch (Exception e) {
 			logger.log(Level.ERROR, "Error while creating reponse JSON file - " + e);
 		}
-		responseFilePath = "." + responseFilePath.split(report.getResultFolderpath())[1];
-		Reporter.log("<br><a href='" + responseFilePath + "'>Response_" + fileName + "</a><br>");
 		return responseFilePath;
 	}
 
@@ -133,8 +133,7 @@ public class FileHelper {
 		try {
 			file.createNewFile();
 		} catch (IOException e) {
-
-			e.printStackTrace();
+			logger.error("Exception occured on making file empty" + e);
 		}
 	}
 }

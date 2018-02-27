@@ -76,15 +76,11 @@ public class AirtelLoggingMgr {
 	}
 
 	public static void setLoggerContext(File configFile) throws IOException {
-		loggerContext = (LoggerContext) org.apache.logging.log4j.LogManager.getContext(false);
+		loggerContext = (LoggerContext) LogManager.getContext(false);
 		InputStream in = new FileInputStream(configFile);
 		ConfigurationSource source = new ConfigurationSource(in);
 		Configuration updated = ConfigurationFactory.getInstance().getConfiguration(loggerContext, source);
 		loggerContext.start(updated);
 
-	}
-
-	public static void main(String args[]) {
-		logger.info("This is working for me");
 	}
 }

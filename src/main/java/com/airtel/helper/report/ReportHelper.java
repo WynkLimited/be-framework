@@ -188,30 +188,28 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 	public void appendresultHTMLReport(String resultFileStringPath, String apiURL, String requestFile,
 			String responseFile, String message, String status, String comment) {
 		try {
-			if (resultFileStringPath != null) {
-				BufferedWriter resultFile = new BufferedWriter(new FileWriter(resultFileStringPath, true));
-				String statusTag = null;
-				if (status.equalsIgnoreCase("True") || status.equalsIgnoreCase("Pass")) {
-					statusTag = TEST_PASS_TAG;
-				} else if (status.equalsIgnoreCase("false") || status.equalsIgnoreCase("Fail")) {
-					statusTag = TEST_FAIL_TAG;
-				} else {
-					statusTag = "<td>";
-				}
 
-				resultFile.append("<tr>");
-				resultFile.append("<td width=30% style=WORD-break:BREAK-all>" + apiURL + "</td>");
-				resultFile.append("<td width=20% style=WORD-break:BREAK-all>" + requestFile + "</td>");
-				resultFile.append("<td width=20% style=WORD-break:BREAK-all>" + responseFile + "</td>");
-				resultFile.append("<td width=10% style=WORD-break:BREAK-all>" + message + "</td>");
-				resultFile.append(statusTag + status + "</td>");
-				resultFile.append("<td style=word-wrap: break-word>" + comment + "</td>");
-				resultFile.append("</tr>");
-				resultFile.close();
+			BufferedWriter resultFile = new BufferedWriter(new FileWriter(resultFileStringPath, true));
+			String statusTag = null;
+			if (status.equalsIgnoreCase("True") || status.equalsIgnoreCase("Pass")) {
+				statusTag = TEST_PASS_TAG;
+			} else if (status.equalsIgnoreCase("false") || status.equalsIgnoreCase("Fail")) {
+				statusTag = TEST_FAIL_TAG;
 			} else {
-				logger.error("Path of result file is not correct");
+				statusTag = "<td>";
 			}
-		} catch (IOException e) {
+
+			resultFile.append("<tr>");
+			resultFile.append("<td width=30% style=WORD-break:BREAK-all>" + apiURL + "</td>");
+			resultFile.append("<td width=20% style=WORD-break:BREAK-all>" + requestFile + "</td>");
+			resultFile.append("<td width=20% style=WORD-break:BREAK-all>" + responseFile + "</td>");
+			resultFile.append("<td width=10% style=WORD-break:BREAK-all>" + message + "</td>");
+			resultFile.append(statusTag + status + "</td>");
+			resultFile.append("<td style=word-wrap: break-word>" + comment + "</td>");
+			resultFile.append("</tr>");
+			resultFile.close();
+
+		} catch (Exception e) {
 			logger.error("Append to HTML failed - " + e);
 		}
 	}
@@ -305,17 +303,20 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 		} else {
 			compareFilePath = compareHtmlObj.createCompartorReport(request);
 		}
+		try {
+			linkCompareFilePath = "./comparatorReport/" + compareFilePath.split("comparatorReport")[1];
+			compareHtmlObj.appendresultHTMLReport(compareFilePath,
+					"<textarea disabled rows='7' cols='55'>" + failureType + "</textarea>",
+					"<textarea disabled rows='7' cols='55'>" + fieldName + "</textarea>",
+					"<textarea disabled rows='7' cols='55'>" + expectedValue + "</textarea>",
+					"<textarea disabled rows='7' cols='55'>" + actualValue + "</textarea>");
+			compareHtmlObj.appendFinalHTMLReport(compareFilePath);
+			String differenceHTMLLink = "<a href='" + linkCompareFilePath + "'>" + failureType + "</a>";
+			ReportHelper.reporterLogging(false, differenceHTMLLink);
+		}
 
-		linkCompareFilePath = "./comparatorReport/" + compareFilePath.split("comparatorReport")[1];
-		compareHtmlObj.appendresultHTMLReport(compareFilePath,
-				"<textarea disabled rows='7' cols='55'>" + failureType + "</textarea>",
-				"<textarea disabled rows='7' cols='55'>" + fieldName + "</textarea>",
-				"<textarea disabled rows='7' cols='55'>" + expectedValue + "</textarea>",
-				"<textarea disabled rows='7' cols='55'>" + actualValue + "</textarea>");
-		compareHtmlObj.appendFinalHTMLReport(compareFilePath);
-		String differenceHTMLLink = "<a href='" + linkCompareFilePath + "'>" + failureType + "</a>";
-		ReportHelper.reporterLogging(false, differenceHTMLLink);
-
+		catch (Exception e) {
+			logger.error("File path is not specified correctly - " + e);
+		}
 	}
-
 }

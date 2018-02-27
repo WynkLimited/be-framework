@@ -133,7 +133,7 @@ public class ApiResponseValidator {
 				ReportHelper.reporterLogging(false, differenceHTMLLink);
 				return false;
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			ReportHelper.logValidationFailure("Exception in comparison", "", e.getMessage(), "Exception");
 		}
 		return true;
