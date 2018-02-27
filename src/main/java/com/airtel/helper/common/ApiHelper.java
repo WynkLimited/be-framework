@@ -65,10 +65,6 @@ public class ApiHelper {
 		return request;
 	}
 
-	public static void main(String[] args) {
-		getResponse(null, "http://www.airtel.in");
-	}
-
 	/**
 	 * This method will be used for getting response of GET request w/o headers.
 	 * This method will always fail non 200 HTTP response.
@@ -130,12 +126,10 @@ public class ApiHelper {
 		}
 		response = request.get(url);
 		long responseTime = response.getTime();
-
 		if (queryParams != null) {
-			logRequestResponse(queryParams.toString().replace(", ", "&"), formatJson(response.body().asString()), url,
-					responseTime);
+			logRequestResponse(queryParams.toString().replace(", ", "&"), formatResponse(response), url, responseTime);
 		} else {
-			logRequestResponse(null, formatJson(response.body().asString()), url, responseTime);
+			logRequestResponse(null, formatResponse(response), url, responseTime);
 		}
 
 		if (checkStatus && response.getStatusCode() != 200 && response.getStatusCode() != 204) {
@@ -219,7 +213,7 @@ public class ApiHelper {
 
 		apiResp = request.post(url);
 		long responseTime = apiResp.getTime();
-		logRequestResponse(body, formatJson(apiResp.body().asString()), url, responseTime);
+		logRequestResponse(body, formatResponse(apiResp), url, responseTime);
 
 		if (checkStatus && apiResp.getStatusCode() != 200) {
 			ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
@@ -303,11 +297,23 @@ public class ApiHelper {
 		return esResponse.asString();
 	}
 
-	private static String formatJson(String jsonString) {
-		JsonParser parser = new JsonParser();
-		JsonObject json = parser.parse(jsonString).getAsJsonObject();
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		return gson.toJson(json);
+	/**
+	 * Format JSON and pretty print the response
+	 * 
+	 * @param apiResponse
+	 * @return
+	 */
+	private static String formatResponse(Response apiResponse) {
+		String responseString = null;
+
+		if (apiResponse.contentType().equalsIgnoreCase(ContentType.JSON.toString()) && apiResponse.asString() != null) {
+			JsonParser parser = new JsonParser();
+			JsonObject json = parser.parse(responseString).getAsJsonObject();
+			Gson gson = new GsonBuilder().setPrettyPrinting().create();
+			responseString = gson.toJson(json);
+		} else
+			responseString = apiResponse.asString();
+		return responseString;
 	}
 
 	public static String convertToXml(Object obj) {
