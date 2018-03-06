@@ -7,11 +7,12 @@ import java.io.IOException;
 import java.util.UUID;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.airtel.helper.logging.AirtelLoggingMgr;
+
 public class ComparatorReportGenerator implements ReportConstants {
-	Logger logger = LogManager.getLogger(ComparatorReportGenerator.class);
+	Logger logger = AirtelLoggingMgr.getLogger(ComparatorReportGenerator.class);
 
 	public void appendresultHTMLReport(String resultFileStringPath, String operationType, String fieldName,
 			String liveValue, String qaValue) {

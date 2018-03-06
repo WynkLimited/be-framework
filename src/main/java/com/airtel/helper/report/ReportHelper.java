@@ -13,7 +13,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.ITestNGMethod;
 import org.testng.ITestResult;
@@ -24,6 +23,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
 import com.airtel.helper.common.BaseTestClass;
+import com.airtel.helper.logging.AirtelLoggingMgr;
 
 public class ReportHelper extends BaseTestClass implements ReportConstants {
 
@@ -33,7 +33,7 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 	String newDate = null;
 	Date startTime = null;
 	private static String resultFolderpath;
-	private static Logger logger = LogManager.getLogger(ReportHelper.class);
+	private static Logger logger = AirtelLoggingMgr.getLogger(ReportHelper.class);
 
 	public String getResultFolderpath() {
 		return resultFolderpath;
@@ -167,19 +167,22 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 			if (result.getStatus() == ITestResult.FAILURE) {
 				status = "Fail";
 				failCount = failCount + 1;
-			} else {
+			} else if (result.getStatus() == ITestResult.SUCCESS) {
 				passCount = passCount + 1;
 			}
+			
 			count = count + 1;
 			String resultFilePath = resultFileStringPath.split("/Results")[1];
 			resultFilePath = "." + resultFilePath;
 
-			appendMethodInformationInSuite(scenario, result.getMethod().getMethodName() + "_" + String.valueOf(number),
-					resultFilePath, status);
-			BufferedWriter resultFile = new BufferedWriter(new FileWriter(resultFileStringPath, true));
+			if (result.getStatus() != ITestResult.SKIP) {
+				appendMethodInformationInSuite(scenario,
+						result.getMethod().getMethodName() + "_" + String.valueOf(number), resultFilePath, status);
+				BufferedWriter resultFile = new BufferedWriter(new FileWriter(resultFileStringPath, true));
 
-			resultFile.append("</table></body></html>");
-			resultFile.close();
+				resultFile.append("</table></body></html>");
+				resultFile.close();
+			}
 		} catch (IOException e) {
 			logger.error("Report not completed - " + e);
 		}

@@ -57,10 +57,11 @@ public class AirtelLoggingMgr {
 	}
 
 	/**
+	 * @param <T>
 	 * @param name
 	 * @return
 	 */
-	public static Logger getLogger(String name) {
+	public static <T> Logger getLogger(Class<T> name) {
 
 		Logger logger = null;
 
@@ -83,4 +84,5 @@ public class AirtelLoggingMgr {
 		loggerContext.start(updated);
 
 	}
+
 }

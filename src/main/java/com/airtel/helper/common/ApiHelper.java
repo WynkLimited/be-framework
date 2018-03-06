@@ -19,7 +19,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -29,6 +28,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import com.airtel.helper.logging.AirtelLoggingMgr;
 import com.airtel.helper.report.FileHelper;
 import com.airtel.helper.report.ReportHelper;
 import com.google.gson.Gson;
@@ -51,7 +51,7 @@ import io.restassured.specification.RequestSpecification;
  * @author b0202849
  */
 public class ApiHelper {
-	private static Logger apiHelperLog = LogManager.getLogger(ApiHelper.class);
+	private static Logger apiHelperLog = AirtelLoggingMgr.getLogger(ApiHelper.class);
 	private static ReportHelper reporter = new ReportHelper();
 	private static FileHelper fileHelper = new FileHelper();
 

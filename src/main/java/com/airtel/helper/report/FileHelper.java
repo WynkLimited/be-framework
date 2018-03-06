@@ -11,14 +11,15 @@ import java.util.UUID;
 import javax.crypto.SecretKey;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Reporter;
+
+import com.airtel.helper.logging.AirtelLoggingMgr;
 
 public class FileHelper {
 
 	static final String DESEDE_ENCRYPTION_SCHEME = "DESede";
-	private static Logger logger = LogManager.getLogger(FileHelper.class);
+	private static Logger logger = AirtelLoggingMgr.getLogger(FileHelper.class);
 	byte[] keyAsBytes;
 	SecretKey key;
 
