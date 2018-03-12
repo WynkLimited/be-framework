@@ -74,7 +74,42 @@ public class GenericComparator extends ReportHelper {
 	 * @return result of comparison b/w the 2 json based on mapping
 	 */
 	public static boolean mappedResponseValidator(String expectedJson, String actualJson, String propertyFilePath) {
-		Map<String, String> mapperProperties = ApiHelper.fetchAllProperties(propertyFilePath);
+		return mappedResponseValidator(expectedJson, actualJson, propertyFilePath, null);
+	}
+
+	/**
+	 * his method is used to compare 2 JSON with different key name for same values.
+	 * Mapping property file needs to contain the JSONpath of both the JSON that
+	 * needs to be compared <br/>
+	 * <br/>
+	 * <b>Example of property file entry:</b> <br/>
+	 * <br/>
+	 * <i>Single field mapping: </i> json1.field1 = json2.field2 <br/>
+	 * <i>List mapping:</i> json1.field3[*] = json2.field4[*] <br/>
+	 * <i>Object mapping:</i> json1.object1 = json2.object2 <br/>
+	 * <br/>
+	 * 
+	 * @param expectedJson
+	 * @param actualJson
+	 * @param propertyFilePath
+	 * @param testCaseName
+	 * @return
+	 */
+	public static boolean mappedResponseValidator(String expectedJson, String actualJson, String propertyFilePath,
+			String testCaseName) {
+		Map<String, String> mapperProperties = new HashMap<>();
+		if (testCaseName != null) {
+			Map<String, String> masterMappings = ApiHelper.fetchAllProperties(propertyFilePath);
+			for (Map.Entry<String, String> masterMapping : masterMappings.entrySet()) {
+				if (masterMapping.getKey().startsWith(testCaseName)) {
+					String[] responseMap = masterMapping.getValue().split("=");
+					mapperProperties.put(responseMap[0], responseMap[1]);
+				}
+			}
+		} else {
+			mapperProperties = ApiHelper.fetchAllProperties(propertyFilePath);
+		}
+		
 		fieldMapper(expectedJson, actualJson, mapperProperties);
 		return ApiResponseValidator.compareJson(ApiHelper.convertToJson(expectedResp),
 				ApiHelper.convertToJson(actualResp), null, null, "move");

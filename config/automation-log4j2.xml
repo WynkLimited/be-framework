@@ -1,45 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
 	<Appenders>
-		<Console name="CONSOLE" target="SYSTEM_OUT">
-			<PatternLayout pattern="%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n" />
-		</Console>
-
 		<RollingRandomAccessFile name="AppFile"
-			fileName="logs/automation-app.log"
-			filePattern="logs/archive/automation-app-%d{yyyy-MM-dd}-%i.log" immediateFlush="false">
+			fileName="logs/automation-app.log" filePattern="logs/archive/automation-app-%d{yyyy-MM-dd}-%i.log"
+			immediateFlush="false">
 			<PatternLayout>
 				<pattern>%d [%t] %p %c - %m%n %ex</pattern>
 			</PatternLayout>
 			<Policies>
-				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
 				<SizeBasedTriggeringPolicy size="100 MB" />
 			</Policies>
 			<DefaultRolloverStrategy max="10" />
 		</RollingRandomAccessFile>
-		
-		
-		
-		
-		
-		
-
-	
 	</Appenders>
-	
-	<Loggers>
-		<!-- Root logger will be used only to have loggers for third party libraries. -->
-		<Root level="DEBUG">
-			<AppenderRef ref="ThirdParty" level="DEBUG" />
-		</Root>
 
+	<Loggers>
 		<!-- This logger will be used to print logs from com.airtel.digital package -->
 		<Logger name="com" level="DEBUG" additivity="false">
-			<AppenderRef ref="AppFile"/>
-			<AppenderRef ref="CONSOLE"/>
+			<AppenderRef ref="AppFile" />
+			<AppenderRef ref="CONSOLE" />
 		</Logger>
-		
-		
 	</Loggers>
 
 </Configuration>
