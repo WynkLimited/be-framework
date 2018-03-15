@@ -306,7 +306,7 @@ public class ApiHelper {
 	private static String formatResponse(Response apiResponse) {
 		String responseString = null;
 
-		if (apiResponse.contentType().equalsIgnoreCase(ContentType.JSON.toString()) && apiResponse.asString() != null) {
+		if (apiResponse.contentType().contains(ContentType.JSON.toString()) && apiResponse.asString() != null) {
 			JsonParser parser = new JsonParser();
 			JsonObject json = parser.parse(apiResponse.asString()).getAsJsonObject();
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
