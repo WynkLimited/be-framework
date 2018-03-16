@@ -20,8 +20,6 @@ import com.jayway.jsonpath.Option;
 public class GenericComparator extends ReportHelper {
 	private static Map<String, Object> expectedResp = new HashMap<>();
 	private static Map<String, Object> actualResp = new HashMap<>();
-	private static String defFieldName = "baseObjField";
-	private static int fieldCounter = 0;
 
 	/**
 	 * This method will fetch value from JSON at a particular JSON path. Value be
@@ -47,12 +45,11 @@ public class GenericComparator extends ReportHelper {
 	 */
 	public static void fieldMapper(String apiResp, String logData, Map<String, String> mapperProperties) {
 		for (Map.Entry<String, String> mapperProp : mapperProperties.entrySet()) {
+			String fieldName = mapperProp.getKey().replace("$.", "").replace(".[*]", "");
 			Object expectedVal = fetchJPathVal(apiResp, mapperProp.getKey());
 			Object actualVal = fetchJPathVal(logData, mapperProp.getValue());
-			String fieldName = defFieldName + fieldCounter;
 			expectedResp.put(fieldName, expectedVal);
 			actualResp.put(fieldName, actualVal);
-			fieldCounter++;
 		}
 	}
 
@@ -109,7 +106,7 @@ public class GenericComparator extends ReportHelper {
 		} else {
 			mapperProperties = ApiHelper.fetchAllProperties(propertyFilePath);
 		}
-		
+
 		fieldMapper(expectedJson, actualJson, mapperProperties);
 		return ApiResponseValidator.compareJson(ApiHelper.convertToJson(expectedResp),
 				ApiHelper.convertToJson(actualResp), null, null, "move");
