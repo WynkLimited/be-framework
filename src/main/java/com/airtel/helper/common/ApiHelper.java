@@ -33,6 +33,8 @@ import com.airtel.helper.report.FileHelper;
 import com.airtel.helper.report.ReportHelper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -308,9 +310,15 @@ public class ApiHelper {
 
 		if (apiResponse.contentType().contains(ContentType.JSON.toString()) && apiResponse.asString() != null) {
 			JsonParser parser = new JsonParser();
-			JsonObject json = parser.parse(apiResponse.asString()).getAsJsonObject();
+			JsonElement jsonElement = parser.parse(apiResponse.asString());
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
-			responseString = gson.toJson(json);
+			if (jsonElement instanceof JsonObject) {
+				JsonObject json = jsonElement.getAsJsonObject();				
+				responseString = gson.toJson(json);
+			} else if (jsonElement instanceof JsonArray) {
+				JsonArray json = jsonElement.getAsJsonArray();
+				responseString = gson.toJson(json);
+			}
 		} else
 			responseString = apiResponse.asString();
 		return responseString;
