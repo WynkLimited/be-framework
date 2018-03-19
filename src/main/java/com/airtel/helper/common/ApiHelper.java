@@ -264,6 +264,18 @@ public class ApiHelper {
 		Gson gsonConverter = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 		return gsonConverter.fromJson(jsonData, classType);
 	}
+	
+	/**
+	 * This method will be used to convert a dynamic class response from JSON
+	 * @author b0201347
+	 * @param jsonData
+	 * @param type
+	 * @return
+	 */
+	public static <T> T convertFromJson(String jsonData, Type type) {
+	    Gson gsonConverter = (new GsonBuilder()).disableHtmlEscaping().setPrettyPrinting().create();
+	    return gsonConverter.fromJson(jsonData, type);
+	}
 
 	/**
 	 * Returns list of object converted from a JSON array string. Input of this
