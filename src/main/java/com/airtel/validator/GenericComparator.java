@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.testng.annotations.Test;
+
 import com.airtel.helper.common.ApiHelper;
 import com.airtel.helper.report.ReportHelper;
 import com.jayway.jsonpath.Configuration;
@@ -18,8 +20,9 @@ import com.jayway.jsonpath.Option;
  *
  */
 public class GenericComparator extends ReportHelper {
-	private static Map<String, Object> expectedResp = new HashMap<>();
-	private static Map<String, Object> actualResp = new HashMap<>();
+
+	static final String EXPECTED_RESULT = "expectedMap";
+	static final String ACTUAL_RESULT = "actualMap";
 
 	/**
 	 * This method will fetch value from JSON at a particular JSON path. Value be
@@ -43,14 +46,21 @@ public class GenericComparator extends ReportHelper {
 	 * @param logData
 	 * @param mapperProperties
 	 */
-	public static void fieldMapper(String apiResp, String logData, Map<String, String> mapperProperties) {
+	public static Map<String, Map<String, Object>> fieldMapper(String apiResp, String logData,
+			Map<String, String> mapperProperties) {
+		Map<String, Map<String, Object>> resultMap = new HashMap<>();
+		Map<String, Object> expectedResp = new HashMap<>();
+		Map<String, Object> actualResp = new HashMap<>();
 		for (Map.Entry<String, String> mapperProp : mapperProperties.entrySet()) {
-			String fieldName = mapperProp.getKey().replace("$.", "").replace(".[*]", "");
+			String fieldName = mapperProp.getValue().replace("$.", "").replace("[*]", "");
 			Object expectedVal = fetchJPathVal(apiResp, mapperProp.getKey());
 			Object actualVal = fetchJPathVal(logData, mapperProp.getValue());
 			expectedResp.put(fieldName, expectedVal);
 			actualResp.put(fieldName, actualVal);
 		}
+		resultMap.put(EXPECTED_RESULT, expectedResp);
+		resultMap.put(ACTUAL_RESULT, actualResp);
+		return resultMap;
 	}
 
 	/**
@@ -107,9 +117,11 @@ public class GenericComparator extends ReportHelper {
 			mapperProperties = ApiHelper.fetchAllProperties(propertyFilePath);
 		}
 
-		fieldMapper(expectedJson, actualJson, mapperProperties);
-		return ApiResponseValidator.compareJson(ApiHelper.convertToJson(expectedResp),
-				ApiHelper.convertToJson(actualResp), null, null, "move");
+		Map<String, Map<String, Object>> resultMap = fieldMapper(expectedJson, actualJson, mapperProperties);
+		String expectedResp = ApiHelper.convertToJson(resultMap.get(EXPECTED_RESULT));
+		String actualResp = ApiHelper.convertToJson(resultMap.get(ACTUAL_RESULT));
+
+		return ApiResponseValidator.compareJson(expectedResp, actualResp, null, null, "move");
 	}
 
 }

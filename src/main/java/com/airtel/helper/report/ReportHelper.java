@@ -204,9 +204,9 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 
 			resultFile.append("<tr>");
 			resultFile.append("<td width=30% style=WORD-break:BREAK-all>" + apiURL + "</td>");
-			resultFile.append("<td width=20% style=WORD-break:BREAK-all>" + requestFile + "</td>");
-			resultFile.append("<td width=20% style=WORD-break:BREAK-all>" + responseFile + "</td>");
-			resultFile.append("<td width=10% style=WORD-break:BREAK-all>" + message + "</td>");
+			resultFile.append("<td width=10% style=WORD-break:BREAK-all>" + requestFile + "</td>");
+			resultFile.append("<td width=10% style=WORD-break:BREAK-all>" + responseFile + "</td>");
+			resultFile.append("<td width=30% style=WORD-break:BREAK-all>" + message + "</td>");
 			resultFile.append(statusTag + status + "</td>");
 			resultFile.append("<td style=word-wrap: break-word>" + comment + "</td>");
 			resultFile.append("</tr>");
