@@ -17,7 +17,6 @@ public class TestDataHelper extends BaseTestClass {
 	@DataProvider(name = "dbDataProvider")
 	protected Iterator<Object[]> getDataFromDB(Method method) {
 		List<String> queryData = new ArrayList<>();
-		List<Map<String, String>> queryResultData = new ArrayList<Map<String, String>>();
 		List<Object[]> testData = new ArrayList<>();
 		Test tstData = method.getAnnotation(Test.class);
 		if (tstData != null && tstData.groups() != null) {
@@ -29,7 +28,7 @@ public class TestDataHelper extends BaseTestClass {
 		String dbEnvironment = queryData.get(1);
 		String sid = queryData.get(2);
 		connection = DbHelper.createDbConnection(dbEnvironment, sid);
-		queryResultData = DbHelper.fetchDatafromDb(connection, query);
+		List<Map<String, String>> queryResultData = DbHelper.fetchDatafromDb(connection, query);
 		// List<Object[]> collect = tempQueryData.stream().map(temp -> new Object[]
 		// {temp}).collect(Collectors.toList());
 

@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.xml.bind.JAXB;
 import javax.xml.parsers.DocumentBuilder;
@@ -20,7 +21,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.Reporter;
@@ -44,6 +44,7 @@ import io.restassured.http.Header;
 import io.restassured.http.Headers;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import net.minidev.json.JSONArray;
 
 /**
  * This class contains methods for generic functions over the API that includes
@@ -264,17 +265,18 @@ public class ApiHelper {
 		Gson gsonConverter = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 		return gsonConverter.fromJson(jsonData, classType);
 	}
-	
+
 	/**
 	 * This method will be used to convert a dynamic class response from JSON
+	 * 
 	 * @author b0201347
 	 * @param jsonData
 	 * @param type
 	 * @return
 	 */
 	public static <T> T convertFromJson(String jsonData, Type type) {
-	    Gson gsonConverter = (new GsonBuilder()).disableHtmlEscaping().setPrettyPrinting().create();
-	    return gsonConverter.fromJson(jsonData, type);
+		Gson gsonConverter = (new GsonBuilder()).disableHtmlEscaping().setPrettyPrinting().create();
+		return gsonConverter.fromJson(jsonData, type);
 	}
 
 	/**
@@ -325,7 +327,7 @@ public class ApiHelper {
 			JsonElement jsonElement = parser.parse(apiResponse.asString());
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
 			if (jsonElement instanceof JsonObject) {
-				JsonObject json = jsonElement.getAsJsonObject();				
+				JsonObject json = jsonElement.getAsJsonObject();
 				responseString = gson.toJson(json);
 			} else if (jsonElement instanceof JsonArray) {
 				JsonArray json = jsonElement.getAsJsonArray();
@@ -441,22 +443,22 @@ public class ApiHelper {
 		return true;
 	}
 
-	public boolean isStringFeildNotBlankInsideJSONObject(JSONObject jsonObject, String feild) {
+	public boolean isStringFeildNotBlankInsideJSONObject(JSONObject jsonObject, String field) {
 
-		return (!jsonObject.getString(feild).isEmpty() && jsonObject.getString(feild) != null);
+		return (!jsonObject.getString(field).isEmpty() && jsonObject.getString(field) != null);
 	}
 
-	public boolean isJsonObjectInsideJsonObjectNotBlank(JSONObject jsonObject, String feild) {
-		return (jsonObject.getJSONObject(feild) != null && jsonObject.getJSONObject(feild).length() != 0);
+	public boolean isJsonObjectInsideJsonObjectNotBlank(JSONObject jsonObject, String field) {
+		return (jsonObject.getJSONObject(field) != null && jsonObject.getJSONObject(field).length() != 0);
 	}
 
-	public boolean isJsonArrayNotBlank(JSONArray jsonArray) {
-		return ((jsonArray != null) && jsonArray.length() > 0);
+	public boolean isJsonArrayNotBlank(JsonArray jsonArray) {
+		return ((jsonArray != null) && jsonArray.size() > 0);
 
 	}
 
-	public boolean isListFieldBlank(JSONObject jsonObject, String feild) {
-		return ((jsonObject.getJSONArray(feild).length() != 0) && (jsonObject.getJSONArray(feild) != null));
+	public boolean isListFieldBlank(JSONObject jsonObject, String field) {
+		return ((jsonObject.getJSONArray(field).length() != 0) && (jsonObject.getJSONArray(field) != null));
 	}
 
 	/**
@@ -503,5 +505,17 @@ public class ApiHelper {
 
 		}
 		return value;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static Object sortArray(Object unsortedArrayObj) {
+		JSONArray unsortedArray = (JSONArray) unsortedArrayObj;
+		@SuppressWarnings("rawtypes")
+		Set sortedArray = new TreeSet<>();
+		for(int arrayIterator = 0; arrayIterator < unsortedArray.size(); arrayIterator++) {
+			sortedArray.add(unsortedArray.get(arrayIterator));
+		}
+		System.out.println(sortedArray.toString());
+		return sortedArray;
 	}
 }

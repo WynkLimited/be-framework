@@ -45,7 +45,6 @@ public class DbHelper {
 	
 
 	/**
-	 * 
 	 * @param connection
 	 * @param query
 	 * @return List<Map<String,String>> - This output will have data returned from
@@ -64,6 +63,7 @@ public class DbHelper {
 			if (connection != null) {
 				Statement stmt = connection.createStatement();
 				result = stmt.executeQuery(query);
+				stmt.close();
 			}
 		} catch (SQLException e) {
 			ReportHelper.logValidationFailure("Couldn't get db connection", "DB connection", e.getMessage(),
