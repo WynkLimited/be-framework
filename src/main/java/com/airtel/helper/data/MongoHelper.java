@@ -25,6 +25,7 @@ public class MongoHelper extends BaseTestClass {
 		return mongoClient;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static MongoCollection getCollection(MongoClient mongoClient, String dataBase, String collection) {
 
 		MongoDatabase mongoDatabase = mongoClient.getDatabase(dataBase);
@@ -40,6 +41,7 @@ public class MongoHelper extends BaseTestClass {
 		return searchQuery;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static List<Object> getResultFromMongo(MongoCollection mongoCollection, BasicDBObject searchQuery) {
 		FindIterable findIterable = mongoCollection.find(searchQuery);
 		MongoCursor mongoCursor = findIterable.iterator();
@@ -51,9 +53,10 @@ public class MongoHelper extends BaseTestClass {
 		return mongoAsObjectResult;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static List<JSONObject> parseMongoDocuments(List<Object> resultFromMongoAsObject) {
 
-		List<JSONObject> jsonObjectListOfMongo = new ArrayList<JSONObject>();
+		List<JSONObject> jsonObjectListOfMongo = new ArrayList<>();
 		Iterator mongoResultIterator = resultFromMongoAsObject.iterator();
 		while (mongoResultIterator.hasNext()) {
 			JSONObject jsonObject = new JSONObject(ApiHelper.convertToJson(mongoResultIterator.next()));

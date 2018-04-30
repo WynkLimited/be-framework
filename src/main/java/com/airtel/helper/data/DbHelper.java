@@ -63,7 +63,6 @@ public class DbHelper {
 			if (connection != null) {
 				Statement stmt = connection.createStatement();
 				result = stmt.executeQuery(query);
-				stmt.close();
 			}
 		} catch (SQLException e) {
 			ReportHelper.logValidationFailure("Couldn't get db connection", "DB connection", e.getMessage(),
