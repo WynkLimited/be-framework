@@ -1,24 +1,19 @@
 package com.airtel.helper.common;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.StringReader;
-import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.xml.bind.JAXB;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
+import com.airtel.helper.logging.AirtelLoggingMgr;
+import com.airtel.helper.report.FileHelper;
+import com.airtel.helper.report.ReportHelper;
+import com.google.gson.*;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.Option;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.http.Header;
+import io.restassured.http.Headers;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+import net.minidev.json.JSONArray;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
@@ -28,23 +23,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import com.airtel.helper.logging.AirtelLoggingMgr;
-import com.airtel.helper.report.FileHelper;
-import com.airtel.helper.report.ReportHelper;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-import io.restassured.http.Header;
-import io.restassured.http.Headers;
-import io.restassured.response.Response;
-import io.restassured.specification.RequestSpecification;
-import net.minidev.json.JSONArray;
+import javax.xml.bind.JAXB;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.*;
+import java.lang.reflect.Type;
+import java.util.*;
 
 /**
  * This class contains methods for generic functions over the API that includes
@@ -517,5 +501,38 @@ public class ApiHelper {
 		}
 		System.out.println(sortedArray.toString());
 		return sortedArray;
+	}
+
+	/**
+	 * This method will fetch value from JSON at a particular JSON path. Value be
+	 * returned as an Object as the class type is not defined
+	 *
+	 * @param inputJson
+	 * @param keyName
+	 * @return
+	 */
+     public static Object fetchJPathVal(String inputJson, String keyName) {
+		Configuration config = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
+		return Optional.ofNullable(inputJson).map(body -> JsonPath.using(config).parse(body).read(keyName.trim()))
+				.orElse(null);
+	}
+
+	/**
+	 * This method will fetch map of value's at a particular JSON PATH mentioned in propertyFilePath
+	 * @param responseJson
+	 * @param propertyFilePath
+	 * @return
+	 */
+	public static Map<String,String> fieldMapperForASingleJsonObject(String responseJson,String propertyFilePath)
+	{
+		Map<String, String> masterMappings = ApiHelper.fetchAllProperties(propertyFilePath);
+		Map<String, String> expectedMap = new HashMap<>();
+		for (Map.Entry<String, String> mapperProp : masterMappings.entrySet())
+		{
+			Object expectedVal = fetchJPathVal(responseJson, mapperProp.getValue());
+			expectedMap.put(mapperProp.getKey(),String.valueOf(expectedVal));
+
+		}
+		return  expectedMap;
 	}
 }
