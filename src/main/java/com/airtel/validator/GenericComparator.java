@@ -1,14 +1,10 @@
 package com.airtel.validator;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
 import com.airtel.helper.common.ApiHelper;
 import com.airtel.helper.report.ReportHelper;
-import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.Option;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class contains methods relevant for comparison of two different JSON
@@ -22,26 +18,12 @@ public class GenericComparator extends ReportHelper {
 	static final String EXPECTED_RESULT = "expectedMap";
 	static final String ACTUAL_RESULT = "actualMap";
 
-	/**
-	 * This method will fetch value from JSON at a particular JSON path. Value be
-	 * returned as an Object as the class type is not defined
-	 * 
-	 * @param inputJson
-	 * @param keyName
-	 * @return
-	 */
-	private static Object fetchJPathVal(String inputJson, String keyName) {
-		Configuration config = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
-		return Optional.ofNullable(inputJson).map(body -> JsonPath.using(config).parse(body).read(keyName.trim()))
-				.orElse(null);
-	}
+
 
 	/**
 	 * This method is used for mapping the values of 2 different JSON into a parent
 	 * JSON of same structure. This will help in comparison of those JSON.
 	 * 
-	 * @param apiResp
-	 * @param logData
 	 * @param mapperProperties
 	 */
 	public static Map<String, Map<String, Object>> fieldMapper(String expectedApiResp, String actualApiResp,
@@ -52,8 +34,8 @@ public class GenericComparator extends ReportHelper {
 		for (Map.Entry<String, String> mapperProp : mapperProperties.entrySet()) {
 			String actualRespField = mapperProp.getValue();
 			String fieldName = actualRespField.replace("$.", "").replace("[*]", "").replace("=true", "");
-			Object expectedVal = fetchJPathVal(expectedApiResp, mapperProp.getKey());
-			Object actualVal = fetchJPathVal(actualApiResp, actualRespField.replace("=true", ""));
+			Object expectedVal = ApiHelper.fetchJPathVal(expectedApiResp, mapperProp.getKey());
+			Object actualVal = ApiHelper.fetchJPathVal(actualApiResp, actualRespField.replace("=true", ""));
 			if (actualRespField.endsWith("=true")) {
 				expectedVal = ApiHelper.sortArray(expectedVal);
 				actualVal = ApiHelper.sortArray(actualVal);

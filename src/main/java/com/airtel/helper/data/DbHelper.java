@@ -1,23 +1,18 @@
 package com.airtel.helper.data;
 
+import com.airtel.helper.common.ApiHelper;
+import com.airtel.helper.report.FileHelper;
+import com.airtel.helper.report.ReportHelper;
+import org.testng.Reporter;
+
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.sql.Blob;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.lang.reflect.Field;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.testng.Reporter;
-
-import com.airtel.helper.common.ApiHelper;
-import com.airtel.helper.report.FileHelper;
-import com.airtel.helper.report.ReportHelper;
 
 public class DbHelper {
 
@@ -147,5 +142,36 @@ public class DbHelper {
 		}
 		closeConnection(connection);
 	}
+
+    public  static  boolean insertDataIntoSQL(Connection connection, String  tableName, Field[] columnsName, List<String> colValues)
+    {
+        try {
+            String commaSepeartedColumnsName="";
+            String commaSepeartedColumnsValue="";
+
+            for (int i = 0; i < columnsName.length-1; i++) {
+                commaSepeartedColumnsName = columnsName[i].getName() + ",";
+                commaSepeartedColumnsValue = "?" + ",";
+            }
+            //get comma sepearted list of column Name
+            commaSepeartedColumnsName = commaSepeartedColumnsName +columnsName[columnsName.length - 1].getName();
+            //get comma sepearted list of column Vlaue
+            commaSepeartedColumnsValue = commaSepeartedColumnsValue+" ? ";
+
+            String query = "insert into " + tableName + "(" + commaSepeartedColumnsName + ")" + " values (" + commaSepeartedColumnsValue + ")";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            for (int k =0 ;k< colValues.size();k++)
+                preparedStatement.setString(k+1,colValues.get(k));
+
+            // execute the preparedstatement and return result accordingly
+            return  preparedStatement.executeUpdate()==1;
+
+        }catch (Exception e) {
+            Reporter.log(e.getMessage());
+            return false;
+        }
+
+    }
+
 
 }
