@@ -150,8 +150,8 @@ public class DbHelper {
             String commaSepeartedColumnsValue="";
 
             for (int i = 0; i < columnsName.length-1; i++) {
-                commaSepeartedColumnsName = columnsName[i].getName() + ",";
-                commaSepeartedColumnsValue = "?" + ",";
+                commaSepeartedColumnsName =commaSepeartedColumnsName + columnsName[i].getName() + ",";
+                commaSepeartedColumnsValue = commaSepeartedColumnsValue+"?" + ",";
             }
             //get comma sepearted list of column Name
             commaSepeartedColumnsName = commaSepeartedColumnsName +columnsName[columnsName.length - 1].getName();
