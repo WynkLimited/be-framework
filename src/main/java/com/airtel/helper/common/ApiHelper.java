@@ -525,12 +525,19 @@ public class ApiHelper {
 	 */
 	public static Map<String,String> fieldMapperForASingleJsonObject(String responseJson,String propertyFilePath)
 	{
+		String finalExpectedVal ="";
 		Map<String, String> masterMappings = ApiHelper.fetchAllProperties(propertyFilePath);
 		Map<String, String> expectedMap = new HashMap<>();
 		for (Map.Entry<String, String> mapperProp : masterMappings.entrySet())
 		{
 			Object expectedVal = fetchJPathVal(responseJson, mapperProp.getValue());
-			expectedMap.put(mapperProp.getKey(),String.valueOf(expectedVal));
+			if(expectedVal.getClass().isInstance(new JSONArray())) {
+				JSONArray jsonArray =( JSONArray)expectedVal;
+				finalExpectedVal=jsonArray.get(0).toString(); //get First Value from List in case of multiple values in form of List
+			}else
+				finalExpectedVal=String.valueOf(expectedVal); //incase Of String putting as it is
+
+			expectedMap.put(mapperProp.getKey(),finalExpectedVal);
 
 		}
 		return  expectedMap;
