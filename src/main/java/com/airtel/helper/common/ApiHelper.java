@@ -42,14 +42,75 @@ public class ApiHelper {
 	private static ReportHelper reporter = new ReportHelper();
 	private static FileHelper fileHelper = new FileHelper();
 
-	private static RequestSpecification prepareGetRequest(Map<String, String> queryParams) {
-		RequestSpecification request = RestAssured.given().redirects().follow(false);
+	private static RequestSpecification prepareRequestParams(Map<String, String> queryParams, List<Header> headers,
+			String body, ContentType contentType) {
+		RequestSpecification request = RestAssured.given().relaxedHTTPSValidation().redirects().follow(false);
 		if (null != queryParams) {
 			for (Map.Entry<String, String> keyValue : queryParams.entrySet()) {
 				request.param(keyValue.getKey(), keyValue.getValue());
 			}
 		}
+
+		if (!headers.isEmpty())
+			request.headers(new Headers(headers));
+		if (body != null && !body.isEmpty()) {
+			request.body(body);
+		}
+		if (contentType != null)
+			request.contentType(contentType);
+
 		return request;
+	}
+
+	/**
+	 * Generic method to fetch response for different type of API request
+	 * 
+	 * @param requestUrl
+	 * @param requestType
+	 * @param body
+	 * @param queryParams
+	 * @param headers
+	 * @param checkStatus
+	 * @return
+	 */
+	public static Response fetchApiResponse(String requestUrl, String requestType, String body,
+			Map<String, String> queryParams, List<Header> headers, ContentType contentType, boolean checkStatus) {
+
+		Response apiResponse = null;
+		String requestLog = null;
+		RequestSpecification apiRequest = prepareRequestParams(queryParams, headers, body, contentType);
+
+		requestLog = "Request body: " + body;
+
+		if (queryParams != null)
+			requestLog = requestLog + "Query Params:" + queryParams.toString();
+
+		switch (requestType) {
+		case "GET":
+			apiResponse = apiRequest.get(requestUrl);
+			break;
+		case "POST":
+			apiResponse = apiRequest.post(requestUrl);
+			break;
+		case "PATCH":
+			apiResponse = apiRequest.patch(requestUrl);
+			break;
+		case "DELETE":
+			apiResponse = apiRequest.delete(requestUrl);
+			break;
+		default:
+			apiResponse = apiRequest.head(requestUrl);
+			break;
+		}
+
+		long responseTime = apiResponse.getTime();
+		logRequestResponse(requestLog, formatResponse(apiResponse), requestUrl, responseTime);
+		if (checkStatus && apiResponse.getStatusCode() != 200 && apiResponse.getStatusCode() != 204) {
+			ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
+					Integer.toString(apiResponse.getStatusCode()), "HTTP status check failure");
+			Assert.assertTrue(false);
+		}
+		return apiResponse;
 	}
 
 	/**
@@ -104,27 +165,7 @@ public class ApiHelper {
 	 */
 	public static Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url,
 			boolean checkStatus) {
-
-		RequestSpecification request = prepareGetRequest(queryParams).relaxedHTTPSValidation();
-		Response response = null;
-		if (headers != null && !headers.isEmpty()) {
-			Headers requestHeader = new Headers(headers);
-			request.headers(requestHeader);
-		}
-		response = request.get(url);
-		long responseTime = response.getTime();
-		if (queryParams != null) {
-			logRequestResponse(queryParams.toString().replace(", ", "&"), formatResponse(response), url, responseTime);
-		} else {
-			logRequestResponse(null, formatResponse(response), url, responseTime);
-		}
-
-		if (checkStatus && response.getStatusCode() != 200 && response.getStatusCode() != 204) {
-			ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
-					Integer.toString(response.getStatusCode()), "HTTP status check failure");
-			Assert.assertTrue(false);
-		}
-		return response;
+		return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus);
 	}
 
 	/**
@@ -184,31 +225,7 @@ public class ApiHelper {
 	 */
 	public static Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
 			String url, boolean checkStatus) {
-		RequestSpecification request = RestAssured.given().relaxedHTTPSValidation();
-		Response apiResp = null;
-
-		if (headers != null && !headers.isEmpty()) {
-			Headers requestHeader = new Headers(headers);
-			request.headers(requestHeader);
-		}
-		if (body != null && !body.isEmpty()) {
-			request.body(body);
-		}
-
-		if (contentType != null)
-			request.contentType(contentType);
-
-		apiResp = request.post(url);
-		long responseTime = apiResp.getTime();
-		logRequestResponse(body, formatResponse(apiResp), url, responseTime);
-
-		if (checkStatus && apiResp.getStatusCode() != 200) {
-			ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
-					Integer.toString(apiResp.getStatusCode()), "HTTP status check failure");
-			Reporter.log("Response has failed with HTTP status code - " + apiResp.getStatusCode());
-			Assert.assertTrue(false);
-		}
-		return apiResp;
+		return fetchApiResponse(url, "POST", body, null, headers, contentType, checkStatus);
 	}
 
 	private static void logRequestResponse(String request, String response, String url, long responseTime) {
@@ -496,10 +513,9 @@ public class ApiHelper {
 		JSONArray unsortedArray = (JSONArray) unsortedArrayObj;
 		@SuppressWarnings("rawtypes")
 		Set sortedArray = new TreeSet<>();
-		for(int arrayIterator = 0; arrayIterator < unsortedArray.size(); arrayIterator++) {
+		for (int arrayIterator = 0; arrayIterator < unsortedArray.size(); arrayIterator++) {
 			sortedArray.add(unsortedArray.get(arrayIterator));
 		}
-		System.out.println(sortedArray.toString());
 		return sortedArray;
 	}
 
@@ -511,35 +527,36 @@ public class ApiHelper {
 	 * @param keyName
 	 * @return
 	 */
-     public static Object fetchJPathVal(String inputJson, String keyName) {
+	public static Object fetchJPathVal(String inputJson, String keyName) {
 		Configuration config = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
 		return Optional.ofNullable(inputJson).map(body -> JsonPath.using(config).parse(body).read(keyName.trim()))
 				.orElse(null);
 	}
 
 	/**
-	 * This method will fetch map of value's at a particular JSON PATH mentioned in propertyFilePath
+	 * This method will fetch map of value's at a particular JSON PATH mentioned in
+	 * propertyFilePath
+	 * 
 	 * @param responseJson
 	 * @param propertyFilePath
 	 * @return
 	 */
-	public static Map<String,String> fieldMapperForASingleJsonObject(String responseJson,String propertyFilePath)
-	{
-		String finalExpectedVal ="";
+	public static Map<String, String> fieldMapperForASingleJsonObject(String responseJson, String propertyFilePath) {
+		String finalExpectedVal = "";
 		Map<String, String> masterMappings = ApiHelper.fetchAllProperties(propertyFilePath);
 		Map<String, String> expectedMap = new HashMap<>();
-		for (Map.Entry<String, String> mapperProp : masterMappings.entrySet())
-		{
+		for (Map.Entry<String, String> mapperProp : masterMappings.entrySet()) {
 			Object expectedVal = fetchJPathVal(responseJson, mapperProp.getValue());
-			if(expectedVal.getClass().isInstance(new JSONArray())) {
-				JSONArray jsonArray =( JSONArray)expectedVal;
-				finalExpectedVal=jsonArray.get(0).toString(); //get First Value from List in case of multiple values in form of List
-			}else
-				finalExpectedVal=String.valueOf(expectedVal); //incase Of String putting as it is
+			if (expectedVal.getClass().isInstance(new JSONArray())) {
+				JSONArray jsonArray = (JSONArray) expectedVal;
+				finalExpectedVal = jsonArray.get(0).toString(); // get First Value from List in case of multiple values
+																// in form of List
+			} else
+				finalExpectedVal = String.valueOf(expectedVal); // incase Of String putting as it is
 
-			expectedMap.put(mapperProp.getKey(),finalExpectedVal);
+			expectedMap.put(mapperProp.getKey(), finalExpectedVal);
 
 		}
-		return  expectedMap;
+		return expectedMap;
 	}
 }

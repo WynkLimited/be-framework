@@ -18,8 +18,10 @@ import com.airtel.helper.exception.resourceloader.ResourceNotFoundException;
  *
  * This is a helper services to read config files.
  */
+@SuppressWarnings("rawtypes")
 public class AirtelConfigService {
 
+	
 	private static HashMap serviceProperty = new HashMap();
 
 	/**
@@ -161,6 +163,7 @@ public class AirtelConfigService {
 	 * @throws EmptyConfigFileException
 	 * @throws ResourceNotFoundException
 	 */
+	@SuppressWarnings("unchecked")
 	private static boolean readFile(String serviceName) throws EmptyConfigFileException, ResourceNotFoundException {
 		HashMap serviceData = null;
 
