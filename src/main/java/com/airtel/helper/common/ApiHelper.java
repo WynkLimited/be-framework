@@ -22,12 +22,16 @@ import org.testng.Reporter;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.DESKeySpec;
 import javax.xml.bind.JAXB;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
 import java.lang.reflect.Type;
+import java.security.spec.KeySpec;
 import java.util.*;
 
 /**
@@ -51,7 +55,7 @@ public class ApiHelper {
 			}
 		}
 
-		if (!headers.isEmpty())
+		if (headers!=null)
 			request.headers(new Headers(headers));
 		if (body != null && !body.isEmpty()) {
 			request.body(body);
@@ -559,4 +563,36 @@ public class ApiHelper {
 		}
 		return expectedMap;
 	}
+
+    /**
+     * This method decrpyts api response on the basis of googleCookie in  Response header
+     * @param key
+     * @param encrypted
+     * @return
+     */
+
+    public static String decryptAPIResponse(String key, String encrypted) {
+        try {
+            KeySpec keySpec = new DESKeySpec(key.getBytes());
+
+            SecretKey secretKey = SecretKeyFactory.getInstance("DES").generateSecret(keySpec);
+
+            Cipher cipher = Cipher.getInstance("DES");
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+
+            String encryptedData= encrypted.replaceAll("\"", "");
+            byte[] original = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
+
+            return new String(original);
+        } catch (Exception e) {
+
+            ReportHelper.reporterLogging(false,"Error in decrypting API response. Key = "+key+" Response = "+encrypted);
+            return  "";
+        }
+    }
+
+
+
+
+
 }
