@@ -585,7 +585,9 @@ public class ApiHelper {
 
             return new String(original);
         } catch (Exception e) {
-            throw new RuntimeException("Error in decrypting API response. Key = "+key+" Response = "+encrypted);
+
+            ReportHelper.reporterLogging(false,"Error in decrypting API response. Key = "+key+" Response = "+encrypted);
+            return  "";
         }
     }
 
