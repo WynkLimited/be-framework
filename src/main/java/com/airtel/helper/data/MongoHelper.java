@@ -1,19 +1,20 @@
 package com.airtel.helper.data;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import org.json.JSONObject;
-
 import com.airtel.helper.common.ApiHelper;
 import com.airtel.helper.common.BaseTestClass;
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by b0200202 on 12/6/17.
@@ -41,7 +42,20 @@ public class MongoHelper extends BaseTestClass {
 		return searchQuery;
 	}
 
-	@SuppressWarnings("rawtypes")
+    public static BasicDBObject prepareMongoQueryFromMultipleKeys(Map<String,String> map) {
+
+        BasicDBObject andQuery = new BasicDBObject();
+        BasicDBList basicDBList= new BasicDBList();
+        for (Map.Entry<String, String> entry : map.entrySet())
+            basicDBList.add(new BasicDBObject(entry.getKey(), entry.getValue()));
+
+        andQuery.put("$and", basicDBList);
+        return andQuery;
+    }
+
+
+
+    @SuppressWarnings("rawtypes")
 	public static List<Object> getResultFromMongo(MongoCollection mongoCollection, BasicDBObject searchQuery) {
 		FindIterable findIterable = mongoCollection.find(searchQuery);
 		MongoCursor mongoCursor = findIterable.iterator();
