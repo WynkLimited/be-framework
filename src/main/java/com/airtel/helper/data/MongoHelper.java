@@ -1,7 +1,16 @@
 package com.airtel.helper.data;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.bson.Document;
+import org.json.JSONObject;
+
 import com.airtel.helper.common.ApiHelper;
 import com.airtel.helper.common.BaseTestClass;
+import com.airtel.helper.report.ReportHelper;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
@@ -9,12 +18,6 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by b0200202 on 12/6/17.
@@ -36,9 +39,7 @@ public class MongoHelper extends BaseTestClass {
 
 	public static BasicDBObject getMongoDBQuery(String key, String value) {
 		BasicDBObject searchQuery = new BasicDBObject();
-
 		searchQuery.put(key, value);
-
 		return searchQuery;
 	}
 
@@ -71,12 +72,50 @@ public class MongoHelper extends BaseTestClass {
 	public static List<JSONObject> parseMongoDocuments(List<Object> resultFromMongoAsObject) {
 
 		List<JSONObject> jsonObjectListOfMongo = new ArrayList<>();
-		Iterator mongoResultIterator = resultFromMongoAsObject.iterator();
+		Iterator<Object> mongoResultIterator = resultFromMongoAsObject.iterator();
 		while (mongoResultIterator.hasNext()) {
 			JSONObject jsonObject = new JSONObject(ApiHelper.convertToJson(mongoResultIterator.next()));
 			jsonObjectListOfMongo.add(jsonObject);
 		}
 
 		return jsonObjectListOfMongo;
+	}
+
+	/**
+	 * This method delete mongo document
+	 * 
+	 * @param mongoClient
+	 * @param mongoValue
+	 * @param dataBaseName
+	 * @param collectionName
+	 * @return
+	 */
+	public boolean findMongoDocumentAndDeleteIt(MongoClient mongoClient, String key, String mongoValue,
+			String dataBaseName, String collectionName) {
+		boolean mongoDeleteion = true;
+		BasicDBObject query = MongoHelper.getMongoDBQuery(key, mongoValue);
+		MongoCollection mongoCollection = MongoHelper.getCollection(mongoClient, dataBaseName, collectionName);
+		List<Object> resultFromMongoAsObject = MongoHelper.getResultFromMongo(mongoCollection, query);
+
+		if (!resultFromMongoAsObject.isEmpty()) {
+			Document mongoDocument;
+			Iterator<Object> mongoListIterator = resultFromMongoAsObject.iterator();
+			while (mongoListIterator.hasNext()) {
+				mongoDocument = (Document) mongoListIterator.next();
+				try {
+					mongoCollection.deleteOne(mongoDocument);
+
+				} catch (Exception e) {
+					mongoDeleteion = false;
+					ReportHelper.logValidationFailure("MongoDeletion", "to delete", "not able to delete",
+							"Error In Deleting Mongo Document from DB : " + dataBaseName + "collectionName :"
+									+ collectionName);
+				}
+			}
+		} else
+			mongoDeleteion = false;
+
+		return mongoDeleteion;
+
 	}
 }

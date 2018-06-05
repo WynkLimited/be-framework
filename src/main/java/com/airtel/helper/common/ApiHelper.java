@@ -551,7 +551,7 @@ public class ApiHelper {
 		Map<String, String> expectedMap = new HashMap<>();
 		for (Map.Entry<String, String> mapperProp : masterMappings.entrySet()) {
 			Object expectedVal = fetchJPathVal(responseJson, mapperProp.getValue());
-			if (expectedVal.getClass().isInstance(new JSONArray())) {
+			if (expectedVal != null && expectedVal.getClass().isInstance(new JSONArray())) {
 				JSONArray jsonArray = (JSONArray) expectedVal;
 				finalExpectedVal = jsonArray.get(0).toString(); // get First Value from List in case of multiple values
 																// in form of List
