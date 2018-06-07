@@ -1,0 +1,6 @@
+.DS_Store
+.idea/
+Results/
+target/
+test-output/
+homes-api-automation.iml
