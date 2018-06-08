@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.json.JSONObject;
 
 import com.airtel.helper.common.ApiHelper;
@@ -90,7 +91,7 @@ public class MongoHelper extends BaseTestClass {
 	 * @param collectionName
 	 * @return
 	 */
-	public boolean findMongoDocumentAndDeleteIt(MongoClient mongoClient, String key, String mongoValue,
+	public static boolean findMongoDocumentAndDeleteIt(MongoClient mongoClient, String key, String mongoValue,
 			String dataBaseName, String collectionName) {
 		boolean mongoDeleteion = true;
 		BasicDBObject query = MongoHelper.getMongoDBQuery(key, mongoValue);
@@ -118,4 +119,39 @@ public class MongoHelper extends BaseTestClass {
 		return mongoDeleteion;
 
 	}
+
+    /**
+     * this method find a document  on the basis of search key & value  and then update a mongo document
+     * @param mongoClient
+     * @param collectionName
+     * @param dataBaseName
+     * @param searchKey
+     * @param searchValue
+     * @param mongoNewUpdatedObject
+     * @return
+     */
+	public static boolean updateMongoDocument(MongoClient mongoClient, String collectionName,String dataBaseName ,String searchKey,String searchValue,Object mongoNewUpdatedObject)
+    {
+        boolean updateStatus=true;
+        MongoCollection mongoCollection = null;
+        try {
+            mongoCollection = MongoHelper.getCollection(mongoClient, dataBaseName, collectionName);
+            BasicDBObject query = new BasicDBObject();
+            query.append(searchKey, searchValue);
+            BasicDBObject updatedDocument = BasicDBObject.parse(mongoNewUpdatedObject.toString());
+            Bson newDocument = new Document("$set", updatedDocument);
+
+            mongoCollection.findOneAndUpdate(query, newDocument);
+        }catch (Exception e)
+        {
+            updateStatus = false;
+            ReportHelper.logValidationFailure("MongoUpdation", "to update", "not able to updated",
+                    "Error In updating Mongo Document datatabase " + dataBaseName +" collection  :  "+ mongoCollection);
+        }
+
+        return  updateStatus;
+    }
+
+
+
 }
