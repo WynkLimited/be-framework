@@ -63,7 +63,7 @@ public class MongoHelper extends BaseTestClass {
 		MongoCursor mongoCursor = findIterable.iterator();
 		List<Object> mongoAsObjectResult = new ArrayList<>();
 
-		if (mongoCursor.hasNext())
+		while (mongoCursor.hasNext())
 			mongoAsObjectResult.add(mongoCursor.next());
 
 		return mongoAsObjectResult;
@@ -121,7 +121,7 @@ public class MongoHelper extends BaseTestClass {
 	}
 
     /**
-     * this method find a document  on the basis of search key & value  and then update a mongo document
+     * this method find a document  on the basis of search key & value  and then update a mongo document which is passed in parameter as mongoNewUpdatedObject
      * @param mongoClient
      * @param collectionName
      * @param dataBaseName
