@@ -139,6 +139,15 @@ public class ApiResponseValidator {
 		return true;
 	}
 
+	/**
+	 * This method is used to validate Json Schema for a particular JSON againsta a
+	 * valid schema
+	 * 
+	 * @param response
+	 * @param responseSchema
+	 * @param esFieldName
+	 * @return
+	 */
 	public static boolean validateJsonSchema(String response, String responseSchema, String esFieldName) {
 		boolean schemaValidationFlag = false;
 		ComparatorReportGenerator compareHtmlObj = new ComparatorReportGenerator();
@@ -188,10 +197,9 @@ public class ApiResponseValidator {
 			String differenceValue, String parentValue) {
 		ComparatorReportGenerator compareObj = new ComparatorReportGenerator();
 
-			compareObj.appendresultHTMLReport(compareFilePath, FAILURE_LOG_START + operationType + FAILURE_LOG_END,
-					FAILURE_LOG_START + differencePath + FAILURE_LOG_END,
-					FAILURE_LOG_START + parentValue + FAILURE_LOG_END,
-					FAILURE_LOG_START + differenceValue + FAILURE_LOG_END);
+		compareObj.appendresultHTMLReport(compareFilePath, FAILURE_LOG_START + operationType + FAILURE_LOG_END,
+				FAILURE_LOG_START + differencePath + FAILURE_LOG_END, FAILURE_LOG_START + parentValue + FAILURE_LOG_END,
+				FAILURE_LOG_START + differenceValue + FAILURE_LOG_END);
 	}
 
 	private static boolean ignoreFieldOperation(Set<String> ignoreProps, String field) {

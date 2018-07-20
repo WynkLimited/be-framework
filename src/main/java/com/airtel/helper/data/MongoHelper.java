@@ -6,13 +6,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.bson.Document;
+
 import org.bson.conversions.Bson;
 import org.json.JSONObject;
 
 import com.airtel.helper.common.ApiHelper;
 import com.airtel.helper.common.BaseTestClass;
 import com.airtel.helper.report.ReportHelper;
+
 import com.mongodb.BasicDBList;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
@@ -44,20 +47,18 @@ public class MongoHelper extends BaseTestClass {
 		return searchQuery;
 	}
 
-    public static BasicDBObject prepareMongoQueryFromMultipleKeys(Map<String,String> map) {
+	public static BasicDBObject prepareMongoQueryFromMultipleKeys(Map<String, String> map) {
 
-        BasicDBObject andQuery = new BasicDBObject();
-        BasicDBList basicDBList= new BasicDBList();
-        for (Map.Entry<String, String> entry : map.entrySet())
-            basicDBList.add(new BasicDBObject(entry.getKey(), entry.getValue()));
+		BasicDBObject andQuery = new BasicDBObject();
+		BasicDBList basicDBList = new BasicDBList();
+		for (Map.Entry<String, String> entry : map.entrySet())
+			basicDBList.add(new BasicDBObject(entry.getKey(), entry.getValue()));
 
-        andQuery.put("$and", basicDBList);
-        return andQuery;
-    }
+		andQuery.put("$and", basicDBList);
+		return andQuery;
+	}
 
-
-
-    @SuppressWarnings("rawtypes")
+	@SuppressWarnings("rawtypes")
 	public static List<Object> getResultFromMongo(MongoCollection mongoCollection, BasicDBObject searchQuery) {
 		FindIterable findIterable = mongoCollection.find(searchQuery);
 		MongoCursor mongoCursor = findIterable.iterator();
@@ -91,6 +92,7 @@ public class MongoHelper extends BaseTestClass {
 	 * @param collectionName
 	 * @return
 	 */
+
 	public static boolean findMongoDocumentAndDeleteIt(MongoClient mongoClient, String key, String mongoValue,
 			String dataBaseName, String collectionName) {
 		boolean mongoDeleteion = true;
@@ -120,38 +122,38 @@ public class MongoHelper extends BaseTestClass {
 
 	}
 
-    /**
-     * this method find a document  on the basis of search key & value  and then update a mongo document which is passed in parameter as mongoNewUpdatedObject
-     * @param mongoClient
-     * @param collectionName
-     * @param dataBaseName
-     * @param searchKey
-     * @param searchValue
-     * @param mongoNewUpdatedObject
-     * @return
-     */
-	public static boolean updateMongoDocument(MongoClient mongoClient, String collectionName,String dataBaseName ,String searchKey,String searchValue,Object mongoNewUpdatedObject)
-    {
-        boolean updateStatus=true;
-        MongoCollection mongoCollection = null;
-        try {
-            mongoCollection = MongoHelper.getCollection(mongoClient, dataBaseName, collectionName);
-            BasicDBObject query = new BasicDBObject();
-            query.append(searchKey, searchValue);
-            BasicDBObject updatedDocument = BasicDBObject.parse(mongoNewUpdatedObject.toString());
-            Bson newDocument = new Document("$set", updatedDocument);
+	/**
+	 * this method find a document on the basis of search key & value and then
+	 * update a mongo document which is passed in parameter as mongoNewUpdatedObject
+	 * 
+	 * @param mongoClient
+	 * @param collectionName
+	 * @param dataBaseName
+	 * @param searchKey
+	 * @param searchValue
+	 * @param mongoNewUpdatedObject
+	 * @return
+	 */
+	public static boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
+			String searchKey, String searchValue, Object mongoNewUpdatedObject) {
+		boolean updateStatus = true;
+		MongoCollection mongoCollection = null;
+		try {
+			mongoCollection = MongoHelper.getCollection(mongoClient, dataBaseName, collectionName);
+			BasicDBObject query = new BasicDBObject();
+			query.append(searchKey, searchValue);
+			BasicDBObject updatedDocument = BasicDBObject.parse(mongoNewUpdatedObject.toString());
+			Bson newDocument = new Document("$set", updatedDocument);
 
-            mongoCollection.findOneAndUpdate(query, newDocument);
-        }catch (Exception e)
-        {
-            updateStatus = false;
-            ReportHelper.logValidationFailure("MongoUpdation", "to update", "not able to updated",
-                    "Error In updating Mongo Document datatabase " + dataBaseName +" collection  :  "+ mongoCollection);
-        }
+			mongoCollection.findOneAndUpdate(query, newDocument);
+		} catch (Exception e) {
+			updateStatus = false;
+			ReportHelper.logValidationFailure("MongoUpdation", "to update", "not able to updated",
+					"Error In updating Mongo Document datatabase " + dataBaseName + " collection  :  "
+							+ mongoCollection);
+		}
 
-        return  updateStatus;
-    }
-
-
+		return updateStatus;
+	}
 
 }

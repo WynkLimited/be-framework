@@ -36,8 +36,6 @@ public class DbHelper {
 		}
 		return con;
 	}
-	
-	
 
 	/**
 	 * @param connection
@@ -77,6 +75,7 @@ public class DbHelper {
 
 	/**
 	 * This method converts the data returned from DB to List<Map>.
+	 * 
 	 * @param resultSet
 	 * @return
 	 */
@@ -111,8 +110,7 @@ public class DbHelper {
 		}
 		return queryData;
 	}
-	
-	
+
 	/**
 	 * 
 	 * @param connection
@@ -143,35 +141,35 @@ public class DbHelper {
 		closeConnection(connection);
 	}
 
-    public  static  boolean insertDataIntoSQL(Connection connection, String  tableName, Field[] columnsName, List<String> colValues)
-    {
-        try {
-            String commaSepeartedColumnsName="";
-            String commaSepeartedColumnsValue="";
+	public static boolean insertDataIntoSQL(Connection connection, String tableName, Field[] columnsName,
+			List<String> colValues) {
+		try {
+			String commaSepeartedColumnsName = "";
+			String commaSepeartedColumnsValue = "";
 
-            for (int i = 0; i < columnsName.length-1; i++) {
-                commaSepeartedColumnsName =commaSepeartedColumnsName + columnsName[i].getName() + ",";
-                commaSepeartedColumnsValue = commaSepeartedColumnsValue+"?" + ",";
-            }
-            //get comma sepearted list of column Name
-            commaSepeartedColumnsName = commaSepeartedColumnsName +columnsName[columnsName.length - 1].getName();
-            //get comma sepearted list of column Vlaue
-            commaSepeartedColumnsValue = commaSepeartedColumnsValue+" ? ";
+			for (int i = 0; i < columnsName.length - 1; i++) {
+				commaSepeartedColumnsName = commaSepeartedColumnsName + columnsName[i].getName() + ",";
+				commaSepeartedColumnsValue = commaSepeartedColumnsValue + "?" + ",";
+			}
+			// get comma sepearted list of column Name
+			commaSepeartedColumnsName = commaSepeartedColumnsName + columnsName[columnsName.length - 1].getName();
+			// get comma sepearted list of column Vlaue
+			commaSepeartedColumnsValue = commaSepeartedColumnsValue + " ? ";
 
-            String query = "insert into " + tableName + "(" + commaSepeartedColumnsName + ")" + " values (" + commaSepeartedColumnsValue + ")";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            for (int k =0 ;k< colValues.size();k++)
-                preparedStatement.setString(k+1,colValues.get(k));
+			String query = "insert into " + tableName + "(" + commaSepeartedColumnsName + ")" + " values ("
+					+ commaSepeartedColumnsValue + ")";
+			PreparedStatement preparedStatement = connection.prepareStatement(query);
+			for (int k = 0; k < colValues.size(); k++)
+				preparedStatement.setString(k + 1, colValues.get(k));
 
-            // execute the preparedstatement and return result accordingly
-            return  preparedStatement.executeUpdate()==1;
+			// execute the preparedstatement and return result accordingly
+			return preparedStatement.executeUpdate() == 1;
 
-        }catch (Exception e) {
-            Reporter.log(e.getMessage());
-            return false;
-        }
+		} catch (Exception e) {
+			Reporter.log(e.getMessage());
+			return false;
+		}
 
-    }
-
+	}
 
 }

@@ -18,8 +18,6 @@ public class GenericComparator extends ReportHelper {
 	static final String EXPECTED_RESULT = "expectedMap";
 	static final String ACTUAL_RESULT = "actualMap";
 
-
-
 	/**
 	 * This method is used for mapping the values of 2 different JSON into a parent
 	 * JSON of same structure. This will help in comparison of those JSON.

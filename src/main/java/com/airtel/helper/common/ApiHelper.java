@@ -1,12 +1,47 @@
 package com.airtel.helper.common;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringReader;
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+
+import javax.xml.bind.JAXB;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
+import org.testng.Assert;
+import org.testng.Reporter;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+
 import com.airtel.helper.logging.AirtelLoggingMgr;
 import com.airtel.helper.report.FileHelper;
 import com.airtel.helper.report.ReportHelper;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
+
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
@@ -33,6 +68,7 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.security.spec.KeySpec;
 import java.util.*;
+
 
 /**
  * This class contains methods for generic functions over the API that includes
@@ -236,10 +272,8 @@ public class ApiHelper {
 		String requestFilePath = "";
 		if (request != null)
 			requestFilePath = fileHelper.createRequestJsonFile(request, "");
-
 		String responseFilePath = fileHelper.createResponseJsonFile(response, "");
 		String reportFolder = reporter.getResultFileStringPath();
-
 		reporter.appendresultHTMLReport(reportFolder, url, "<a href='" + requestFilePath + "'>Request Data" + "</a>",
 				"<a href='" + responseFilePath + "'>Response Data" + "</a>",
 				"Response Time(in msec) :- " + String.valueOf(responseTime), "", "");
@@ -371,8 +405,7 @@ public class ApiHelper {
 			prop.load(inpStream);
 			return prop.getProperty(keyName);
 		} catch (IOException e) {
-			apiHelperLog.log(Level.ERROR,
-					"Filepath mentioned is not correct and method breaks with exception " + e.getStackTrace());
+			apiHelperLog.log(Level.ERROR, "Filepath mentioned is not correct " + e.getStackTrace());
 			return null;
 		}
 	}
@@ -392,7 +425,7 @@ public class ApiHelper {
 			return prop.stringPropertyNames();
 		} catch (IOException e) {
 			Reporter.log("Filepath mentioned is not correct and method breaks with exception " + e);
-			return null;
+			return new HashSet<>();
 		}
 	}
 
@@ -538,6 +571,23 @@ public class ApiHelper {
 	}
 
 	/**
+<<<<<<< Updated upstream
+=======
+	 * This method will fetch value from JSON at a particular JSON path. Value be
+	 * returned for the class provided as input.
+	 *
+	 * @param inputJson
+	 * @param keyName
+	 * @return
+	 */
+	public static <T> T fetchJPathVal(String inputJson, String keyName, Class<T> classType) {
+		Configuration config = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
+		return classType.cast(Optional.ofNullable(inputJson)
+				.map(body -> JsonPath.using(config).parse(body).read(keyName.trim())).orElse(null));
+	}
+
+	/**
+>>>>>>> Stashed changes
 	 * This method will fetch map of value's at a particular JSON PATH mentioned in
 	 * propertyFilePath
 	 * 
@@ -552,6 +602,7 @@ public class ApiHelper {
 		for (Map.Entry<String, String> mapperProp : masterMappings.entrySet()) {
 			Object expectedVal = fetchJPathVal(responseJson, mapperProp.getValue());
 			if (expectedVal != null && expectedVal.getClass().isInstance(new JSONArray())) {
+
 				JSONArray jsonArray = (JSONArray) expectedVal;
 				finalExpectedVal = jsonArray.get(0).toString(); // get First Value from List in case of multiple values
 																// in form of List
@@ -570,7 +621,6 @@ public class ApiHelper {
      * @param encrypted
      * @return
      */
-
     public static String decryptAPIResponse(String key, String encrypted) {
         try {
             KeySpec keySpec = new DESKeySpec(key.getBytes());
@@ -590,9 +640,5 @@ public class ApiHelper {
             return  "";
         }
     }
-
-
-
-
 
 }

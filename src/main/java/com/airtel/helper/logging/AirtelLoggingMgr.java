@@ -82,7 +82,7 @@ public class AirtelLoggingMgr {
 		ConfigurationSource source = new ConfigurationSource(in);
 		Configuration updated = ConfigurationFactory.getInstance().getConfiguration(loggerContext, source);
 		loggerContext.start(updated);
-
 	}
+	
 
 }

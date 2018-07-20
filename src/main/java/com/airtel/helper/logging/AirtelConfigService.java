@@ -21,7 +21,6 @@ import com.airtel.helper.exception.resourceloader.ResourceNotFoundException;
 @SuppressWarnings("rawtypes")
 public class AirtelConfigService {
 
-	
 	private static HashMap serviceProperty = new HashMap();
 
 	/**
@@ -79,6 +78,7 @@ public class AirtelConfigService {
 
 		try {
 			// get hashmap for this service
+			@SuppressWarnings("rawtypes")
 			HashMap data = getServiceProperties(serviceName);
 
 			// check if we have this data
