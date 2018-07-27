@@ -10,7 +10,7 @@ public interface Constants {
 	String INFLUX_DB_NAME = "api_automation";
 	String INFLUX_USER = "automation";
 	String INFLUX_PASS = "automation";
-	String INFLUX_MEASUREMENT = "automation_stat";
+	String INFLUX_MEASUREMENT = "automation_stats";
 
 	interface ERROR_CODE {
 		String CONFIGURATION_PROPERTY = "ERR_CFG_00";

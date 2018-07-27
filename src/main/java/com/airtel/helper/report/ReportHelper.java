@@ -21,6 +21,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
 import com.airtel.helper.common.BaseTestClass;
+import com.airtel.helper.data.InfluxDbHelper;
 import com.airtel.helper.logging.AirtelLoggingMgr;
 
 public class ReportHelper extends BaseTestClass implements ReportConstants {
@@ -88,8 +89,12 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 			BufferedWriter resultFile = new BufferedWriter(new FileWriter(suiteFileStringPath, true));
 			Date testEndTime = new Date();
 			long testDuration = testEndTime.getTime() - startTime.getTime();
-			
-			// Closing the table for methods
+			String testSuiteName = context.getCurrentXmlTest().getSuite().getFileName();
+			int index = testSuiteName.lastIndexOf('/');
+			testSuiteName = testSuiteName.substring(index + 1);
+
+			InfluxDbHelper.populateAutomationStats(testDuration, testSuiteName, passCount, failCount);
+
 			resultFile.append("</table>");
 			resultFile.append(SUMMARY_REPORT_TEMPLATE);
 
@@ -99,7 +104,7 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 			resultFile.append(SUMMARY_REPORT_ROW_START + "Run End Time" + REPORT_COLUMN_END);
 			resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + testEndTime + "</b></td></tr>");
 
-			resultFile.append(SUMMARY_REPORT_ROW_START + "Test Run Duration" + REPORT_COLUMN_END);
+			resultFile.append(SUMMARY_REPORT_ROW_START + "Test Run Duration(in ms)" + REPORT_COLUMN_END);
 			resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + testDuration + "</b></td></tr>");
 
 			resultFile.append(SUMMARY_REPORT_ROW_START + "Total Tests executed" + REPORT_COLUMN_END);
@@ -111,36 +116,10 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 			resultFile.append(SUMMARY_REPORT_ROW_START + "Total Fail Test count" + REPORT_COLUMN_END);
 			resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + String.valueOf(failCount) + "</b></td></tr>");
 
-			resultFile.append(SUMMARY_REPORT_ROW_START + "Total Suite Name" + REPORT_COLUMN_END);
-			resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + context.getSuite().getName() + "</b></td></tr>");
-			
 			resultFile.append("</table></body></html>");
 			resultFile.close();
 		} catch (Exception ex) {
 			logger.error("Unable to close result file - " + ex);
-		}
-	}
-
-	public void appendMethodInformationInSuite(String scenarioName, String methodName, String methodFilePath,
-			String status) {
-		try {
-			String statusTag = null;
-			if (status.equalsIgnoreCase("Pass")) {
-				statusTag = TEST_PASS_TAG;
-			} else if (status.equalsIgnoreCase("Fail")) {
-				statusTag = TEST_FAIL_TAG;
-			} else {
-				statusTag = "<td>";
-			}
-			BufferedWriter resultFile = new BufferedWriter(new FileWriter(suiteFileStringPath, true));
-			resultFile.append("<tr>");
-			resultFile.append("<td>" + scenarioName + "</td>");
-			resultFile.append("<td><a href='" + methodFilePath + "' />" + methodName + "</td>");
-			resultFile.append(statusTag + status + "</td>");
-			resultFile.append("</tr>");
-			resultFile.close();
-		} catch (IOException e) {
-			logger.error("Error in appending information to suite - " + e);
 		}
 	}
 
@@ -149,8 +128,7 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 		try {
 			UUID randNo = UUID.randomUUID();
 
-			resultFileStringPath = resultFolderpath + File.pathSeparator + method.getName().toString() + "_" + randNo
-					+ ".html";
+			resultFileStringPath = resultFolderpath + "/" + method.getName().toString() + "_" + randNo + ".html";
 			BufferedWriter resultFile = new BufferedWriter(new FileWriter(resultFileStringPath, true));
 			resultFile.append(REQ_RESP_LOG_TEMPLATE);
 			resultFile.close();
@@ -163,7 +141,7 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 
 	@AfterMethod(alwaysRun = true)
 	public void appendFinalHTMLReport(ITestResult result) {
-		
+
 		ITestNGMethod testNGMethod = result.getMethod();
 		try {
 			int number = testNGMethod.getCurrentInvocationCount();
@@ -194,6 +172,29 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 		}
 	}
 
+	public void appendMethodInformationInSuite(String scenarioName, String methodName, String methodFilePath,
+			String status) {
+		try {
+			String statusTag = null;
+			if (status.equalsIgnoreCase("Pass")) {
+				statusTag = TEST_PASS_TAG;
+			} else if (status.equalsIgnoreCase("Fail")) {
+				statusTag = TEST_FAIL_TAG;
+			} else {
+				statusTag = "<td>";
+			}
+			BufferedWriter resultFile = new BufferedWriter(new FileWriter(suiteFileStringPath, true));
+			resultFile.append("<tr>");
+			resultFile.append("<td>" + scenarioName + "</td>");
+			resultFile.append("<td><a href='" + methodFilePath + "' />" + methodName + "</td>");
+			resultFile.append(statusTag + status + "</td>");
+			resultFile.append("</tr>");
+			resultFile.close();
+		} catch (IOException e) {
+			logger.error("Error in appending information to suite - " + e);
+		}
+	}
+
 	public void appendresultHTMLReport(String resultFileStringPath, String apiURL, String requestFile,
 			String responseFile, String message, String status, String comment) {
 		try {
@@ -219,7 +220,7 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 			resultFile.close();
 
 		} catch (Exception e) {
-			logger.error("Append to HTML failed - " + e);
+			logger.error("Append to HTML failed - " + e.getStackTrace());
 		}
 	}
 
