@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.lang.reflect.Type;
+import java.security.spec.KeySpec;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +18,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.DESKeySpec;
 import javax.xml.bind.JAXB;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -49,26 +55,6 @@ import io.restassured.http.Headers;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import net.minidev.json.JSONArray;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-import org.json.JSONObject;
-import org.testng.Assert;
-import org.testng.Reporter;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.DESKeySpec;
-import javax.xml.bind.JAXB;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.*;
-import java.lang.reflect.Type;
-import java.security.spec.KeySpec;
-import java.util.*;
-
 
 /**
  * This class contains methods for generic functions over the API that includes
@@ -91,7 +77,7 @@ public class ApiHelper {
 			}
 		}
 
-		if (headers!=null)
+		if (headers != null)
 			request.headers(new Headers(headers));
 		if (body != null && !body.isEmpty()) {
 			request.body(body);
@@ -571,10 +557,8 @@ public class ApiHelper {
 	}
 
 	/**
-<<<<<<< Updated upstream
-=======
-	 * This method will fetch value from JSON at a particular JSON path. Value be
-	 * returned for the class provided as input.
+	 * This method will fetch value from JSON at a
+	 * particular JSON path. Value be returned for the class provided as input.
 	 *
 	 * @param inputJson
 	 * @param keyName
@@ -587,9 +571,8 @@ public class ApiHelper {
 	}
 
 	/**
->>>>>>> Stashed changes
-	 * This method will fetch map of value's at a particular JSON PATH mentioned in
-	 * propertyFilePath
+	 * This method will fetch map of value's at a particular
+	 * JSON PATH mentioned in propertyFilePath
 	 * 
 	 * @param responseJson
 	 * @param propertyFilePath
@@ -605,7 +588,6 @@ public class ApiHelper {
 
 				JSONArray jsonArray = (JSONArray) expectedVal;
 				finalExpectedVal = jsonArray.get(0).toString(); // get First Value from List in case of multiple values
-																// in form of List
 			} else
 				finalExpectedVal = String.valueOf(expectedVal); // incase Of String putting as it is
 
@@ -615,30 +597,29 @@ public class ApiHelper {
 		return expectedMap;
 	}
 
-    /**
-     * This method decrpyts api response on the basis of googleCookie in  Response header
-     * @param key
-     * @param encrypted
-     * @return
-     */
-    public static String decryptAPIResponse(String key, String encrypted) {
-        try {
-            KeySpec keySpec = new DESKeySpec(key.getBytes());
+	/**
+	 * This method decrpyts api response on the basis of googleCookie in Response
+	 * header
+	 * 
+	 * @param key
+	 * @param encrypted
+	 * @return
+	 */
+	public static String decryptAPIResponse(String key, String encrypted) {
+		try {
+			KeySpec keySpec = new DESKeySpec(key.getBytes());
+			SecretKey secretKey = SecretKeyFactory.getInstance("DES").generateSecret(keySpec);
+			Cipher cipher = Cipher.getInstance("DES");
+			cipher.init(Cipher.DECRYPT_MODE, secretKey);
+			String encryptedData = encrypted.replaceAll("\"", "");
+			byte[] original = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
+			return new String(original);
+		} catch (Exception e) {
 
-            SecretKey secretKey = SecretKeyFactory.getInstance("DES").generateSecret(keySpec);
-
-            Cipher cipher = Cipher.getInstance("DES");
-            cipher.init(Cipher.DECRYPT_MODE, secretKey);
-
-            String encryptedData= encrypted.replaceAll("\"", "");
-            byte[] original = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
-
-            return new String(original);
-        } catch (Exception e) {
-
-            ReportHelper.reporterLogging(false,"Error in decrypting API response. Key = "+key+" Response = "+encrypted);
-            return  "";
-        }
-    }
+			ReportHelper.reporterLogging(false,
+					"Error in decrypting API response. Key = " + key + " Response = " + encrypted);
+			return "";
+		}
+	}
 
 }

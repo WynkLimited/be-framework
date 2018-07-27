@@ -2,18 +2,16 @@ package com.airtel.helper.report;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
+import org.testng.ITestContext;
 import org.testng.ITestNGMethod;
 import org.testng.ITestResult;
 import org.testng.Reporter;
@@ -85,21 +83,25 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 	}
 
 	@AfterSuite(alwaysRun = true)
-	public void afterSuite() {
+	public void afterSuite(ITestContext context) {
 		try {
 			BufferedWriter resultFile = new BufferedWriter(new FileWriter(suiteFileStringPath, true));
-			Date date = new Date();
-			SimpleDateFormat oDateFormat = new SimpleDateFormat("dd/MMM/yyyy hh:mm:s");
-			String sRunEndTime = oDateFormat.format(date);
-			String sRunStartTime = oDateFormat.format(startTime);
-
+			Date testEndTime = new Date();
+			long testDuration = testEndTime.getTime() - startTime.getTime();
+			
+			// Closing the table for methods
 			resultFile.append("</table>");
 			resultFile.append(SUMMARY_REPORT_TEMPLATE);
+
 			resultFile.append(SUMMARY_REPORT_ROW_START + "Run Start Time" + REPORT_COLUMN_END);
-			resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + sRunStartTime + "</b></td></tr>");
+			resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + startTime + "</b></td></tr>");
 
 			resultFile.append(SUMMARY_REPORT_ROW_START + "Run End Time" + REPORT_COLUMN_END);
-			resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + sRunEndTime + "</b></td></tr>");
+			resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + testEndTime + "</b></td></tr>");
+
+			resultFile.append(SUMMARY_REPORT_ROW_START + "Test Run Duration" + REPORT_COLUMN_END);
+			resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + testDuration + "</b></td></tr>");
+
 			resultFile.append(SUMMARY_REPORT_ROW_START + "Total Tests executed" + REPORT_COLUMN_END);
 			resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + String.valueOf(passCount + failCount) + "</b></td></tr>");
 
@@ -109,6 +111,9 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 			resultFile.append(SUMMARY_REPORT_ROW_START + "Total Fail Test count" + REPORT_COLUMN_END);
 			resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + String.valueOf(failCount) + "</b></td></tr>");
 
+			resultFile.append(SUMMARY_REPORT_ROW_START + "Total Suite Name" + REPORT_COLUMN_END);
+			resultFile.append(SUMMARY_REPORT_VALUE_TEMPLATE + context.getSuite().getName() + "</b></td></tr>");
+			
 			resultFile.append("</table></body></html>");
 			resultFile.close();
 		} catch (Exception ex) {
@@ -144,7 +149,8 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 		try {
 			UUID randNo = UUID.randomUUID();
 
-			resultFileStringPath = resultFolderpath + "/" + method.getName().toString() + "_" + randNo + ".html";
+			resultFileStringPath = resultFolderpath + File.pathSeparator + method.getName().toString() + "_" + randNo
+					+ ".html";
 			BufferedWriter resultFile = new BufferedWriter(new FileWriter(resultFileStringPath, true));
 			resultFile.append(REQ_RESP_LOG_TEMPLATE);
 			resultFile.close();
@@ -157,7 +163,7 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 
 	@AfterMethod(alwaysRun = true)
 	public void appendFinalHTMLReport(ITestResult result) {
-
+		
 		ITestNGMethod testNGMethod = result.getMethod();
 		try {
 			int number = testNGMethod.getCurrentInvocationCount();
@@ -170,7 +176,7 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 			} else if (result.getStatus() == ITestResult.SUCCESS) {
 				passCount = passCount + 1;
 			}
-			
+
 			count = count + 1;
 			String resultFilePath = resultFileStringPath.split("/Results")[1];
 			resultFilePath = "." + resultFilePath;
@@ -214,33 +220,6 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 
 		} catch (Exception e) {
 			logger.error("Append to HTML failed - " + e);
-		}
-	}
-
-	public void addDirToZipArchive(ZipOutputStream zos, File fileToZip, String parrentDirectoryName) throws Exception {
-		if (fileToZip == null || !fileToZip.exists()) {
-			return;
-		}
-
-		String zipEntryName = fileToZip.getName();
-		if (parrentDirectoryName != null && !parrentDirectoryName.isEmpty()) {
-			zipEntryName = parrentDirectoryName + "/" + fileToZip.getName();
-		}
-
-		if (fileToZip.isDirectory()) {
-			for (File file : fileToZip.listFiles()) {
-				addDirToZipArchive(zos, file, zipEntryName);
-			}
-		} else {
-			byte[] buffer = new byte[1024];
-			FileInputStream fis = new FileInputStream(fileToZip);
-			zos.putNextEntry(new ZipEntry(zipEntryName));
-			int length;
-			while ((length = fis.read(buffer)) > 0) {
-				zos.write(buffer, 0, length);
-			}
-			zos.closeEntry();
-			fis.close();
 		}
 	}
 
