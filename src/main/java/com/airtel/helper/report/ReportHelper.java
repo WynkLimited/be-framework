@@ -91,7 +91,7 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 			long testDuration = testEndTime.getTime() - startTime.getTime();
 			String testSuiteName = context.getCurrentXmlTest().getSuite().getFileName();
 			int index = testSuiteName.lastIndexOf('/');
-			testSuiteName = testSuiteName.substring(index + 1);
+			testSuiteName = testSuiteName.substring(index + 1).replace(".xml", "");
 
 			InfluxDbHelper.populateAutomationStats(testDuration, testSuiteName, passCount, failCount);
 
