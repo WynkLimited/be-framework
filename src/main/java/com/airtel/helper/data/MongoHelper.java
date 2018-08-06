@@ -1,28 +1,23 @@
 package com.airtel.helper.data;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import com.google.gson.Gson;
-import org.bson.Document;
-
-import org.bson.conversions.Bson;
-import org.json.JSONObject;
-
 import com.airtel.helper.common.ApiHelper;
 import com.airtel.helper.common.BaseTestClass;
 import com.airtel.helper.report.ReportHelper;
-
 import com.mongodb.BasicDBList;
-
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by b0200202 on 12/6/17.
@@ -169,44 +164,10 @@ public class MongoHelper extends BaseTestClass {
 	 */
 	public List<JSONObject> fetchDataFromMongoForMultipleKeys(MongoClient mongoClient,Map<String,String> map, String dataBaseName, String collectionName) {
 
-		BasicDBObject query = MongoHelper.prepareMongoQueryFromMultipleKeys(map);
-		MongoCollection mongoCollection = MongoHelper.getCollection(mongoClient, dataBaseName, collectionName);
-		List<Object> mongoResult = MongoHelper.getResultFromMongo(mongoCollection, query);
-		return MongoHelper.parseMongoDocuments(mongoResult);
-	}
-
-
-	/**
-	 * This method will convert the list of json returned from mongo to list of  particular class type using GSON
-	 * @param jsonObjectListOfMongo
-	 * @param classType
-	 * @param <T>
-	 * @return
-	 */
-	public <T> List<T> convertFromJsonToInputClassList(List<JSONObject> jsonObjectListOfMongo, Class<T> classType) {
-		Gson gson= new Gson();
-		T requiredClass =null;
-
-		List<T>  requiredResponseList =new ArrayList<T>();
-		if (!jsonObjectListOfMongo.isEmpty()){
-			Iterator<JSONObject> mongoObjectIteartor = jsonObjectListOfMongo.iterator();
-
-			while (mongoObjectIteartor.hasNext()) {
-				JSONObject mongoObject = mongoObjectIteartor.next();
-
-				try {
-					requiredClass = gson.fromJson(mongoObject.toString(),classType);
-				}catch (Exception e)
-				{
-					ReportHelper.reporterLogging(false,"Exception in Gnson while Mapping mongo Object to Specific class for ID "+mongoObject.get("_id")+e.getStackTrace());
-				}
-
-				requiredResponseList.add(requiredClass);
-			}
-			return requiredResponseList;
-		}
-		else
-			return  new ArrayList<T>();
+		BasicDBObject query =prepareMongoQueryFromMultipleKeys(map);
+		MongoCollection mongoCollection = getCollection(mongoClient, dataBaseName, collectionName);
+		List<Object> mongoResult = getResultFromMongo(mongoCollection, query);
+		return parseMongoDocuments(mongoResult);
 	}
 
 }
