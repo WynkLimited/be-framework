@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.Gson;
 import org.bson.Document;
 
 import org.bson.conversions.Bson;
@@ -154,6 +155,58 @@ public class MongoHelper extends BaseTestClass {
 		}
 
 		return updateStatus;
+	}
+
+
+
+	/**
+	 * This method will fetch data from mongo for multiple keys
+	 * @param mongoClient
+	 * @param map
+	 * @param dataBaseName
+	 * @param collectionName
+	 * @return
+	 */
+	public List<JSONObject> fetchDataFromMongoForMultipleKeys(MongoClient mongoClient,Map<String,String> map, String dataBaseName, String collectionName) {
+
+		BasicDBObject query = MongoHelper.prepareMongoQueryFromMultipleKeys(map);
+		MongoCollection mongoCollection = MongoHelper.getCollection(mongoClient, dataBaseName, collectionName);
+		List<Object> mongoResult = MongoHelper.getResultFromMongo(mongoCollection, query);
+		return MongoHelper.parseMongoDocuments(mongoResult);
+	}
+
+
+	/**
+	 * This method will convert the list of json returned from mongo to list of  particular class type using GSON
+	 * @param jsonObjectListOfMongo
+	 * @param classType
+	 * @param <T>
+	 * @return
+	 */
+	public <T> List<T> convertFromJsonToInputClassList(List<JSONObject> jsonObjectListOfMongo, Class<T> classType) {
+		Gson gson= new Gson();
+		T requiredClass =null;
+
+		List<T>  requiredResponseList =new ArrayList<T>();
+		if (!jsonObjectListOfMongo.isEmpty()){
+			Iterator<JSONObject> mongoObjectIteartor = jsonObjectListOfMongo.iterator();
+
+			while (mongoObjectIteartor.hasNext()) {
+				JSONObject mongoObject = mongoObjectIteartor.next();
+
+				try {
+					requiredClass = gson.fromJson(mongoObject.toString(),classType);
+				}catch (Exception e)
+				{
+					ReportHelper.reporterLogging(false,"Exception in Gnson while Mapping mongo Object to Specific class for ID "+mongoObject.get("_id")+e.getStackTrace());
+				}
+
+				requiredResponseList.add(requiredClass);
+			}
+			return requiredResponseList;
+		}
+		else
+			return  new ArrayList<T>();
 	}
 
 }
