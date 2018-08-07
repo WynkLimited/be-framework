@@ -1,27 +1,23 @@
 package com.airtel.helper.data;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.bson.Document;
-
-import org.bson.conversions.Bson;
-import org.json.JSONObject;
-
 import com.airtel.helper.common.ApiHelper;
 import com.airtel.helper.common.BaseTestClass;
 import com.airtel.helper.report.ReportHelper;
-
 import com.mongodb.BasicDBList;
-
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by b0200202 on 12/6/17.
@@ -154,6 +150,24 @@ public class MongoHelper extends BaseTestClass {
 		}
 
 		return updateStatus;
+	}
+
+
+
+	/**
+	 * This method will fetch data from mongo for multiple keys
+	 * @param mongoClient
+	 * @param map
+	 * @param dataBaseName
+	 * @param collectionName
+	 * @return
+	 */
+	public List<JSONObject> fetchDataFromMongoForMultipleKeys(MongoClient mongoClient,Map<String,String> map, String dataBaseName, String collectionName) {
+
+		BasicDBObject query =prepareMongoQueryFromMultipleKeys(map);
+		MongoCollection mongoCollection = getCollection(mongoClient, dataBaseName, collectionName);
+		List<Object> mongoResult = getResultFromMongo(mongoCollection, query);
+		return parseMongoDocuments(mongoResult);
 	}
 
 }
