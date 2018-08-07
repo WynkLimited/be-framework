@@ -3,23 +3,28 @@ package com.airtel.helper.report;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.crypto.SecretKey;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 import org.testng.Reporter;
-import org.testng.asserts.SoftAssert;
+
+import com.airtel.helper.logging.AirtelLoggingMgr;
 
 public class FileHelper {
 
-	public static final String DESEDE_ENCRYPTION_SCHEME = "DESede";
+	static final String DESEDE_ENCRYPTION_SCHEME = "DESede";
+	private static Logger logger = AirtelLoggingMgr.getLogger(FileHelper.class);
 	byte[] keyAsBytes;
 	SecretKey key;
-
-	public static SoftAssert softAssert = new SoftAssert();
 
 	public void writeToFile(String str, String fileName, boolean appendToFile) {
 		File file = null;
@@ -32,16 +37,13 @@ public class FileHelper {
 			writer.close();
 
 		} catch (IOException e) {
-			softAssert.assertTrue(false, "Error in writng to file..");
-			e.printStackTrace();
+			logger.log(Level.ERROR, "Not able to write to a file - " + e);
 		}
 	}
 
 	public String getFileAbsolutePath(String partialFilePath, String filename) {
-
 		String path = null;
-
-		File file = new File(partialFilePath + "/" + filename);
+		File file = new File(partialFilePath + File.separator + filename);
 
 		path = file.getAbsolutePath();
 
@@ -67,13 +69,13 @@ public class FileHelper {
 			}
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.log(Level.ERROR, "Error while reading from a file - " + e);
 		} finally {
 			try {
 				if (br != null)
 					br.close();
 			} catch (IOException ex) {
-				ex.printStackTrace();
+				logger.log(Level.ERROR, "Error while closing file to read - " + ex);
 			}
 		}
 		finalStr = str.toString();
@@ -96,11 +98,11 @@ public class FileHelper {
 			BufferedWriter resultFile = new BufferedWriter(new FileWriter(requestFilePath, true));
 			resultFile.append(jsonMsg);
 			resultFile.close();
+			requestFilePath = "." + requestFilePath.split(report.getResultFolderpath())[1];
+			Reporter.log("<br><a href='" + requestFilePath + "'>Request_" + fileName + "</a><br>");
 		} catch (Exception e) {
-			Reporter.log("<br>" + e.getMessage() + "<br>");
+			logger.log(Level.ERROR, "Error while creating JSON file - " + e);
 		}
-		requestFilePath = "." + requestFilePath.split(report.getResultFolderpath())[1];
-		Reporter.log("<br><a href='" + requestFilePath + "'>Request_" + fileName + "</a><br>");
 		return requestFilePath;
 	}
 
@@ -120,11 +122,11 @@ public class FileHelper {
 			BufferedWriter resultFile = new BufferedWriter(new FileWriter(responseFilePath, true));
 			resultFile.append(jsonMsg);
 			resultFile.close();
+			responseFilePath = "." + responseFilePath.split(report.getResultFolderpath())[1];
+			Reporter.log("<br><a href='" + responseFilePath + "'>Response_" + fileName + "</a><br>");
 		} catch (Exception e) {
-			Reporter.log("<br>" + e.getMessage() + "<br>");
+			logger.log(Level.ERROR, "Error while creating reponse JSON file - " + e);
 		}
-		responseFilePath = "." + responseFilePath.split(report.getResultFolderpath())[1];
-		Reporter.log("<br><a href='" + responseFilePath + "'>Response_" + fileName + "</a><br>");
 		return responseFilePath;
 	}
 
@@ -135,8 +137,33 @@ public class FileHelper {
 		try {
 			file.createNewFile();
 		} catch (IOException e) {
+			logger.error("Exception occured on making file empty" + e);
+		}
+	}
 
-			e.printStackTrace();
+	public void addDirToZipArchive(ZipOutputStream zos, File fileToZip, String parrentDirectoryName) throws Exception {
+		if (fileToZip == null || !fileToZip.exists()) {
+			return;
+		}
+
+		String zipEntryName = fileToZip.getName();
+		if (parrentDirectoryName != null && !parrentDirectoryName.isEmpty()) {
+			zipEntryName = parrentDirectoryName + "/" + fileToZip.getName();
+		}
+		if (fileToZip.isDirectory()) {
+			for (File file : fileToZip.listFiles()) {
+				addDirToZipArchive(zos, file, zipEntryName);
+			}
+		} else {
+			byte[] buffer = new byte[1024];
+			FileInputStream fis = new FileInputStream(fileToZip);
+			zos.putNextEntry(new ZipEntry(zipEntryName));
+			int length;
+			while ((length = fis.read(buffer)) > 0) {
+				zos.write(buffer, 0, length);
+			}
+			zos.closeEntry();
+			fis.close();
 		}
 	}
 }

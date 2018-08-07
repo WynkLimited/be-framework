@@ -21,16 +21,19 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class ExcelHelper {
 
 	/**
-	 * This method returns the values present in excel in a List of Map. Key of map is the name of the column and value is corresponding to the value of a cell at the row. 
+	 * This method returns the values present in excel in a List of Map. Key of map
+	 * is the name of the column and value is corresponding to the value of a cell
+	 * at the row.
+	 * 
 	 * @param fileName
 	 * @param sheetNo
 	 * @return
 	 */
 	public static List<Map<String, String>> fetchDataExcel(String fileName, int sheetNo) {
 		File dataFile = new File(fileName);
-		List<Map<String, String>> resultantData = new ArrayList<Map<String, String>>();
+		List<Map<String, String>> resultantData = new ArrayList<>();
 
-		Map<Integer, String> columnMapping = new HashMap<Integer, String>();
+		Map<Integer, String> columnMapping = new HashMap<>();
 		try {
 			int startRow = 1;
 			int startCol = 0;
@@ -63,10 +66,10 @@ public class ExcelHelper {
 			}
 			workbook.close();
 		} catch (FileNotFoundException e) {
-			throw new RuntimeException("File " + fileName + " was not found" + e.getStackTrace().toString());
+			throw new RuntimeException("File " + fileName + " was not found" + e.getStackTrace());
 
 		} catch (IOException e) {
-			throw new RuntimeException("Can't Read Excel " + fileName + e.getStackTrace().toString());
+			throw new RuntimeException("Can't Read Excel " + fileName + e.getStackTrace());
 		}
 		return resultantData;
 	}
@@ -97,28 +100,22 @@ public class ExcelHelper {
 				for (startCol = 0; startCol < totalcolumns; startCol++, cj++) {
 
 					Cell cell = datatypeSheet.getRow(startRow).getCell(startCol);
-					if (cell == null) {
-						testDataObject[ci][cj] = null;
-					} else {
+					testDataObject[ci][cj] = null;
+					if (cell != null) {
 						switch (cell.getCellType()) {
-						case Cell.CELL_TYPE_STRING: {
+						case Cell.CELL_TYPE_STRING:
 							testDataObject[ci][cj] = cell.getStringCellValue().equalsIgnoreCase("null") ? null
 									: cell.getStringCellValue();
 							break;
-						}
-						case Cell.CELL_TYPE_NUMERIC: {
+						case Cell.CELL_TYPE_NUMERIC:
 							testDataObject[ci][cj] = cell.getNumericCellValue();
 							break;
-						}
-						case Cell.CELL_TYPE_BOOLEAN: {
+						case Cell.CELL_TYPE_BOOLEAN:
 							testDataObject[ci][cj] = cell.getBooleanCellValue();
 							break;
-						}
-						case Cell.CELL_TYPE_BLANK: {
+						case Cell.CELL_TYPE_BLANK:
 							testDataObject[ci][cj] = "";
 							break;
-						}
-						default:
 						}
 					}
 

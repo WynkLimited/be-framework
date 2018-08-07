@@ -1,7 +1,7 @@
 
-package com.airtel.common.helper.exception.resourceloader;
+package com.airtel.helper.exception.resourceloader;
 
-import com.airtel.common.helper.exception.GenericException;
+import com.airtel.helper.exception.GenericException;
 
 
 /**

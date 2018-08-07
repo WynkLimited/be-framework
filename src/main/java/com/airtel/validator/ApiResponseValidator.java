@@ -1,7 +1,9 @@
 package com.airtel.validator;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.testng.Reporter;
 
@@ -27,9 +29,12 @@ import com.github.fge.jsonschema.main.JsonValidator;
  * @author b0202849
  */
 public class ApiResponseValidator {
-	 static final String OPERATION = "op";
-	 static final String DIFFERENCE_PATH = "path";
-	 static final String DIFFERENCE_VALUE = "value";
+
+	static final String OPERATION = "op";
+	static final String DIFFERENCE_PATH = "path";
+	static final String DIFFERENCE_VALUE = "value";
+	static final String FAILURE_LOG_START = "";
+	static final String FAILURE_LOG_END = "";
 
 	/**
 	 * This method compares two json and log the difference b/w those JSON. This
@@ -71,6 +76,11 @@ public class ApiResponseValidator {
 	 */
 	public static boolean compareJsonWithRequest(String responseExpected, String responseActual, String request,
 			String propFilePath) {
+		return compareJson(responseExpected, responseActual, request, propFilePath, null);
+	}
+
+	public static boolean compareJson(String responseExpected, String responseActual, String request,
+			String propFilePath, String ignoreOperation) {
 		ComparatorReportGenerator compareHtmlObj = new ComparatorReportGenerator();
 		try {
 			String compareFilePath = null;
@@ -79,38 +89,38 @@ public class ApiResponseValidator {
 			if (request == null) {
 				compareFilePath = compareHtmlObj.createCompartarReport();
 			} else {
-				compareFilePath = compareHtmlObj.createCompartarReportWithReq(request);
+				compareFilePath = compareHtmlObj.createCompartorReport(request);
 			}
+
 			linkCompareFilePath = "./comparatorReport/" + compareFilePath.split("comparatorReport")[1];
 
 			int differenceCounter = 0;
 			// Extracting JSON data to JSON node and comparing them
+
 			ObjectMapper objMapper = new ObjectMapper();
 			JsonNode responseExp = objMapper.readTree(responseExpected);
 			JsonNode responseAct = objMapper.readTree(responseActual);
 			JsonNode jsonDiff = JsonDiff.asJson(responseExp, responseAct);
 			Set<String> dndCompareValues = null;
+
 			if (propFilePath != null && !propFilePath.isEmpty()) {
 				dndCompareValues = ApiHelper.getAllProperty(propFilePath);
 			}
 
 			for (int diffCount = 0; diffCount < jsonDiff.size(); diffCount++) {
 				String diffPath = jsonDiff.get(diffCount).get(DIFFERENCE_PATH).asText();
-
-				if (dndCompareValues == null || !dndCompareValues.contains(diffPath)) {
+				String operationType = jsonDiff.get(diffCount).get(OPERATION).asText();
+				if ((dndCompareValues == null || !ignoreFieldOperation(dndCompareValues, diffPath))
+						&& !(ignoreOperation != null && operationType.equalsIgnoreCase(ignoreOperation))) {
 					differenceCounter++;
-					String operationType = jsonDiff.get(diffCount).get(OPERATION).asText();
+
 					JsonNode diffValueJsonNode = jsonDiff.get(diffCount).get(DIFFERENCE_VALUE);
-					String diffValue = null;
-					if (diffValueJsonNode != null)
-						diffValue = jsonDiff.get(diffCount).get(DIFFERENCE_VALUE).asText();
-					String parentValue = "";
 
-					if (responseExp.at(diffPath) != null) {
-						parentValue = responseExp.at(diffPath).asText();
-					}
+					String diffValue = Optional.ofNullable(diffValueJsonNode)
+							.map(dataValue -> diffValueJsonNode.asText()).orElse(null);
+					String parentValue = Optional.ofNullable(responseExp.at(diffPath))
+							.map(value -> responseExp.at(diffPath).asText()).orElse(null);
 
-					logFailure(operationType.toUpperCase(), diffPath, diffValue, parentValue);
 					logFailureInReporter(compareFilePath, operationType.toUpperCase(), diffPath, diffValue,
 							parentValue);
 				}
@@ -123,12 +133,21 @@ public class ApiResponseValidator {
 				ReportHelper.reporterLogging(false, differenceHTMLLink);
 				return false;
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			ReportHelper.logValidationFailure("Exception in comparison", "", e.getMessage(), "Exception");
 		}
 		return true;
 	}
 
+	/**
+	 * This method is used to validate Json Schema for a particular JSON againsta a
+	 * valid schema
+	 * 
+	 * @param response
+	 * @param responseSchema
+	 * @param esFieldName
+	 * @return
+	 */
 	public static boolean validateJsonSchema(String response, String responseSchema, String esFieldName) {
 		boolean schemaValidationFlag = false;
 		ComparatorReportGenerator compareHtmlObj = new ComparatorReportGenerator();
@@ -146,7 +165,6 @@ public class ApiResponseValidator {
 			if (!errorReport.isSuccess()) {
 				for (ProcessingMessage msg : errorReport) {
 					if (msg.getLogLevel().toString().equalsIgnoreCase("error")) {
-						schemaValidationFlag = false;
 						errorText += msg.getMessage() + "<br/>";
 					}
 				}
@@ -178,22 +196,21 @@ public class ApiResponseValidator {
 	private static void logFailureInReporter(String compareFilePath, String operationType, String differencePath,
 			String differenceValue, String parentValue) {
 		ComparatorReportGenerator compareObj = new ComparatorReportGenerator();
-		try {
-			compareObj.appendresultHTMLReport(compareFilePath,
-					"<textarea disabled rows='7' cols='55'>" + operationType + "</textarea>",
-					"<textarea disabled rows='7' cols='55'>" + differencePath + "</textarea>",
-					"<textarea disabled rows='7' cols='55'>" + parentValue + "</textarea>",
-					"<textarea disabled rows='7' cols='55'>" + differenceValue + "</textarea>");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+
+		compareObj.appendresultHTMLReport(compareFilePath, FAILURE_LOG_START + operationType + FAILURE_LOG_END,
+				FAILURE_LOG_START + differencePath + FAILURE_LOG_END, FAILURE_LOG_START + parentValue + FAILURE_LOG_END,
+				FAILURE_LOG_START + differenceValue + FAILURE_LOG_END);
 	}
 
-	private static void logFailure(String operationType, String path, String qaEnvValue, String liveEnvValue) {
-		Reporter.log("<font size='2'><b>Difference Type - </b>" + operationType + "</font>");
-		Reporter.log("<font size='1'><b>Jpath - </b>" + path + "</font>");
-		Reporter.log("<font size='1'><b>QA Env value - </b>" + qaEnvValue + "</font>");
-		Reporter.log("<font size='1'><b>Live Env value - </b>" + liveEnvValue + "</font>");
-		Reporter.log("<br/>");
+	private static boolean ignoreFieldOperation(Set<String> ignoreProps, String field) {
+		boolean ignoreField = false;
+		for (String ignoreProperty : ignoreProps) {
+			if (Pattern.matches(ignoreProperty, field)) {
+				ignoreField = true;
+				break;
+			}
+		}
+		return ignoreField;
 	}
+
 }

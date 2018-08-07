@@ -44,11 +44,10 @@ public class DataHelper {
 	}
 
 	public static List<String> executeShelCommand(String command) {
-		List<String> outputData = new ArrayList<String>();
+		List<String> outputData = new ArrayList<>();
 		try {
 			String dataString = null;
-			Process execCommand = Runtime.getRuntime().exec(new String[] { "/bin/sh", "-c",
-					command });
+			Process execCommand = Runtime.getRuntime().exec(new String[] { "/bin/sh", "-c", command });
 			BufferedReader commandRespReader = new BufferedReader(new InputStreamReader(execCommand.getInputStream()));
 			while ((dataString = commandRespReader.readLine()) != null) {
 				outputData.add(dataString);
