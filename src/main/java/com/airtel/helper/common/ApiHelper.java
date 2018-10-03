@@ -587,10 +587,9 @@ public class ApiHelper {
 			if (expectedVal != null && expectedVal.getClass().isInstance(new JSONArray())) {
 
 				JSONArray jsonArray = (JSONArray) expectedVal;
-				finalExpectedVal = jsonArray.get(0).toString(); // get First Value from List in case of multiple values
+				finalExpectedVal = jsonArray.get(0)!=null?jsonArray.get(0).toString():null; // get First Value from List in case of multiple values
 			} else
-				finalExpectedVal = String.valueOf(expectedVal); // incase Of String putting as it is
-
+				finalExpectedVal = expectedVal==null?null:String.valueOf(expectedVal); // incase Of String or null values  putting  it as it is
 			expectedMap.put(mapperProp.getKey(), finalExpectedVal);
 
 		}
