@@ -145,10 +145,10 @@ public class ApiResponseValidator {
 	 * 
 	 * @param response
 	 * @param responseSchema
-	 * @param esFieldName
+	 * @param id
 	 * @return
 	 */
-	public static boolean validateJsonSchema(String response, String responseSchema, String esFieldName) {
+	public static boolean validateJsonSchema(String response, String responseSchema, String id) {
 		boolean schemaValidationFlag = false;
 		ComparatorReportGenerator compareHtmlObj = new ComparatorReportGenerator();
 		try {
@@ -161,7 +161,7 @@ public class ApiResponseValidator {
 			JsonSchemaFactory factory = JsonSchemaFactory.byDefault();
 			JsonValidator schemaValidator = factory.getValidator();
 			ProcessingReport errorReport = schemaValidator.validate(jsonSchema, jsonResponse);
-			String errorText = "Schema validation failures - in " + esFieldName + " :";
+			String errorText = "Schema validation failures - for id - " + id + " :";
 			if (!errorReport.isSuccess()) {
 				for (ProcessingMessage msg : errorReport) {
 					if (msg.getLogLevel().toString().equalsIgnoreCase("error")) {
@@ -169,7 +169,7 @@ public class ApiResponseValidator {
 					}
 				}
 				Reporter.log(errorText);
-				logFailureInReporter(compareFilePath, "ES log comparison", "-", errorText, "-");
+				logFailureInReporter(compareFilePath, "JSON SCHEMA  COMPARISION", "-", errorText, "-");
 				compareHtmlObj.appendFinalHTMLReport(compareFilePath);
 				String differenceHTMLLink = "<a href='" + linkCompareFilePath + "'>Differences Link</a>";
 				ReportHelper.reporterLogging(false, differenceHTMLLink);

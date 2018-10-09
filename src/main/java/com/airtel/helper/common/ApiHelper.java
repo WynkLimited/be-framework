@@ -72,9 +72,7 @@ public class ApiHelper {
 			String body, ContentType contentType) {
 		RequestSpecification request = RestAssured.given().relaxedHTTPSValidation().redirects().follow(false);
 		if (null != queryParams) {
-			for (Map.Entry<String, String> keyValue : queryParams.entrySet()) {
-				request.param(keyValue.getKey(), keyValue.getValue());
-			}
+			request.queryParams(queryParams);
 		}
 
 		if (headers != null)
@@ -252,6 +250,24 @@ public class ApiHelper {
 	public static Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
 			String url, boolean checkStatus) {
 		return fetchApiResponse(url, "POST", body, null, headers, contentType, checkStatus);
+	}
+
+
+	/**
+	 * This method will be used for getting response of POST request with headers with query params
+	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
+	 * value as false/true.
+	 * @param body
+	 * @param headers
+	 * @param contentType
+	 * @param url
+	 * @param queryParams
+	 * @param checkStatus
+	 * @return
+	 */
+	public static Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
+												   String url,Map<String, String> queryParams,boolean checkStatus) {
+		return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus);
 	}
 
 	private static void logRequestResponse(String request, String response, String url, long responseTime) {
