@@ -152,6 +152,39 @@ public class MongoHelper extends BaseTestClass {
 		return updateStatus;
 	}
 
+	/**
+	 * this method find a document on the basis of search key & value and then
+	 * update a mongo document which is passed in parameter as mongoNewUpdatedObject as it is without converting it to string
+	 *
+	 * @param mongoClient
+	 * @param collectionName
+	 * @param dataBaseName
+	 * @param searchKey
+	 * @param searchValue
+	 * @param mongoNewUpdatedObject
+	 * @return
+	 */
+	public static boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
+											  String searchKey, String searchValue, Map mongoNewUpdatedObject) {
+		boolean updateStatus = true;
+		MongoCollection mongoCollection = null;
+		try {
+			mongoCollection = MongoHelper.getCollection(mongoClient, dataBaseName, collectionName);
+			BasicDBObject query = new BasicDBObject();
+			query.append(searchKey, searchValue);
+			Bson newDocument = new Document("$set", mongoNewUpdatedObject);
+			mongoCollection.findOneAndUpdate(query, newDocument);
+		} catch (Exception e) {
+			updateStatus = false;
+			ReportHelper.logValidationFailure("MongoUpdation", "to update", "not able to updated",
+					"Error In updating Mongo Document datatabase " + dataBaseName + " collection  :  "
+							+ mongoCollection);
+		}
+
+		return updateStatus;
+	}
+
+
 
 
 	/**
