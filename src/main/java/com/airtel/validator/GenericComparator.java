@@ -52,11 +52,11 @@ public class GenericComparator extends ReportHelper {
 	 *
 	 * @param mapperProperties
 	 */
-	public static Map<String, Map<String, String>> fieldMapperString(String expectedApiResp, String actualApiResp,
+	public static Map<String, Map<String, Object>> fieldMapperString(String expectedApiResp, String actualApiResp,
 															   Map<String, String> mapperProperties) {
-		Map<String, Map<String, String>> resultMap = new HashMap<>();
-		Map<String, String> expectedResp = new HashMap<>();
-		Map<String, String> actualResp = new HashMap<>();
+		Map<String, Map<String, Object>> resultMap = new HashMap<>();
+		Map<String, Object> expectedResp = new HashMap<>();
+		Map<String, Object> actualResp = new HashMap<>();
 		for (Map.Entry<String, String> mapperProp : mapperProperties.entrySet()) {
 			String actualRespField = mapperProp.getValue();
 			String fieldName = actualRespField.replace("$.", "").replace("[*]", "").replace("=true", "");
@@ -68,14 +68,14 @@ public class GenericComparator extends ReportHelper {
 			}
 
 			if(expectedVal==null) {
-				expectedResp.put(fieldName,null);
+				expectedResp.put(fieldName,expectedVal);
 			}
 			else {
 				expectedResp.put(fieldName,expectedVal.toString());
 			}
 
 			if(actualVal==null) {
-				actualResp.put(fieldName, null);
+				actualResp.put(fieldName, actualVal);
 			}
 			else {
 				actualResp.put(fieldName, actualVal.toString());
@@ -129,33 +129,8 @@ public class GenericComparator extends ReportHelper {
 	 */
 	public static boolean mappedResponseValidator(String expectedJson, String actualJson, String propertyFilePath,
 			String testCaseName) {
-		Map<String, String> mapperProperties;
-		mapperProperties=convertPropertiesIntoMap(testCaseName,propertyFilePath);
-
-		Map<String, Map<String, Object>> resultMap = fieldMapper(expectedJson, actualJson, mapperProperties);
-		String expectedResp = ApiHelper.convertToJson(resultMap.get(EXPECTED_RESULT));
-		String actualResp = ApiHelper.convertToJson(resultMap.get(ACTUAL_RESULT));
-
-		return ApiResponseValidator.compareJson(expectedResp, actualResp, null, null, "move");
-	}
-
-	private static Map<String,String> convertPropertiesIntoMap(String testCaseName,String propertyFilePath)
-	{
-		Map<String, String> mapperProperties = new HashMap<>();
-		if (testCaseName != null) {
-			Map<String, String> masterMappings = ApiHelper.fetchAllProperties(propertyFilePath);
-			for (Map.Entry<String, String> masterMapping : masterMappings.entrySet()) {
-				if (masterMapping.getKey().startsWith(testCaseName)) {
-					String[] responseMap = masterMapping.getValue().split("=");
-					mapperProperties.put(responseMap[0], responseMap[1]);
+			return mappedResponseValidator(expectedJson,actualJson,propertyFilePath,testCaseName,false);
 				}
-			}
-		} else {
-			mapperProperties = ApiHelper.fetchAllProperties(propertyFilePath);
-		}
-
-		return mapperProperties;
-	}
 
 	/**
 	 * This method is used to compare 2 JSON with different key name for same values
@@ -179,24 +154,32 @@ public class GenericComparator extends ReportHelper {
 	 */
 	public static boolean mappedResponseValidator(String expectedJson, String actualJson, String propertyFilePath,
 												  String testCaseName,boolean isDataTypeComparisonRequired) {
-		Map<String, String> mapperProperties;
-		String expectedResp=null;
-		String actualResp=null;
+		Map<String, String> mapperProperties = new HashMap<>();
+		Map<String, Map<String, Object>> resultMap;
 
-		mapperProperties=convertPropertiesIntoMap(testCaseName,propertyFilePath);
+		if (testCaseName != null) {
+			Map<String, String> masterMappings = ApiHelper.fetchAllProperties(propertyFilePath);
+			for (Map.Entry<String, String> masterMapping : masterMappings.entrySet()) {
+				if (masterMapping.getKey().startsWith(testCaseName)) {
+					String[] responseMap = masterMapping.getValue().split("=");
+					mapperProperties.put(responseMap[0], responseMap[1]);
+				}
+			}
+		} else {
+			mapperProperties = ApiHelper.fetchAllProperties(propertyFilePath);
+		}
 
 		if(isDataTypeComparisonRequired) {
-			Map<String, Map<String, Object>> resultMap = fieldMapper(expectedJson, actualJson, mapperProperties);
+			resultMap = fieldMapper(expectedJson, actualJson, mapperProperties);
 
-			expectedResp = ApiHelper.convertToJson(resultMap.get(EXPECTED_RESULT));
-			actualResp = ApiHelper.convertToJson(resultMap.get(ACTUAL_RESULT));
 		}
 		else {
-			Map<String, Map<String, String>> resultMap = fieldMapperString(expectedJson, actualJson, mapperProperties);
-
-			expectedResp = ApiHelper.convertToJson(resultMap.get(EXPECTED_RESULT));
-			actualResp = ApiHelper.convertToJson(resultMap.get(ACTUAL_RESULT));
+			resultMap = fieldMapperString(expectedJson, actualJson, mapperProperties);
 		}
+
+		String expectedResp = ApiHelper.convertToJson(resultMap.get(EXPECTED_RESULT));
+		String actualResp = ApiHelper.convertToJson(resultMap.get(ACTUAL_RESULT));
+
 
 		return ApiResponseValidator.compareJson(expectedResp, actualResp, null, null, "move");
 	}
