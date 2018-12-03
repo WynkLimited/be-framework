@@ -50,6 +50,18 @@ public class DbHelper {
 		return convertResultToMap(result);
 	}
 
+	/**
+	 * @param connection
+	 * @param query
+	 * @return int - This output will be number in int which Specifies
+	 *         number of rows affected by The Query.The output will be -1 in
+	 *         case of any Exception.The Output will be 1 in case of 1 row is affected.
+	 */
+	public static int updateDeleteDataFromDb(Connection connection,String query)
+	{
+		return executeUpdate(connection,query);
+	}
+
 	private static ResultSet executeQuery(Connection connection, String query) {
 		ResultSet result = null;
 		try {
@@ -60,6 +72,22 @@ public class DbHelper {
 		} catch (SQLException e) {
 			ReportHelper.logValidationFailure("Couldn't get db connection", "DB connection", e.getMessage(),
 					"DB connection failure");
+		}
+
+		return result;
+	}
+
+	private static int executeUpdate(Connection connection, String query) {
+		int result = 0;
+
+		try {
+			if (connection != null) {
+				Statement stmt = connection.createStatement();
+				result = stmt.executeUpdate(query);
+			}
+		} catch (SQLException var4) {
+			ReportHelper.logValidationFailure("Couldn't get db connection", "DB connection", var4.getMessage(), "DB connection failure");
+			return -1;
 		}
 
 		return result;
