@@ -84,6 +84,7 @@ public class DbHelper {
 			if (connection != null) {
 				Statement stmt = connection.createStatement();
 				result = stmt.executeUpdate(query);
+				connection.commit();
 			}
 		} catch (SQLException var4) {
 			ReportHelper.logValidationFailure("Couldn't get db connection", "DB connection", var4.getMessage(), "DB connection failure");
