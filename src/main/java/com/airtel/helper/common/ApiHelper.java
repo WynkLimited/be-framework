@@ -637,4 +637,75 @@ public class ApiHelper {
 		}
 	}
 
+	/**
+	 * This method will be used for getting response of POST request with headers.
+	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
+	 * value as false/true.
+	 * 
+	 * @param body
+	 * @param headers
+	 * @param contentType
+	 * @param url
+	 * @param statusCode
+	 * @return
+	 */
+	public static Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
+			String url, int statusCode) {
+		return fetchApiResponse(url, "POST", body, null, headers, contentType, statusCode);
+	}
+	
+	/**
+	 * Generic method to fetch response for different type of API request
+	 * 
+	 * @param requestUrl
+	 * @param requestType
+	 * @param body
+	 * @param queryParams
+	 * @param headers
+	 * @param statusCode
+	 * @return
+	 */
+	public static Response fetchApiResponse(String requestUrl, String requestType, String body,
+			Map<String, String> queryParams, List<Header> headers, ContentType contentType, int statusCode) {
+
+		Response apiResponse = null;
+		String requestLog = null;
+		RequestSpecification apiRequest = prepareRequestParams(queryParams, headers, body, contentType);
+
+		requestLog = "Request body: " + body;
+
+		if (queryParams != null)
+			requestLog = requestLog + "Query Params:" + queryParams.toString();
+
+		switch (requestType) {
+		case "GET":
+			apiResponse = apiRequest.get(requestUrl);
+			break;
+		case "POST":
+			apiResponse = apiRequest.post(requestUrl);
+			break;
+		case "PATCH":
+			apiResponse = apiRequest.patch(requestUrl);
+			break;
+		case "DELETE":
+			apiResponse = apiRequest.delete(requestUrl);
+			break;
+		default:
+			apiResponse = apiRequest.head(requestUrl);
+			break;
+		}
+
+		long responseTime = apiResponse.getTime();
+		 logRequestResponse(requestLog, formatResponse(apiResponse), requestUrl,
+		 responseTime);
+		if (apiResponse.getStatusCode() != statusCode) {
+			ReportHelper.logValidationFailure("HTTP Status code not " + Integer.toString(statusCode),
+					Integer.toString(statusCode), Integer.toString(apiResponse.getStatusCode()),
+					"HTTP status check failure");
+			Assert.assertTrue(false);
+		}
+		return apiResponse;
+	}
+
+	
 }
