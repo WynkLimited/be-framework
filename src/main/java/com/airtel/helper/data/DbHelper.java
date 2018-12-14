@@ -57,7 +57,7 @@ public class DbHelper {
 	 *         number of rows affected by The Query.The output will be -1 in
 	 *         case of any Exception.The Output will be 1 in case of 1 row is affected.
 	 */
-	private static int updateDeleteDataFromDb(Connection connection, String query) {
+	public static int updateDeleteDataFromDb(Connection connection, String query) {
 		int result = 0;
 
 		try {
