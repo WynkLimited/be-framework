@@ -71,14 +71,14 @@ public class GenericComparator extends ReportHelper {
 				expectedResp.put(fieldName,expectedVal);
 			}
 			else {
-				expectedResp.put(fieldName,expectedVal.toString());
+				expectedResp.put(fieldName,ApiHelper.convertJsonArrayObjToStringObj(expectedVal));
 			}
 
 			if(actualVal==null) {
 				actualResp.put(fieldName, actualVal);
 			}
 			else {
-				actualResp.put(fieldName, actualVal.toString());
+				actualResp.put(fieldName, ApiHelper.convertJsonArrayObjToStringObj(actualVal));
 			}
 
 		}

@@ -28,7 +28,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.testng.Assert;
 import org.testng.Reporter;
 import org.w3c.dom.Document;
@@ -707,5 +709,47 @@ public class ApiHelper {
 		return apiResponse;
 	}
 
-	
+	/**
+	 * This method is used to convert object to jsonArray if
+	 * it is JsonArray else it will return null.
+	 *
+	 * @param object
+	 * @return
+	 */
+	public static org.json.JSONArray objectToJSONArray(Object object){
+		Object json = null;
+		org.json.JSONArray jsonArray = null;
+		try {
+			json = new JSONTokener(object.toString()).nextValue();
+		} catch (JSONException e) {
+			apiHelperLog.log(Level.ERROR, "Json is not valid " + e.getStackTrace());
+			e.printStackTrace();
+		}
+		if (json instanceof org.json.JSONArray) {
+			jsonArray = (org.json.JSONArray) json;
+		}
+		return jsonArray;
+	}
+
+	/**
+	 * This method is used to convert Json Array Object
+	 * and its values to String Object
+	 *
+	 * @param object
+	 * @return
+	 */
+	public static Object convertJsonArrayObjToStringObj(Object object)
+	{
+		org.json.JSONArray jsonArray=objectToJSONArray(object);
+		org.json.JSONArray destJsonarray=new org.json.JSONArray();
+
+		if(jsonArray!=null) {
+
+			for (int i = 0; i < jsonArray.length(); i++) {
+				destJsonarray.put(jsonArray.get(i).toString());
+			}
+			return destJsonarray.toString();
+		}else {
+			return object.toString();}
+	}
 }
