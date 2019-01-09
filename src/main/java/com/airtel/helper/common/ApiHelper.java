@@ -768,6 +768,9 @@ public class ApiHelper {
             case "POST":
                 apiResponse = apiRequest.post(requestUrl);
                 break;
+            case "PUT":
+                apiResponse = apiRequest.put(requestUrl);
+                break;
             case "PATCH":
                 apiResponse = apiRequest.patch(requestUrl);
                 break;
