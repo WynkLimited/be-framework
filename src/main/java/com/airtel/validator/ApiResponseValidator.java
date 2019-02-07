@@ -168,7 +168,7 @@ public class ApiResponseValidator {
 						errorText += msg.getMessage() + "<br/>";
 					}
 				}
-				Reporter.log(errorText);
+				ReportHelper.reporterLogging(false,errorText);
 				logFailureInReporter(compareFilePath, "JSON SCHEMA  COMPARISION", "-", errorText, "-");
 				compareHtmlObj.appendFinalHTMLReport(compareFilePath);
 				String differenceHTMLLink = "<a href='" + linkCompareFilePath + "'>Differences Link</a>";
@@ -177,10 +177,9 @@ public class ApiResponseValidator {
 				schemaValidationFlag = true;
 
 		} catch (IOException e) {
-			Reporter.log("Couldn't convert schema because of error " + e.getLocalizedMessage());
+			ReportHelper.reporterLogging(false,"Couldn't convert schema because of error " + e.getLocalizedMessage());
 		} catch (ProcessingException e) {
-			Reporter.log("Couldn't process report " + e.getLocalizedMessage());
-
+			ReportHelper.reporterLogging(false,"Couldn't process report " + e.getLocalizedMessage());
 		}
 		return schemaValidationFlag;
 	}

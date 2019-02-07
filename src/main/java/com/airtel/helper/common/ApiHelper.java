@@ -8,15 +8,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.lang.reflect.Type;
 import java.security.spec.KeySpec;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -28,7 +20,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.testng.Assert;
 import org.testng.Reporter;
 import org.w3c.dom.Document;
@@ -631,16 +625,42 @@ public class ApiHelper {
         return value;
     }
 
-    @SuppressWarnings("unchecked")
-    public static Object sortArray(Object unsortedArrayObj) {
-        JSONArray unsortedArray = (JSONArray) unsortedArrayObj;
-        @SuppressWarnings("rawtypes")
-        Set sortedArray = new TreeSet<>();
-        for (int arrayIterator = 0; arrayIterator < unsortedArray.size(); arrayIterator++) {
-            sortedArray.add(unsortedArray.get(arrayIterator));
-        }
-        return sortedArray;
-    }
+	/**
+	 * This method sort  array of object fetched from jspath and on the bases of value of json ,
+	 * sort them using Treemap
+	 * @param unsortedArrayObj
+	 * @return
+	 */
+	public static Object sortArray(Object unsortedArrayObj) {
+
+		ArrayList sortedArray = new ArrayList();
+		TreeMap<Object, Integer> treeMap = new TreeMap();
+
+		JSONArray unsortedArray = (JSONArray) unsortedArrayObj;
+		for (int arrayIterator = 0; arrayIterator < unsortedArray.size(); arrayIterator++) {
+			Object arrayValue = unsortedArray.get(arrayIterator);
+			try {
+				if (treeMap.containsKey(arrayValue)) {
+					Integer val = treeMap.get(arrayValue);
+					treeMap.put(arrayValue, ++val);
+				} else {
+					treeMap.put(arrayValue, 1);
+				}
+			} catch (ClassCastException castException) {
+				ReportHelper.reporterLogging(false, "data type mismatch for same key in a json with value :" + arrayValue);
+			}
+		}
+
+		for (Map.Entry<Object, Integer> entry : treeMap.entrySet())
+
+			for (int i = 0; i < entry.getValue(); i++) {
+				sortedArray.add(entry.getKey());
+			}
+
+
+		return sortedArray;
+
+	}
 
     /**
      * This method will fetch value from JSON at a particular JSON path. Value be
@@ -794,5 +814,47 @@ public class ApiHelper {
         return apiResponse;
     }
 
+	/**
+	 * This method is used to convert object to jsonArray if
+	 * it is JsonArray else it will return null.
+	 *
+	 * @param object
+	 * @return
+	 */
+	public static org.json.JSONArray objectToJSONArray(Object object){
+		Object json = null;
+		org.json.JSONArray jsonArray = null;
+		try {
+			json = new JSONTokener(object.toString()).nextValue();
+		} catch (JSONException e) {
+			apiHelperLog.log(Level.ERROR, "Json is not valid " + e.getStackTrace());
+			e.printStackTrace();
+		}
+		if (json instanceof org.json.JSONArray) {
+			jsonArray = (org.json.JSONArray) json;
+		}
+		return jsonArray;
+	}
 
+	/**
+	 * This method is used to convert Json Array Object
+	 * and its values to String Object
+	 *
+	 * @param object
+	 * @return
+	 */
+	public static Object convertJsonArrayObjToStringObj(Object object)
+	{
+		org.json.JSONArray jsonArray=objectToJSONArray(object);
+		org.json.JSONArray destJsonarray=new org.json.JSONArray();
+
+		if(jsonArray!=null) {
+
+			for (int i = 0; i < jsonArray.length(); i++) {
+				destJsonarray.put(jsonArray.get(i).toString());
+			}
+			return destJsonarray.toString();
+		}else {
+			return object.toString();}
+	}
 }
