@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.airtel.api-automation</groupId>
 	<artifactId>api-automation-framework</artifactId>
-	<version>1.4.2</version>
+	<version>1.4.9</version>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jre.level>1.8</jre.level>
@@ -108,7 +108,7 @@
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongo-java-driver</artifactId>
-			<version>3.4.1</version>
+			<version>3.8.2</version>
 		</dependency>
 		<dependency>
 			<groupId>com.aerospike</groupId>

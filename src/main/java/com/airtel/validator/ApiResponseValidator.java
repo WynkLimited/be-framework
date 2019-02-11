@@ -145,10 +145,10 @@ public class ApiResponseValidator {
 	 * 
 	 * @param response
 	 * @param responseSchema
-	 * @param esFieldName
+	 * @param id
 	 * @return
 	 */
-	public static boolean validateJsonSchema(String response, String responseSchema, String esFieldName) {
+	public static boolean validateJsonSchema(String response, String responseSchema, String id) {
 		boolean schemaValidationFlag = false;
 		ComparatorReportGenerator compareHtmlObj = new ComparatorReportGenerator();
 		try {
@@ -161,15 +161,15 @@ public class ApiResponseValidator {
 			JsonSchemaFactory factory = JsonSchemaFactory.byDefault();
 			JsonValidator schemaValidator = factory.getValidator();
 			ProcessingReport errorReport = schemaValidator.validate(jsonSchema, jsonResponse);
-			String errorText = "Schema validation failures - in " + esFieldName + " :";
+			String errorText = "Schema validation failures - for id - " + id + " :";
 			if (!errorReport.isSuccess()) {
 				for (ProcessingMessage msg : errorReport) {
 					if (msg.getLogLevel().toString().equalsIgnoreCase("error")) {
 						errorText += msg.getMessage() + "<br/>";
 					}
 				}
-				Reporter.log(errorText);
-				logFailureInReporter(compareFilePath, "ES log comparison", "-", errorText, "-");
+				ReportHelper.reporterLogging(false,errorText);
+				logFailureInReporter(compareFilePath, "JSON SCHEMA  COMPARISION", "-", errorText, "-");
 				compareHtmlObj.appendFinalHTMLReport(compareFilePath);
 				String differenceHTMLLink = "<a href='" + linkCompareFilePath + "'>Differences Link</a>";
 				ReportHelper.reporterLogging(false, differenceHTMLLink);
@@ -177,10 +177,9 @@ public class ApiResponseValidator {
 				schemaValidationFlag = true;
 
 		} catch (IOException e) {
-			Reporter.log("Couldn't convert schema because of error " + e.getLocalizedMessage());
+			ReportHelper.reporterLogging(false,"Couldn't convert schema because of error " + e.getLocalizedMessage());
 		} catch (ProcessingException e) {
-			Reporter.log("Couldn't process report " + e.getLocalizedMessage());
-
+			ReportHelper.reporterLogging(false,"Couldn't process report " + e.getLocalizedMessage());
 		}
 		return schemaValidationFlag;
 	}
