@@ -22,6 +22,10 @@ public class DbHelper {
 		return createDbConnection(environment, sid, "1521");
 	}
 
+	public static Connection createDbConnectionWithPort(String environment, String sid, String port) {
+		return createDbConnection(environment, sid, port);
+	}
+	
 	public static Connection createDbConnection(String environment, String sid, String port) {
 		Connection con = null;
 		String dbServerIp = ApiHelper.getValueOfProperty(CONFIGURATION_FILE_PATH, environment + "_IP");
