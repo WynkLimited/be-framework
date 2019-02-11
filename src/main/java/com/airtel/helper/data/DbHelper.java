@@ -76,7 +76,7 @@ public class DbHelper {
 		return result;
 	}
 
-	private static ResultSet executeQuery(Connection connection, String query) {
+	public static ResultSet executeQuery(Connection connection, String query) {
 		ResultSet result = null;
 		try {
 			if (connection != null) {
