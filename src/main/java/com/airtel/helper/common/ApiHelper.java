@@ -857,4 +857,22 @@ public class ApiHelper {
 		}else {
 			return object.toString();}
 	}
+	
+	/**
+	 * This method will be used for getting response of POST request with headers and query parameters.
+	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
+	 * value as false/true.
+	 * 
+	 * @param body
+	 * @param queryParams
+	 * @param headers
+	 * @param contentType
+	 * @param url
+	 * @param checkStatus
+	 * @return
+	 */
+	public static Response postResponseWithHeaders(String body,Map<String,String> queryParams, List<Header> headers, ContentType contentType,
+			String url, boolean checkStatus) {
+		return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus);
+	}
 }

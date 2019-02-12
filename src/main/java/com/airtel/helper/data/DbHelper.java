@@ -21,7 +21,7 @@ public class DbHelper {
 	public static Connection createDbConnection(String environment, String sid) {
 		return createDbConnection(environment, sid, "1521");
 	}
-
+	
 	public static Connection createDbConnection(String environment, String sid, String port) {
 		Connection con = null;
 		String dbServerIp = ApiHelper.getValueOfProperty(CONFIGURATION_FILE_PATH, environment + "_IP");
@@ -72,7 +72,7 @@ public class DbHelper {
 		return result;
 	}
 
-	private static ResultSet executeQuery(Connection connection, String query) {
+	public static ResultSet executeQuery(Connection connection, String query) {
 		ResultSet result = null;
 		try {
 			if (connection != null) {
@@ -101,7 +101,7 @@ public class DbHelper {
 	 * @param resultSet
 	 * @return
 	 */
-	private static List<Map<String, String>> convertResultToMap(ResultSet resultSet) {
+	public static List<Map<String, String>> convertResultToMap(ResultSet resultSet) {
 		List<Map<String, String>> queryData = new ArrayList<>();
 		try {
 			int columnLength = resultSet.getMetaData().getColumnCount();
