@@ -631,36 +631,15 @@ public class ApiHelper {
 	 * @param unsortedArrayObj
 	 * @return
 	 */
-	public static Object sortArray(Object unsortedArrayObj) {
+    public static Object sortArray(Object unsortedArrayObj) {
+            Set sortedArray = new TreeSet<>();
+            JSONArray unsortedArray = (JSONArray) unsortedArrayObj;
+            for (int arrayIterator = 0; arrayIterator < unsortedArray.size(); arrayIterator++) {
+                sortedArray.add(unsortedArray.get(arrayIterator));
+            }
+            return sortedArray;
+    }
 
-		ArrayList sortedArray = new ArrayList();
-		TreeMap<Object, Integer> treeMap = new TreeMap();
-
-		JSONArray unsortedArray = (JSONArray) unsortedArrayObj;
-		for (int arrayIterator = 0; arrayIterator < unsortedArray.size(); arrayIterator++) {
-			Object arrayValue = unsortedArray.get(arrayIterator);
-			try {
-				if (treeMap.containsKey(arrayValue)) {
-					Integer val = treeMap.get(arrayValue);
-					treeMap.put(arrayValue, ++val);
-				} else {
-					treeMap.put(arrayValue, 1);
-				}
-			} catch (ClassCastException castException) {
-				ReportHelper.reporterLogging(false, "data type mismatch for same key in a json with value :" + arrayValue);
-			}
-		}
-
-		for (Map.Entry<Object, Integer> entry : treeMap.entrySet())
-
-			for (int i = 0; i < entry.getValue(); i++) {
-				sortedArray.add(entry.getKey());
-			}
-
-
-		return sortedArray;
-
-	}
 
     /**
      * This method will fetch value from JSON at a particular JSON path. Value be
