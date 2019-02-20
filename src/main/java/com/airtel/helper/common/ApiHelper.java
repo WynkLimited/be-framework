@@ -626,8 +626,7 @@ public class ApiHelper {
     }
 
 	/**
-	 * This method sort  array of object fetched from jspath and on the bases of value of json ,
-	 * sort them using Treemap
+	 * This method sort  array of object fetched from jspath and on the bases of value of json
 	 * @param unsortedArrayObj
 	 * @return
 	 */
