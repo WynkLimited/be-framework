@@ -19,8 +19,8 @@ public abstract class BaseManager extends ApiHelper implements IManager, IDbHelp
 
     public Connection createDbConnection(String server, String username, String password, String sid, String port) {
 
-        this._dbConnection = new DbHelper(server, username, password, sid, port);
-        return this._dbConnection.createDbConnection();
+        this._dbConnection = new DbHelper();
+        return this._dbConnection.createDbConnection(server, sid, port, username, password);
     }
 
     @Override
