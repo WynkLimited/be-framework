@@ -25,7 +25,7 @@ import com.airtel.helper.common.BaseTestClass;
 import com.airtel.helper.data.InfluxDbHelper;
 import com.airtel.helper.logging.AirtelLoggingMgr;
 
-public class ReportHelper extends BaseTestClass implements ReportConstants {
+public class ReportHelper implements ReportConstants {
 
     static int count = 0;
     static int passCount = 0;

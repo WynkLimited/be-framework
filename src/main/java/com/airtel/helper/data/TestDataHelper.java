@@ -2,6 +2,7 @@ package com.airtel.helper.data;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -15,8 +16,10 @@ import com.airtel.helper.common.BaseTestClass;
 
 import static com.airtel.helper.data.DbHelper.CONFIGURATION_FILE_PATH;
 
-public class TestDataHelper extends BaseTestClass {
+public class TestDataHelper extends DataHelper {
 
+
+    Connection connection;
 
     @DataProvider(name = "dbDataProvider")
     protected Iterator<Object[]> getDataFromDB(Method method) {
@@ -32,9 +35,9 @@ public class TestDataHelper extends BaseTestClass {
         String dbEnvironment = queryData.get(1);
         String sid = queryData.get(2);
 
-        String dbServerIp = ApiHelper.getValueOfProperty(CONFIGURATION_FILE_PATH, dbEnvironment + "_IP");
-        String userName = ApiHelper.getValueOfProperty(CONFIGURATION_FILE_PATH, dbEnvironment + "_USER");
-        String password = ApiHelper.getValueOfProperty(CONFIGURATION_FILE_PATH, dbEnvironment + "_PASSWORD");
+        String dbServerIp = getValueOfProperty(CONFIGURATION_FILE_PATH, dbEnvironment + "_IP");
+        String userName = getValueOfProperty(CONFIGURATION_FILE_PATH, dbEnvironment + "_USER");
+        String password = getValueOfProperty(CONFIGURATION_FILE_PATH, dbEnvironment + "_PASSWORD");
         String port = "1521";
         DbHelper dbhelper = new DbHelper();
 
