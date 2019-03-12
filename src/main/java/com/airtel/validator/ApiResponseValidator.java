@@ -29,7 +29,7 @@ import com.github.fge.jsonschema.main.JsonValidator;
  *
  * @author b0202849
  */
-public abstract class ApiResponseValidator extends JsonParser {
+public class ApiResponseValidator extends JsonParser {
 
     final String OPERATION = "op";
     final String DIFFERENCE_PATH = "path";
