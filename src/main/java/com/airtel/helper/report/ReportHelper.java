@@ -162,6 +162,11 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
                     }
                 }
             }
+            if(scenario.equals("")){
+                if(result.getMethod().getDescription() != null){
+                    scenario = result.getMethod().getDescription();
+                }
+            }
 
             if (result.getStatus() == ITestResult.FAILURE) {
                 status = "Fail";
