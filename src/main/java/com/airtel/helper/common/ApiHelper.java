@@ -853,4 +853,19 @@ public class ApiHelper {
 			String url, boolean checkStatus) {
 		return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus);
 	}
+	
+	 /**
+     * This method will be used for getting response of GET request with headers.
+     * This method will verify and validate response code .
+     *
+     * @param queryParams
+     * @param headers
+     * @param url
+     * @param checkStatus
+     * @return
+     */
+    public static Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url,
+                                                  int checkStatus) {
+        return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus);
+    }
 }
