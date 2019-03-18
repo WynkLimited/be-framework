@@ -37,7 +37,7 @@ public class MongoHelper extends BaseTestClass {
 
 	}
 
-	public static BasicDBObject getMongoDBQuery(String key, String value) {
+	public static BasicDBObject getMongoDBQuery(String key, Object value) {
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put(key, value);
 		return searchQuery;
@@ -89,7 +89,7 @@ public class MongoHelper extends BaseTestClass {
 	 * @return
 	 */
 
-	public static boolean findMongoDocumentAndDeleteIt(MongoClient mongoClient, String key, String mongoValue,
+	public static boolean findMongoDocumentAndDeleteIt(MongoClient mongoClient, String key, Object mongoValue,
 			String dataBaseName, String collectionName) {
 		boolean mongoDeleteion = true;
 		BasicDBObject query = MongoHelper.getMongoDBQuery(key, mongoValue);

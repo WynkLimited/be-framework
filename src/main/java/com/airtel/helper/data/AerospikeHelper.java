@@ -4,15 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.aerospike.client.AerospikeClient;
-import com.aerospike.client.Bin;
-import com.aerospike.client.Host;
-import com.aerospike.client.Key;
-import com.aerospike.client.Record;
+import com.aerospike.client.*;
 import com.aerospike.client.policy.BatchPolicy;
 import com.aerospike.client.policy.ClientPolicy;
+import com.aerospike.client.policy.ScanPolicy;
 import com.aerospike.client.policy.WritePolicy;
 import com.airtel.helper.common.BaseTestClass;
+import com.airtel.helper.report.ReportHelper;
 
 /**
  * Created by b0200202 on 12/6/17.
@@ -53,6 +51,28 @@ public class AerospikeHelper extends BaseTestClass {
 		Key key = new Key(namespace, setName, value);
 		Record record = client.get(null, key, binName);
 		return record;
+	}
+
+	public static boolean deleteAllRecordsFromSet(AerospikeClient client,String namespace,String set)
+	{
+		try {
+			ScanPolicy scanPolicy = new ScanPolicy();
+			/*
+   		* scan the entire Set using scannAll(). This will scan each node
+   	 	* in the cluster and return the record Digest to the call back object
+   		*/
+			client.scanAll(scanPolicy, namespace, set, (key, record) -> {
+		/*
+		* for each Digest returned, delete it using delete()
+		*/
+				client.delete(new WritePolicy(), key);
+
+			}, new String[] {});
+			return true;
+		} catch (AerospikeException e) {
+			ReportHelper.reporterLogging(false,e.toString());
+			return false;
+		}
 	}
 
 	public static void writeRecordForAKey(AerospikeClient client, String namespace, String setName, String value,

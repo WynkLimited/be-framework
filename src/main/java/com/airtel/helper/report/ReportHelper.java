@@ -151,7 +151,7 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 
             if (result.getParameters().length != 0) {
                 for (Object parameter : result.getParameters()) {
-                    if (parameter instanceof Map && (((Map) (parameter)).containsKey("TC_DESCRIPTION")) || ((Map) (parameter)).containsKey("TCDESCRIPTION")) {
+                    if (parameter instanceof Map && ((((Map) (parameter)).containsKey("TC_DESCRIPTION")) || ((Map) (parameter)).containsKey("TCDESCRIPTION"))) {
 
                         if (((Map) (parameter)).containsKey("TC_DESCRIPTION"))
                             scenario = ((Map) (parameter)).get("TC_DESCRIPTION").toString();
@@ -160,6 +160,11 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 
                         break;
                     }
+                }
+            }
+            if(scenario.equals("")){
+                if(result.getMethod().getDescription() != null){
+                    scenario = result.getMethod().getDescription();
                 }
             }
 
