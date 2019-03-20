@@ -184,6 +184,25 @@ public class MongoHelper extends BaseTestClass {
 		return updateStatus;
 	}
 
+	public static boolean updateMultipleMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
+											  String searchKey, String searchValue, Map mongoNewUpdatedObject) {
+		boolean updateStatus = true;
+		MongoCollection mongoCollection = null;
+		try {
+			mongoCollection = MongoHelper.getCollection(mongoClient, dataBaseName, collectionName);
+			BasicDBObject query = new BasicDBObject();
+			query.append(searchKey, searchValue);
+			Bson newDocument = new Document("$set", mongoNewUpdatedObject);
+			mongoCollection.updateMany(query, newDocument);
+		} catch (Exception e) {
+			updateStatus = false;
+			ReportHelper.logValidationFailure("MongoUpdation", "to update", "not able to updated",
+					"Error In updating Mongo Document datatabase " + dataBaseName + " collection  :  "
+							+ mongoCollection);
+		}
+
+		return updateStatus;
+	}
 
 
 
