@@ -152,10 +152,11 @@ public class MongoHelper extends BaseTestClass {
 		return updateStatus;
 	}
 
+
 	/**
-	 * this method find a document on the basis of search key & value and then
-	 * update a mongo document which is passed in parameter as mongoNewUpdatedObject as it is without converting it to string
 	 *
+	 * This method find a document on the basis of search key & value and then
+	 * update only single mongo document for the Map passed as mongoNewUpdatedObject(key value pair ) in request
 	 * @param mongoClient
 	 * @param collectionName
 	 * @param dataBaseName
@@ -165,7 +166,26 @@ public class MongoHelper extends BaseTestClass {
 	 * @return
 	 */
 	public static boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
-											  String searchKey, String searchValue, Map mongoNewUpdatedObject) {
+											   String searchKey, String searchValue, Map mongoNewUpdatedObject) {
+	return updateMongoDocuments(mongoClient,collectionName,dataBaseName,searchKey,searchValue,mongoNewUpdatedObject,false);
+	}
+
+
+
+	/**
+	 * this method find a document on the basis of search key & value and then
+	 * update either single  mongo document or multiple mongo documents
+	 * which is passed in parameter as mongoNewUpdatedObject as it is without converting it to string
+	 * @param mongoClient
+	 * @param collectionName
+	 * @param dataBaseName
+	 * @param searchKey
+	 * @param searchValue
+	 * @param mongoNewUpdatedObject
+	 * @return
+	 */
+	public static boolean updateMongoDocuments(MongoClient mongoClient, String collectionName, String dataBaseName,
+											  String searchKey, String searchValue, Map mongoNewUpdatedObject,boolean updateMultipleDocuments) {
 		boolean updateStatus = true;
 		MongoCollection mongoCollection = null;
 		try {
@@ -173,38 +193,18 @@ public class MongoHelper extends BaseTestClass {
 			BasicDBObject query = new BasicDBObject();
 			query.append(searchKey, searchValue);
 			Bson newDocument = new Document("$set", mongoNewUpdatedObject);
+			if (updateMultipleDocuments)mongoCollection.updateMany(query, newDocument);
+			else
 			mongoCollection.findOneAndUpdate(query, newDocument);
 		} catch (Exception e) {
 			updateStatus = false;
-			ReportHelper.logValidationFailure("MongoUpdation", "to update", "not able to updated",
+			ReportHelper.reporterLogging(false,
 					"Error In updating Mongo Document datatabase " + dataBaseName + " collection  :  "
-							+ mongoCollection);
+							+ mongoCollection +" with exception -> "+e);
 		}
 
 		return updateStatus;
 	}
-
-	public static boolean updateMultipleMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
-											  String searchKey, String searchValue, Map mongoNewUpdatedObject) {
-		boolean updateStatus = true;
-		MongoCollection mongoCollection = null;
-		try {
-			mongoCollection = MongoHelper.getCollection(mongoClient, dataBaseName, collectionName);
-			BasicDBObject query = new BasicDBObject();
-			query.append(searchKey, searchValue);
-			Bson newDocument = new Document("$set", mongoNewUpdatedObject);
-			mongoCollection.updateMany(query, newDocument);
-		} catch (Exception e) {
-			updateStatus = false;
-			ReportHelper.logValidationFailure("MongoUpdation", "to update", "not able to updated",
-					"Error In updating Mongo Document datatabase " + dataBaseName + " collection  :  "
-							+ mongoCollection);
-		}
-
-		return updateStatus;
-	}
-
-
 
 	/**
 	 * This method will fetch data from mongo for multiple keys
