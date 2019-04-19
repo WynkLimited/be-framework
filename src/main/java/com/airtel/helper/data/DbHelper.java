@@ -3,6 +3,7 @@ package com.airtel.helper.data;
 import com.airtel.helper.common.ApiHelper;
 import com.airtel.helper.report.FileHelper;
 import com.airtel.helper.report.ReportHelper;
+import com.mongodb.lang.NonNull;
 import org.testng.Reporter;
 
 import java.io.InputStream;
@@ -188,10 +189,38 @@ public class DbHelper {
 			return preparedStatement.executeUpdate() == 1;
 
 		} catch (Exception e) {
-			Reporter.log(e.getMessage());
+			ReportHelper.reporterLogging(false,e.getMessage());
 			return false;
 		}
 
+	}
+
+	/**
+	 * This method perform any DML operation on sql on the basis of query passed in parameter
+	 * @param connection
+	 * @param query
+	 * @return
+	 */
+	public static boolean performSqlOperations(Connection connection,String query) {
+		PreparedStatement preparedStatement = null;
+		boolean result=true;
+
+			try {
+				preparedStatement = connection.prepareStatement(query);
+				return preparedStatement.executeUpdate() == 1; // execute the preparedstatement and return result accordingly
+
+			} catch (SQLException ex) {
+				result=false;
+				ReportHelper.reporterLogging(false, "Error In Executing sql query " + ex.getMessage());
+
+			} finally {
+				try {
+					preparedStatement.close();
+				} catch (Exception ex) {
+					ReportHelper.reporterLogging(false, "Error In closing preparedStatement in sql  " + ex.getMessage());
+				}
+			}
+		return result;
 	}
 
 }
