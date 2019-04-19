@@ -21,7 +21,7 @@ public class DbHelper {
 	public static Connection createDbConnection(String environment, String sid) {
 		return createDbConnection(environment, sid, "1521");
 	}
-	
+
 	public static Connection createDbConnection(String environment, String sid, String port) {
 		Connection con = null;
 		String dbServerIp = ApiHelper.getValueOfProperty(CONFIGURATION_FILE_PATH, environment + "_IP");
@@ -97,7 +97,7 @@ public class DbHelper {
 
 	/**
 	 * This method converts the data returned from DB to List<Map>.
-	 * 
+	 *
 	 * @param resultSet
 	 * @return
 	 */
@@ -134,7 +134,7 @@ public class DbHelper {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param connection
 	 * @param query
 	 * @param fileName
@@ -188,10 +188,38 @@ public class DbHelper {
 			return preparedStatement.executeUpdate() == 1;
 
 		} catch (Exception e) {
-			Reporter.log(e.getMessage());
+			ReportHelper.reporterLogging(false,e.getMessage());
 			return false;
 		}
 
+	}
+
+	/**
+	 * This method perform any DML operation on sql on the basis of query passed in parameter
+	 * @param connection
+	 * @param query
+	 * @return
+	 */
+	public static boolean performSqlOperations(Connection connection,String query) {
+		PreparedStatement preparedStatement = null;
+		boolean result=true;
+
+			try {
+				preparedStatement = connection.prepareStatement(query);
+				return preparedStatement.executeUpdate() == 1; // execute the preparedstatement and return result accordingly
+
+			} catch (SQLException ex) {
+				result=false;
+				ReportHelper.reporterLogging(false, "Error In Executing sql query " + ex.getMessage());
+
+			} finally {
+				try {
+					preparedStatement.close();
+				} catch (Exception ex) {
+					ReportHelper.reporterLogging(false, "Error In closing preparedStatement in sql  " + ex.getMessage());
+				}
+			}
+		return result;
 	}
 
 }
