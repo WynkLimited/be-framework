@@ -3,7 +3,6 @@ package com.airtel.helper.data;
 import com.airtel.helper.common.ApiHelper;
 import com.airtel.helper.report.FileHelper;
 import com.airtel.helper.report.ReportHelper;
-import com.mongodb.lang.NonNull;
 import org.testng.Reporter;
 
 import java.io.InputStream;
@@ -22,7 +21,7 @@ public class DbHelper {
 	public static Connection createDbConnection(String environment, String sid) {
 		return createDbConnection(environment, sid, "1521");
 	}
-	
+
 	public static Connection createDbConnection(String environment, String sid, String port) {
 		Connection con = null;
 		String dbServerIp = ApiHelper.getValueOfProperty(CONFIGURATION_FILE_PATH, environment + "_IP");
@@ -98,7 +97,7 @@ public class DbHelper {
 
 	/**
 	 * This method converts the data returned from DB to List<Map>.
-	 * 
+	 *
 	 * @param resultSet
 	 * @return
 	 */
@@ -135,7 +134,7 @@ public class DbHelper {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param connection
 	 * @param query
 	 * @param fileName
