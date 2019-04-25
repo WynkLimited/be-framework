@@ -100,6 +100,12 @@ public class ApiHelper {
 
         requestLog = "Request body: " + body;
 
+        String headerData ="";
+        for(Header h : headers)
+        {
+            headerData = headerData + h.getName()+ " : " + h.getValue();
+        }
+
         if (queryParams != null)
             requestLog = requestLog + "Query Params:" + queryParams.toString();
 
@@ -125,7 +131,7 @@ public class ApiHelper {
         }
 
         long responseTime = apiResponse.getTime();
-        logRequestResponse(requestLog, formatResponse(apiResponse), requestUrl, responseTime);
+        logRequestResponse(requestLog, formatResponse(apiResponse), requestUrl, responseTime,headerData);
         if (checkStatus && apiResponse.getStatusCode() != 200 && apiResponse.getStatusCode() != 204) {
             ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
                     Integer.toString(apiResponse.getStatusCode()), "HTTP status check failure");
@@ -348,7 +354,7 @@ public class ApiHelper {
     }
 
 
-    private static void logRequestResponse(String request, String response, String url, long responseTime) {
+    private static void logRequestResponse(String request, String response, String url, long responseTime,String headers) {
         String requestFilePath = "";
         if (request != null)
             requestFilePath = fileHelper.createRequestJsonFile(request, "");
@@ -356,7 +362,7 @@ public class ApiHelper {
         String reportFolder = reporter.getResultFileStringPath();
         reporter.appendresultHTMLReport(reportFolder, url, "<a href='" + requestFilePath + "'>Request Data" + "</a>",
                 "<a href='" + responseFilePath + "'>Response Data" + "</a>",
-                "Response Time(in msec) :- " + String.valueOf(responseTime), "", "");
+                "Response Time(in msec) :- " + String.valueOf(responseTime), "", "",headers);
     }
 
     /**
@@ -391,7 +397,7 @@ public class ApiHelper {
      * @param jsonData
      * @param type
      * @return
-     * @author b0201347
+     * @author
      */
     public static <T> T convertFromJson(String jsonData, Type type) {
         Gson gsonConverter = (new GsonBuilder()).disableHtmlEscaping().setPrettyPrinting().create();
@@ -759,6 +765,12 @@ public class ApiHelper {
         if (queryParams != null)
             requestLog = requestLog + "Query Params:" + queryParams.toString();
 
+        String headerData ="";
+        for(Header h : headers)
+        {
+            headerData = headerData + h.getName()+ " : " + h.getValue();
+        }
+
         switch (requestType) {
             case "GET":
                 apiResponse = apiRequest.get(requestUrl);
@@ -782,7 +794,7 @@ public class ApiHelper {
 
         long responseTime = apiResponse.getTime();
         logRequestResponse(requestLog, formatResponse(apiResponse), requestUrl,
-                responseTime);
+                responseTime,headerData);
         if (apiResponse.getStatusCode() != statusCode) {
             ReportHelper.logValidationFailure("HTTP Status code not " + Integer.toString(statusCode),
                     Integer.toString(statusCode), Integer.toString(apiResponse.getStatusCode()),
