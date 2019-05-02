@@ -216,7 +216,7 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
     }
 
     public void appendresultHTMLReport(String resultFileStringPath, String apiURL, String requestFile,
-                                       String responseFile, String message, String status, String comment) {
+                                       String responseFile, String message, String status, String comment,String headers) {
         try {
 
             BufferedWriter resultFile = new BufferedWriter(new FileWriter(resultFileStringPath, true));
@@ -231,6 +231,7 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
 
             resultFile.append("<tr>");
             resultFile.append("<td width=30% style=WORD-break:BREAK-all>" + apiURL + "</td>");
+            resultFile.append("<td width=10% style=WORD-break:BREAK-all>" + headers + "</td>");
             resultFile.append("<td width=10% style=WORD-break:BREAK-all>" + requestFile + "</td>");
             resultFile.append("<td width=10% style=WORD-break:BREAK-all>" + responseFile + "</td>");
             resultFile.append("<td width=30% style=WORD-break:BREAK-all>" + message + "</td>");
@@ -248,7 +249,7 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
         ReportHelper reportHelper = new ReportHelper();
         try {
             reportHelper.appendresultHTMLReport(reportHelper.getResultFileStringPath(), "", "", "", sMessage,
-                    String.valueOf(status), Thread.currentThread().getStackTrace()[2].getMethodName());
+                    String.valueOf(status), Thread.currentThread().getStackTrace()[2].getMethodName(),"");
             Reporter.log("<br>");
             if (status) {
                 Reporter.log("<Font Color=#008000> PASS </Font>" + sMessage);
