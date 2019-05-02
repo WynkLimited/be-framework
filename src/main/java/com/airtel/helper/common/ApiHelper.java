@@ -64,12 +64,17 @@ public class ApiHelper
     private static FileHelper fileHelper = new FileHelper();
 
     private static RequestSpecification prepareRequestParams(Map<String, String> queryParams, List<Header> headers,
-                                                             String body, ContentType contentType)
+                                                             String body, ContentType contentType,Map<String,String> formParams)
     {
         RequestSpecification request = RestAssured.given().relaxedHTTPSValidation().redirects().follow(false);
         if (null != queryParams)
         {
             request.queryParams(queryParams);
+        }
+
+        if (null != formParams)
+        {
+            request.formParams(formParams);
         }
 
         if (headers != null)
@@ -96,12 +101,12 @@ public class ApiHelper
      * @return
      */
     public static Response fetchApiResponse(String requestUrl, String requestType, String body,
-                                            Map<String, String> queryParams, List<Header> headers, ContentType contentType, boolean checkStatus)
+                                            Map<String, String> queryParams, List<Header> headers, ContentType contentType, boolean checkStatus,Map<String,String> formParams)
     {
 
         Response apiResponse = null;
         String requestLog = null;
-        RequestSpecification apiRequest = prepareRequestParams(queryParams, headers, body, contentType);
+        RequestSpecification apiRequest = prepareRequestParams(queryParams, headers, body, contentType,formParams);
 
         requestLog = "Request body: " + body;
 
@@ -207,7 +212,24 @@ public class ApiHelper
     public static Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url,
                                                   boolean checkStatus)
     {
-        return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus);
+        return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus,null);
+    }
+
+    /**
+     * This method will be used for getting response of GET request with headers.
+     * This method will fail non 200 HTTP response.
+     *
+     * @param queryParams
+     * @param headers
+     * @param url
+     * @param checkStatus
+     * @param formParams
+     * @return
+     */
+    public static Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url,
+                                                  boolean checkStatus,Map<String,String> formParams)
+    {
+        return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus,formParams);
     }
 
     /**
@@ -271,7 +293,26 @@ public class ApiHelper
     public static Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
                                                    String url, boolean checkStatus)
     {
-        return fetchApiResponse(url, "POST", body, null, headers, contentType, checkStatus);
+        return fetchApiResponse(url, "POST", body, null, headers, contentType, checkStatus,null);
+    }
+
+    /**
+     * This method will be used for getting response of POST request with headers.
+     * This method can pass/fail non-200 HTTP status code based on checkStatus field
+     * value as false/true.
+     *
+     * @param body
+     * @param headers
+     * @param contentType
+     * @param url
+     * @param checkStatus
+     * @param formParams
+     * @return
+     */
+    public static Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
+                                                   String url, boolean checkStatus,Map<String,String> formParams)
+    {
+        return fetchApiResponse(url, "POST", body, null, headers, contentType, checkStatus,formParams);
     }
 
 
@@ -291,7 +332,27 @@ public class ApiHelper
     public static Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
                                                    String url, Map<String, String> queryParams, boolean checkStatus)
     {
-        return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus);
+        return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus,null);
+    }
+
+    /**
+     * This method will be used for getting response of POST request with headers with query params
+     * This method can pass/fail non-200 HTTP status code based on checkStatus field
+     * value as false/true.
+     *
+     * @param body
+     * @param headers
+     * @param contentType
+     * @param url
+     * @param queryParams
+     * @param checkStatus
+     * @param formParams
+     * @return
+     */
+    public static Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
+                                                   String url, Map<String, String> queryParams, boolean checkStatus,Map<String,String> formParams)
+    {
+        return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus,formParams);
     }
 
     /**
@@ -355,7 +416,26 @@ public class ApiHelper
     public static Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
                                                   String url, boolean checkStatus)
     {
-        return fetchApiResponse(url, "PUT", body, null, headers, contentType, checkStatus);
+        return fetchApiResponse(url, "PUT", body, null, headers, contentType, checkStatus,null);
+    }
+
+    /**
+     * This method will be used for getting response of POST request with headers.
+     * This method can pass/fail non-200 HTTP status code based on checkStatus field
+     * value as false/true.
+     *
+     * @param body
+     * @param headers
+     * @param contentType
+     * @param url
+     * @param checkStatus
+     * @param formParams
+     * @return
+     */
+    public static Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
+                                                  String url, boolean checkStatus,Map<String,String> formParams)
+    {
+        return fetchApiResponse(url, "PUT", body, null, headers, contentType, checkStatus,formParams);
     }
 
 
@@ -375,7 +455,27 @@ public class ApiHelper
     public static Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
                                                   String url, Map<String, String> queryParams, boolean checkStatus)
     {
-        return fetchApiResponse(url, "PUT", body, queryParams, headers, contentType, checkStatus);
+        return fetchApiResponse(url, "PUT", body, queryParams, headers, contentType, checkStatus,null);
+    }
+
+    /**
+     * This method will be used for getting response of POST request with headers with query params
+     * This method can pass/fail non-200 HTTP status code based on checkStatus field
+     * value as false/true.
+     *
+     * @param body
+     * @param headers
+     * @param contentType
+     * @param url
+     * @param queryParams
+     * @param checkStatus
+     * @param formParams
+     * @return
+     */
+    public static Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
+                                                  String url, Map<String, String> queryParams, boolean checkStatus,Map<String,String> formParams)
+    {
+        return fetchApiResponse(url, "PUT", body, queryParams, headers, contentType, checkStatus,formParams);
     }
 
 
@@ -820,7 +920,26 @@ public class ApiHelper
     public static Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
                                                    String url, int statusCode)
     {
-        return fetchApiResponse(url, "POST", body, null, headers, contentType, statusCode);
+        return fetchApiResponse(url, "POST", body, null, headers, contentType, statusCode,null);
+    }
+
+    /**
+     * This method will be used for getting response of POST request with headers.
+     * This method can pass/fail non-200 HTTP status code based on checkStatus field
+     * value as false/true.
+     *
+     * @param body
+     * @param headers
+     * @param contentType
+     * @param url
+     * @param statusCode
+     * @param formParams
+     * @return
+     */
+    public static Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
+                                                   String url, int statusCode,Map<String,String> formParams)
+    {
+        return fetchApiResponse(url, "POST", body, null, headers, contentType, statusCode,formParams);
     }
 
     /**
@@ -835,12 +954,12 @@ public class ApiHelper
      * @return
      */
     public static Response fetchApiResponse(String requestUrl, String requestType, String body,
-                                            Map<String, String> queryParams, List<Header> headers, ContentType contentType, int statusCode)
+                                            Map<String, String> queryParams, List<Header> headers, ContentType contentType, int statusCode,Map<String,String> formParams)
     {
 
         Response apiResponse = null;
         String requestLog = null;
-        RequestSpecification apiRequest = prepareRequestParams(queryParams, headers, body, contentType);
+        RequestSpecification apiRequest = prepareRequestParams(queryParams, headers, body, contentType,formParams);
 
         requestLog = "Request body: " + body;
 
@@ -962,7 +1081,27 @@ public class ApiHelper
     public static Response postResponseWithHeaders(String body, Map<String, String> queryParams, List<Header> headers, ContentType contentType,
                                                    String url, boolean checkStatus)
     {
-        return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus);
+        return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus,null);
+    }
+
+    /**
+     * This method will be used for getting response of POST request with headers and query parameters.
+     * This method can pass/fail non-200 HTTP status code based on checkStatus field
+     * value as false/true.
+     *
+     * @param body
+     * @param queryParams
+     * @param headers
+     * @param contentType
+     * @param url
+     * @param checkStatus
+     * @param formParams
+     * @return
+     */
+    public static Response postResponseWithHeaders(String body, Map<String, String> queryParams, List<Header> headers, ContentType contentType,
+                                                   String url, boolean checkStatus,Map<String,String> formParams)
+    {
+        return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus,formParams);
     }
 
     /**
@@ -978,6 +1117,23 @@ public class ApiHelper
     public static Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url,
                                                   int checkStatus)
     {
-        return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus);
+        return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus,null);
+    }
+
+    /**
+     * This method will be used for getting response of GET request with headers.
+     * This method will verify and validate response code .
+     *
+     * @param queryParams
+     * @param headers
+     * @param url
+     * @param checkStatus
+     * @param formParams
+     * @return
+     */
+    public static Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url,
+                                                  int checkStatus,Map<String,String> formParams)
+    {
+        return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus,formParams);
     }
 }
