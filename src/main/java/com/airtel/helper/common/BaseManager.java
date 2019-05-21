@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class BaseManager extends ApiHelper implements IManager, IDbHelper, IMongoHelper, IAeroSpikeHelper, IResponseValidator {
+public abstract class BaseManager extends ApiHelper implements IManager, IDbHelper, IMongoHelper, IAeroSpikeHelper, IResponseValidator,IJsonParser {
 
 
     /*
@@ -25,11 +25,11 @@ public abstract class BaseManager extends ApiHelper implements IManager, IDbHelp
     Implement IJson parser if needed.
 
      */
-    protected final DbHelper _dbHelper;
-    protected final AerospikeHelper _aeroSpikeHelper;
-    protected final MongoHelper _mongoHelper;
-    protected final JsonParser _jsonHelper;
-    protected final GenericComparator _responsevalidator;
+    protected final IDbHelper _dbHelper;
+    protected final IAeroSpikeHelper _aeroSpikeHelper;
+    protected final IMongoHelper _mongoHelper;
+    protected final IJsonParser _jsonHelper;
+    protected final IResponseValidator _responsevalidator;
 
     public BaseManager() {
 
