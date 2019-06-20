@@ -943,6 +943,25 @@ public class ApiHelper
     }
 
     /**
+     * This method will be used for getting response of PUT request with headers.
+     * This method verify HTTP status code based on checkStatus field
+     * value as false/true.
+     *
+     * @param body
+     * @param headers
+     * @param contentType
+     * @param url
+     * @param statusCode
+     * @param formParams
+     * @return
+     */
+    public static Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
+			String url, int statusCode) {
+		return fetchApiResponse(url, "POST", body, (Map) null, headers, contentType, statusCode, (Map) null);
+	}
+
+    
+    /**
      * Generic method to fetch response for different type of API request
      *
      * @param requestUrl
