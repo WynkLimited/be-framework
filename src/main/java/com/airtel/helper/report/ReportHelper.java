@@ -8,6 +8,7 @@ import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
@@ -93,8 +94,8 @@ public class ReportHelper extends BaseTestClass implements ReportConstants {
             String testSuiteName = context.getCurrentXmlTest().getSuite().getFileName();
             int index = testSuiteName.lastIndexOf('/');
             testSuiteName = testSuiteName.substring(index + 1).replace(".xml", "");
-
-            InfluxDbHelper.populateAutomationStats(testDuration, testSuiteName, passCount, failCount);
+            String git_commit_id = Optional.ofNullable(System.getProperty("git_commit_id")).orElse("preprod_run");
+            InfluxDbHelper.populateAutomationStats(testDuration, testSuiteName, git_commit_id, passCount, failCount);
 
             resultFile.append("</table>");
             resultFile.append(SUMMARY_REPORT_TEMPLATE);
