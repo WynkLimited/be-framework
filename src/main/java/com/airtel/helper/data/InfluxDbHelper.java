@@ -16,13 +16,14 @@ public class InfluxDbHelper implements Constants {
 		return influxDB;
 	}
 
-	public static void populateAutomationStats(long testDuration, String testName, int passCount, int failCount) {
+	public static void populateAutomationStats(long testDuration, String testName, String git_commit_id, int passCount,
+			int failCount) {
 		InfluxDB influxDB = createConnectionInflux();
 		Point testResult = Point.measurement(INFLUX_MEASUREMENT).time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
 				.addField("suite_name", testName).addField("run_duration", testDuration)
-				.addField("total_test", passCount + failCount).addField("pass_test", passCount)
-				.addField("fail_test", failCount).addField("success_pct", passCount * 100 / (passCount + failCount))
-				.build();
+				.addField("git_commit_id", git_commit_id).addField("total_test", passCount + failCount)
+				.addField("pass_test", passCount).addField("fail_test", failCount)
+				.addField("success_pct", passCount * 100 / (passCount + failCount)).build();
 		influxDB.write(testResult);
 		influxDB.close();
 	}

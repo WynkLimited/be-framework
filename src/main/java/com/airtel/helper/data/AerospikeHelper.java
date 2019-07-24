@@ -7,9 +7,11 @@ import java.util.Map;
 import com.aerospike.client.*;
 import com.aerospike.client.policy.BatchPolicy;
 import com.aerospike.client.policy.ClientPolicy;
+import com.aerospike.client.policy.ScanPolicy;
 import com.aerospike.client.policy.WritePolicy;
 import com.airtel.helper.Interfaces.IAeroSpikeHelper;
 import com.airtel.helper.common.BaseTestClass;
+import com.airtel.helper.report.ReportHelper;
 
 /**
  * Created by b0200202 on 12/6/17.

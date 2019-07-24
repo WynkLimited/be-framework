@@ -38,30 +38,39 @@ import io.restassured.specification.RequestSpecification;
  *
  * @author b0202849
  */
-public class ApiHelper extends DataHelper {
+public class ApiHelper extends DataHelper
+{
 
 
     private Logger apiHelperLog;
     private ReportHelper reporter;
     private FileHelper fileHelper;
 
-    public ApiHelper() {
+    public ApiHelper()
+    {
         apiHelperLog = AirtelLoggingMgr.getLogger(ApiHelper.class);
         reporter = new ReportHelper();
         fileHelper = new FileHelper();
     }
 
-
     private RequestSpecification prepareRequestParams(Map<String, String> queryParams, List<Header> headers,
-                                                      String body, ContentType contentType) {
+                                                      String body, ContentType contentType, Map<String, String> formParams)
+    {
         RequestSpecification request = RestAssured.given().relaxedHTTPSValidation().redirects().follow(false);
-        if (null != queryParams) {
+        if (null != queryParams)
+        {
             request.queryParams(queryParams);
+        }
+
+        if (null != formParams)
+        {
+            request.formParams(formParams);
         }
 
         if (headers != null)
             request.headers(new Headers(headers));
-        if (body != null && !body.isEmpty()) {
+        if (body != null && !body.isEmpty())
+        {
             request.body(body);
         }
         if (contentType != null)
@@ -82,18 +91,30 @@ public class ApiHelper extends DataHelper {
      * @return
      */
     public Response fetchApiResponse(String requestUrl, String requestType, String body,
-                                     Map<String, String> queryParams, List<Header> headers, ContentType contentType, boolean checkStatus) {
+                                     Map<String, String> queryParams, List<Header> headers, ContentType contentType, boolean checkStatus, Map<String, String> formParams)
+    {
 
         Response apiResponse = null;
         String requestLog = null;
-        RequestSpecification apiRequest = prepareRequestParams(queryParams, headers, body, contentType);
+        RequestSpecification apiRequest = prepareRequestParams(queryParams, headers, body, contentType, formParams);
 
         requestLog = "Request body: " + body;
+
+        String headerData = "";
+
+        if (headers != null)
+        {
+            for (Header h : headers)
+            {
+                headerData = headerData + h.getName() + " : " + h.getValue();
+            }
+        }
 
         if (queryParams != null)
             requestLog = requestLog + "Query Params:" + queryParams.toString();
 
-        switch (RequestType.valueOf(requestType.toUpperCase())) {
+        switch (RequestType.valueOf(requestType.toUpperCase()))
+        {
             case GET:
                 apiResponse = apiRequest.get(requestUrl);
                 break;
@@ -115,8 +136,9 @@ public class ApiHelper extends DataHelper {
         }
 
         long responseTime = apiResponse.getTime();
-        logRequestResponse(requestLog, formatResponse(apiResponse), requestUrl, responseTime);
-        if (checkStatus && apiResponse.getStatusCode() != 200 && apiResponse.getStatusCode() != 204) {
+        logRequestResponse(requestLog, formatResponse(apiResponse), requestUrl, responseTime, headerData);
+        if (checkStatus && apiResponse.getStatusCode() != 200 && apiResponse.getStatusCode() != 204)
+        {
             ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
                     Integer.toString(apiResponse.getStatusCode()), "HTTP status check failure");
             Assert.assertTrue(false);
@@ -132,7 +154,8 @@ public class ApiHelper extends DataHelper {
      * @param url
      * @return response
      */
-    public Response getResponse(Map<String, String> queryParams, String url) {
+    public Response getResponse(Map<String, String> queryParams, String url)
+    {
         return getResponseWithHeaders(queryParams, null, url, true);
     }
 
@@ -146,7 +169,8 @@ public class ApiHelper extends DataHelper {
      * @param checkStatus
      * @return
      */
-    public Response getResponse(Map<String, String> queryParams, String url, boolean checkStatus) {
+    public Response getResponse(Map<String, String> queryParams, String url, boolean checkStatus)
+    {
         return getResponseWithHeaders(queryParams, null, url, checkStatus);
     }
 
@@ -160,7 +184,8 @@ public class ApiHelper extends DataHelper {
      * @param url
      * @return
      */
-    public Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url) {
+    public Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url)
+    {
         return getResponseWithHeaders(queryParams, headers, url, true);
     }
 
@@ -175,8 +200,25 @@ public class ApiHelper extends DataHelper {
      * @return
      */
     public Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url,
-                                           boolean checkStatus) {
-        return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus);
+                                           boolean checkStatus, Map<String, String> formParams)
+    {
+        return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus, formParams);
+    }
+
+    /**
+     * This method will be used for getting response of GET request with headers.
+     * This method will fail non 200 HTTP response.
+     *
+     * @param queryParams
+     * @param headers
+     * @param url
+     * @param checkStatus
+     * @return
+     */
+    public Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url,
+                                                  boolean checkStatus)
+    {
+        return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus, null);
     }
 
     /**
@@ -188,7 +230,8 @@ public class ApiHelper extends DataHelper {
      * @param url
      * @return
      */
-    public Response postResponse(String body, ContentType contentType, String url) {
+    public Response postResponse(String body, ContentType contentType, String url)
+    {
         return postResponseWithHeaders(body, null, contentType, url, true);
     }
 
@@ -203,7 +246,8 @@ public class ApiHelper extends DataHelper {
      * @param checkStatus
      * @return
      */
-    public Response postResponse(String body, ContentType contentType, String url, boolean checkStatus) {
+    public Response postResponse(String body, ContentType contentType, String url, boolean checkStatus)
+    {
         return postResponseWithHeaders(body, null, contentType, url, checkStatus);
     }
 
@@ -218,7 +262,8 @@ public class ApiHelper extends DataHelper {
      * @return
      */
     public Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
-                                            String url) {
+                                            String url)
+    {
         return postResponseWithHeaders(body, headers, contentType, url, true);
     }
 
@@ -235,8 +280,9 @@ public class ApiHelper extends DataHelper {
      * @return
      */
     public Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
-                                            String url, boolean checkStatus) {
-        return fetchApiResponse(url, "POST", body, null, headers, contentType, checkStatus);
+                                            String url, boolean checkStatus)
+    {
+        return fetchApiResponse(url, "POST", body, null, headers, contentType, checkStatus, null);
     }
 
 
@@ -254,8 +300,9 @@ public class ApiHelper extends DataHelper {
      * @return
      */
     public Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
-                                            String url, Map<String, String> queryParams, boolean checkStatus) {
-        return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus);
+                                            String url, Map<String, String> queryParams, boolean checkStatus,Map<String,String> formParams)
+    {
+        return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus,formParams);
     }
 
     /**
@@ -267,7 +314,8 @@ public class ApiHelper extends DataHelper {
      * @param url
      * @return
      */
-    public Response putResponse(String body, ContentType contentType, String url) {
+    public Response putResponse(String body, ContentType contentType, String url)
+    {
         return putResponseWithHeaders(body, null, contentType, url, true);
     }
 
@@ -282,7 +330,8 @@ public class ApiHelper extends DataHelper {
      * @param checkStatus
      * @return
      */
-    public Response putResponse(String body, ContentType contentType, String url, boolean checkStatus) {
+    public Response putResponse(String body, ContentType contentType, String url, boolean checkStatus)
+    {
         return putResponseWithHeaders(body, null, contentType, url, checkStatus);
     }
 
@@ -297,7 +346,8 @@ public class ApiHelper extends DataHelper {
      * @return
      */
     public Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
-                                           String url) {
+                                           String url)
+    {
         return putResponseWithHeaders(body, headers, contentType, url, true);
     }
 
@@ -314,8 +364,28 @@ public class ApiHelper extends DataHelper {
      * @return
      */
     public Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
-                                           String url, boolean checkStatus) {
-        return fetchApiResponse(url, "PUT", body, null, headers, contentType, checkStatus);
+                                           String url, boolean checkStatus)
+    {
+        return fetchApiResponse(url, "PUT", body, null, headers, contentType, checkStatus, null);
+    }
+
+    /**
+     * This method will be used for getting response of POST request with headers.
+     * This method can pass/fail non-200 HTTP status code based on checkStatus field
+     * value as false/true.
+     *
+     * @param body
+     * @param headers
+     * @param contentType
+     * @param url
+     * @param checkStatus
+     * @param formParams
+     * @return
+     */
+    public Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
+                                           String url, boolean checkStatus, Map<String, String> formParams)
+    {
+        return fetchApiResponse(url, "PUT", body, null, headers, contentType, checkStatus, formParams);
     }
 
 
@@ -333,12 +403,34 @@ public class ApiHelper extends DataHelper {
      * @return
      */
     public Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
-                                           String url, Map<String, String> queryParams, boolean checkStatus) {
-        return fetchApiResponse(url, "PUT", body, queryParams, headers, contentType, checkStatus);
+                                           String url, Map<String, String> queryParams, boolean checkStatus)
+    {
+        return fetchApiResponse(url, "PUT", body, queryParams, headers, contentType, checkStatus, null);
     }
 
 
-    private void logRequestResponse(String request, String response, String url, long responseTime) {
+    /**
+     * This method will be used for getting response of POST request with headers with query params
+     * This method can pass/fail non-200 HTTP status code based on checkStatus field
+     * value as false/true.
+     *
+     * @param body
+     * @param headers
+     * @param contentType
+     * @param url
+     * @param queryParams
+     * @param checkStatus
+     * @return
+     */
+    public Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
+                                           String url, Map<String, String> queryParams, boolean checkStatus, Map<String, String> formParams)
+    {
+        return fetchApiResponse(url, "PUT", body, queryParams, headers, contentType, checkStatus, formParams);
+    }
+
+
+    private void logRequestResponse(String request, String response, String url, long responseTime, String headers)
+    {
         String requestFilePath = "";
         if (request != null)
             requestFilePath = fileHelper.createRequestJsonFile(request, "");
@@ -346,7 +438,7 @@ public class ApiHelper extends DataHelper {
         String reportFolder = reporter.getResultFileStringPath();
         reporter.appendresultHTMLReport(reportFolder, url, "<a href='" + requestFilePath + "'>Request Data" + "</a>",
                 "<a href='" + responseFilePath + "'>Response Data" + "</a>",
-                "Response Time(in msec) :- " + String.valueOf(responseTime), "", "");
+                "Response Time(in msec) :- " + String.valueOf(responseTime), "", "", headers);
     }
 
     /**
@@ -360,7 +452,8 @@ public class ApiHelper extends DataHelper {
      * @param value
      * @return
      */
-    public String fetchEsLogsResponse(String server, String collectionName, String keyName, String value) {
+    public String fetchEsLogsResponse(String server, String collectionName, String keyName, String value)
+    {
         StringBuilder urlBuilder = new StringBuilder();
         String url = urlBuilder.append("http://").append(server).append(":9200/").append(collectionName)
                 .append("_search").toString();
@@ -376,21 +469,27 @@ public class ApiHelper extends DataHelper {
      * @param apiResponse
      * @return
      */
-    private String formatResponse(Response apiResponse) {
+    private String formatResponse(Response apiResponse)
+    {
         String responseString = null;
 
-        if (apiResponse.contentType().contains(ContentType.JSON.toString()) && apiResponse.asString() != null) {
+        if (apiResponse.contentType().contains(ContentType.JSON.toString()) && apiResponse.asString() != null)
+        {
             JsonParser parser = new JsonParser();
             JsonElement jsonElement = parser.parse(apiResponse.asString());
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            if (jsonElement instanceof JsonObject) {
+            if (jsonElement instanceof JsonObject)
+            {
                 JsonObject json = jsonElement.getAsJsonObject();
                 responseString = gson.toJson(json);
-            } else if (jsonElement instanceof JsonArray) {
+            }
+            else if (jsonElement instanceof JsonArray)
+            {
                 JsonArray json = jsonElement.getAsJsonArray();
                 responseString = gson.toJson(json);
             }
-        } else
+        }
+        else
             responseString = apiResponse.asString();
         return responseString;
     }
@@ -403,8 +502,10 @@ public class ApiHelper extends DataHelper {
      * @param encrypted
      * @return
      */
-    public String decryptAPIResponse(String key, String encrypted) {
-        try {
+    public String decryptAPIResponse(String key, String encrypted)
+    {
+        try
+        {
             KeySpec keySpec = new DESKeySpec(key.getBytes());
             SecretKey secretKey = SecretKeyFactory.getInstance("DES").generateSecret(keySpec);
             Cipher cipher = Cipher.getInstance("DES");
@@ -412,7 +513,9 @@ public class ApiHelper extends DataHelper {
             String encryptedData = encrypted.replaceAll("\"", "");
             byte[] original = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
             return new String(original);
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
 
             ReportHelper.reporterLogging(false,
                     "Error in decrypting API response. Key = " + key + " Response = " + encrypted);
@@ -433,8 +536,9 @@ public class ApiHelper extends DataHelper {
      * @return
      */
     public Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
-                                            String url, int statusCode) {
-        return fetchApiResponse(url, "POST", body, null, headers, contentType, statusCode);
+                                            String url, int statusCode, Map<String, String> formParams)
+    {
+        return fetchApiResponse(url, "POST", body, null, headers, contentType, statusCode, formParams);
     }
 
     /**
@@ -449,18 +553,30 @@ public class ApiHelper extends DataHelper {
      * @return
      */
     public Response fetchApiResponse(String requestUrl, String requestType, String body,
-                                     Map<String, String> queryParams, List<Header> headers, ContentType contentType, int statusCode) {
+                                     Map<String, String> queryParams, List<Header> headers, ContentType contentType, int statusCode, Map<String, String> formParams)
+    {
 
         Response apiResponse = null;
         String requestLog = null;
-        RequestSpecification apiRequest = prepareRequestParams(queryParams, headers, body, contentType);
+        RequestSpecification apiRequest = prepareRequestParams(queryParams, headers, body, contentType, formParams);
 
         requestLog = "Request body: " + body;
 
         if (queryParams != null)
             requestLog = requestLog + "Query Params:" + queryParams.toString();
 
-        switch (requestType) {
+        String headerData = null;
+        if (headers != null)
+        {
+            headerData = "";
+            for (Header h : headers)
+            {
+                headerData = headerData + h.getName() + " : " + h.getValue();
+            }
+        }
+
+        switch (requestType)
+        {
             case "GET":
                 apiResponse = apiRequest.get(requestUrl);
                 break;
@@ -483,8 +599,9 @@ public class ApiHelper extends DataHelper {
 
         long responseTime = apiResponse.getTime();
         logRequestResponse(requestLog, formatResponse(apiResponse), requestUrl,
-                responseTime);
-        if (apiResponse.getStatusCode() != statusCode) {
+                responseTime, headerData);
+        if (apiResponse.getStatusCode() != statusCode)
+        {
             ReportHelper.logValidationFailure("HTTP Status code not " + Integer.toString(statusCode),
                     Integer.toString(statusCode), Integer.toString(apiResponse.getStatusCode()),
                     "HTTP status check failure");
@@ -507,7 +624,8 @@ public class ApiHelper extends DataHelper {
      * @return
      */
     public Response postResponseWithHeaders(String body, Map<String, String> queryParams, List<Header> headers, ContentType contentType,
-                                            String url, boolean checkStatus) {
-        return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus);
+                                            String url, boolean checkStatus, Map<String, String> formParams)
+    {
+        return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus, formParams);
     }
 }
