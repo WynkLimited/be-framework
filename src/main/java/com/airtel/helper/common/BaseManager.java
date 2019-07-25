@@ -27,11 +27,11 @@ public abstract class BaseManager extends ApiHelper implements IManager, IDbHelp
     Implement IJson parser if needed.
 
      */
-    public IDbHelper _dbHelper;
-    public IAeroSpikeHelper _aeroSpikeHelper;
-    public IMongoHelper _mongoHelper;
-    public IJsonParser _jsonHelper;
-    public IResponseValidator _responsevalidator;
+    protected final IDbHelper _dbHelper;
+    protected final IAeroSpikeHelper _aeroSpikeHelper;
+    protected final IMongoHelper _mongoHelper;
+    protected final IJsonParser _jsonHelper;
+    protected final IResponseValidator _responsevalidator;
 
     public BaseManager() {
 
