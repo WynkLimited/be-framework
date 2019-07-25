@@ -4,6 +4,7 @@ import com.aerospike.client.*;
 import com.airtel.helper.Interfaces.*;
 import com.airtel.helper.data.*;
 import com.airtel.validator.GenericComparator;
+import com.google.gson.JsonArray;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -11,6 +12,7 @@ import net.minidev.json.JSONArray;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.HashMap;
@@ -259,4 +261,75 @@ public abstract class BaseManager extends ApiHelper implements IManager, IDbHelp
     public boolean compareJsonWithRequest(String responseExpected, String responseActual, String request, String propFilePath) {
         return this._responsevalidator.compareJsonWithRequest(responseExpected, responseActual, request, propFilePath);
     }
+    
+    
+    
+    /**
+     * Json Parser Methods Implementation
+     **/
+    
+	@Override
+	public <T> T convertFromJson(String jsonData, Class<T> classType) {
+		return this._jsonHelper.convertFromJson(jsonData, classType);
+	}
+
+	@Override
+	public <T> T convertFromJson(String jsonData, Type type) {
+		return this._jsonHelper.convertFromJson(jsonData, type);
+	}
+
+	@Override
+	public <T> List<T> convertFromJsonArray(String jsonArray, Type listType) {
+		return this._jsonHelper.convertFromJsonArray(jsonArray, listType);
+	}
+
+	@Override
+	public Object convertJsonArrayObjToStringObj(Object object) {
+		return this._jsonHelper.convertJsonArrayObjToStringObj(object);
+	}
+
+	@Override
+	public String convertToJson(Object obj) {
+		return this._jsonHelper.convertToJson(obj);
+	}
+
+	@Override
+	public Object fetchJPathVal(String inputJson, String keyName) {
+		return this._jsonHelper.fetchJPathVal(inputJson, keyName);
+	}
+
+	@Override
+	public <T> T fetchJPathVal(String inputJson, String keyName, Class<T> classType) {
+		return this._jsonHelper.fetchJPathVal(inputJson, keyName, classType);
+	}
+
+	@Override
+	public boolean isJsonArrayNotBlank(JsonArray jsonArray) {
+		return this._jsonHelper.isJsonArrayNotBlank(jsonArray);
+	}
+
+	@Override
+	public boolean isJsonObjectInsideJsonObjectNotBlank(JSONObject jsonObject, String field) {
+		return this._jsonHelper.isJsonObjectInsideJsonObjectNotBlank(jsonObject, field);
+	}
+
+	@Override
+	public boolean isListFieldBlank(JSONObject jsonObject, String field) {
+		return this._jsonHelper.isListFieldBlank(jsonObject, field);
+	}
+
+	@Override
+	public boolean isStringFeildNotBlankInsideJSONObject(JSONObject jsonObject, String field) {
+		return this._jsonHelper.isListFieldBlank(jsonObject, field);
+	}
+
+	@Override
+	public  org.json.JSONArray objectToJSONArray(Object object) {
+		return this._jsonHelper.objectToJSONArray(object);
+	}
+
+	@Override
+	public Object sortArray(Object unsortedArrayObj) {
+		return this._jsonHelper.sortArray(unsortedArrayObj);
+	}
 }
