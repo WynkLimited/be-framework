@@ -1,13 +1,15 @@
 **Overview**
 
-This is core automation framework that is extended in LOB frameworks for API automation. API automation frameworks for LOBs are wrapper over this framework and leveraging TestNg for automation & validations. The framework has all important functionality for accessing APIs, validating APIs, comparing JSONs & pulling data from different databases.
+This is core automation framework that is extended in LOB frameworks for API automation. API automation frameworks for LOBs are wrapper over this framework and leverage TestNg for automation & validations. The framework has all important functionality for accessing APIs, validating APIs, comparing JSONs & pulling data from different databases.
 
 Project extending this framework should have the mentioned package structure:
 
-controller/helper - All methods hitting specific API, validating API functionality are included as part of these package.
-dto - Request or response pojo, if required should be put as part of this package.
+src/main/java/constants - Containing all LOB specific constansts.
+src/main/java/controller - All methods hitting specific API, validating API functionality are included as part of these package.
+src/main/java/helper - LOB specific helper methods can be added here. Example: starting and stopping a  specific process on the server.
+src/main/java/dto - Request or response pojo, if required should be put as part of this package.
 config - All configuration should be put as part of this package.
-test - Test classes are mentioned in src/test/java. No business or validation logic should be put in here. All test should be light weight and use methods mentioned in controller or helper classes for validating test case. *TestClasses should alway extend ReportHelper for automated report logging.*
+src/main/test - Test classes are mentioned in src/test/java. No business or validation logic should be put in here. All tests should be light weight and use methods mentioned in controller or helper classes for validating test case. *TestClasses should alway extend ReportHelper for automated report logging.*
 
 **Use cases solved using the framework**
 
@@ -32,6 +34,7 @@ Add the following dependency in your LOB framework
 *1. API related functionalities*
 
 ApiHelper.java contains all important functions w.r.t accessing API, converting DTO to objects & vice-versa, reading configurations and fetching values at jPath.
+Example: methods like ‘getResponseWithHeaders, postResponseWithHeaders, convertToJson’ and the like.
 
 *2. API Validations*
 
@@ -40,7 +43,10 @@ ApiResponseValidator.java contains methods for validations of API like schema va
 *3. Report Helpers*
 
 ReportHelper.java has all method related to reporting. Functionality like automated reporting for accessing API, validation failures in comparison and method for logging additional information are leveraged from this class.
+This class has to be extended by each Test class. It initialises the report file at the beginning of each class and flushes it at the end of it.
+The results of each suite/individual run are also pushed to InfluxDb for monitoring.
 
 *4. Data Helpers*
 
-The package for data helpers have functionality w.r.t fetching data from multiple data sources like MongoDB, OracleSQL, Aerospike and Excel. It also has TestDataHelper that can be used with @DataProvider method of TestNg for providing multiple data to a test case.
+The package for data helpers have functionality w.r.t fetching data from multiple data sources like MongoDB, OracleSQL, Aerospike and Excel. 
+TestDataHelper.java class has multiple implementations of @DataProvider annotation of TestNg. It fetches data from different sources and feeds it into the DataProvider of TestNg.
