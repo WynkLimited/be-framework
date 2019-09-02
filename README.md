@@ -9,6 +9,14 @@ dto - Request or response pojo, if required should be put as part of this packag
 config - All configuration should be put as part of this package.
 test - Test classes are mentioned in src/test/java. No business or validation logic should be put in here. All test should be light weight and use methods mentioned in controller or helper classes for validating test case. *TestClasses should alway extend ReportHelper for automated report logging.*
 
+**Use cases solved using the framework**
+
+- *Comparison b/w 2 JSON on same structure:* For discovery APIs or GET API, comparison b/w 2 JSON is used across all LOBs.
+- *Comparison b/w 2 JSON on different structure:* For certain use cases, validation of API needs to be carried out with child API or downstream API. For those use cases, this methodology is used.
+- *Schema and response code validation:* Basic schema & response code validation that should be done for all API is easily integratable using the framework
+- *Data validation with different database:* For transaction APIs, data validations are done with downstreams like Mongo, Oracle, Aerospike etc. Ready to use methods for fetching data from these DB can be wrapped and used for validation.
+
+
 **How to include**
 
 Add the following dependency in your LOB framework
@@ -27,7 +35,7 @@ ApiHelper.java contains all important functions w.r.t accessing API, converting 
 
 *2. API Validations*
 
-ApiResponseValidator.java contains methods for validations of API like schema validations and Json comparator. GenericComparator.java is used for comparing 2 different structured JSON by leveraging Json Paths.
+ApiResponseValidator.java contains methods for validations of API like schema validations and Json comparator. GenericComparator.java is used for comparing 2 different structured JSON by leveraging Json Paths. JsonComparator is a wrapper on zsonpatch and helps in providing difference b/w 2 JSON of same object. 
 
 *3. Report Helpers*
 
