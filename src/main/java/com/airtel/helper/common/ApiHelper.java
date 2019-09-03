@@ -8,6 +8,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
 
+import com.airtel.Models.Constants;
+import com.airtel.Models.LogItemReq;
 import com.airtel.helper.Interfaces.IJsonParser;
 import com.airtel.helper.constants.RequestType;
 import com.airtel.helper.data.DataHelper;
@@ -30,7 +32,7 @@ import io.restassured.http.Header;
 import io.restassured.http.Headers;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
-
+import com.report.*;
 /**
  * This class contains methods for generic functions over the API that includes
  * fetching response for GET/POST Request, marshaling & unmarshalling between
@@ -136,7 +138,17 @@ public class ApiHelper extends DataHelper
         }
 
         long responseTime = apiResponse.getTime();
-        logRequestResponse(requestLog, formatResponse(apiResponse), requestUrl, responseTime, headerData);
+        String resString = formatResponse(apiResponse);
+        logRequestResponse(requestLog, resString, requestUrl, responseTime, headerData);
+
+        LogItemReq logItemReq = new LogItemReq();
+        logItemReq.setType(Constants.LOGITEMTYPE.APILog);
+        logItemReq.setHeaders(headerData);
+        logItemReq.setTargetApiUrl(requestUrl);
+        logItemReq.setResStatusCode(apiResponse.statusCode());
+        logItemReq.setMessage(resString);
+        SentinelLogger.info(logItemReq);
+
         if (checkStatus && apiResponse.getStatusCode() != 200 && apiResponse.getStatusCode() != 204)
         {
             ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
@@ -436,9 +448,12 @@ public class ApiHelper extends DataHelper
             requestFilePath = fileHelper.createRequestJsonFile(request, "");
         String responseFilePath = fileHelper.createResponseJsonFile(response, "");
         String reportFolder = reporter.getResultFileStringPath();
+
         reporter.appendresultHTMLReport(reportFolder, url, "<a href='" + requestFilePath + "'>Request Data" + "</a>",
                 "<a href='" + responseFilePath + "'>Response Data" + "</a>",
                 "Response Time(in msec) :- " + String.valueOf(responseTime), "", "", headers);
+
+
     }
 
     /**
@@ -600,6 +615,15 @@ public class ApiHelper extends DataHelper
         long responseTime = apiResponse.getTime();
         logRequestResponse(requestLog, formatResponse(apiResponse), requestUrl,
                 responseTime, headerData);
+
+        LogItemReq logItemReq = new LogItemReq();
+        logItemReq.setType(Constants.LOGITEMTYPE.APILog);
+        logItemReq.setHeaders(headerData);
+        logItemReq.setTargetApiUrl(requestUrl);
+        logItemReq.setResStatusCode(apiResponse.statusCode());
+        logItemReq.setMessage( formatResponse(apiResponse));
+        SentinelLogger.info(logItemReq);
+
         if (apiResponse.getStatusCode() != statusCode)
         {
             ReportHelper.logValidationFailure("HTTP Status code not " + Integer.toString(statusCode),

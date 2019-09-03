@@ -11,21 +11,21 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.airtel.listener.testng.Vangaurd;
+import com.report.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.testng.ITestContext;
 import org.testng.ITestNGMethod;
 import org.testng.ITestResult;
 import org.testng.Reporter;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.*;
 
 import com.airtel.helper.common.BaseTestClass;
 import com.airtel.helper.data.InfluxDbHelper;
 import com.airtel.helper.logging.AirtelLoggingMgr;
 
+@Listeners(Vangaurd.class)
 public class ReportHelper implements ReportConstants {
 
     static int count = 0;
@@ -254,9 +254,13 @@ public class ReportHelper implements ReportConstants {
             Reporter.log("<br>");
             if (status) {
                 Reporter.log("<Font Color=#008000> PASS </Font>" + sMessage);
+                SentinelLogger.info(sMessage);
             } else {
                 Reporter.log("<Font Color=red> FAIL </Font> " + sMessage);
+                SentinelLogger.error(sMessage);
             }
+
+
         } catch (Exception e) {
             logger.error("Not able to log in report - " + e);
         }

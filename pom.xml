@@ -3,13 +3,21 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.airtel.api-automation</groupId>
 	<artifactId>api-automation-framework</artifactId>
-	<version>1.4.28</version>
+	<version>1.4.29</version>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jre.level>1.8</jre.level>
 		<jdk.level>1.8</jdk.level>
 	</properties>
 	<build>
+        <resources>
+        <resource>
+            <directory>src/main/config</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+        </resource>
+        </resources>
 		<plugins>
 			<!-- Compiler plug-in -->
 			<plugin>
@@ -21,6 +29,18 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 		</plugins>
 	</build>
 
@@ -79,6 +99,11 @@
 			<artifactId>zjsonpatch</artifactId>
 			<version>0.3.4</version>
 		</dependency>
+        <dependency>
+            <groupId>com.airtel.subTest-Ng</groupId>
+            <artifactId>subscriber-testNg</artifactId>
+            <version>1.0.7</version>
+        </dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.jayway.jsonpath/json-path -->
 		<dependency>
