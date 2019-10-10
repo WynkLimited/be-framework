@@ -25,7 +25,13 @@ import java.util.Map;
 public class MongoHelper extends BaseTestClass {
 
 	public static MongoClient connectToMongoDBServer(String serverIp, Integer port) {
-		mongoClient = new MongoClient(serverIp, port);
+		if (mongoClient ==null){
+			synchronized (MongoHelper.class){
+				if (mongoClient ==null){
+					mongoClient = new MongoClient(serverIp, port);
+				}
+			}
+		}
 		return mongoClient;
 	}
 
