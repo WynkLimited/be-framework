@@ -1,10 +1,9 @@
 package com.airtel.helper.data;
 
-import com.airtel.helper.common.ApiHelper;
+import com.airtel.helper.Interfaces.IDbHelper;
 import com.airtel.helper.report.FileHelper;
 import com.airtel.helper.report.ReportHelper;
 import org.testng.Reporter;
-import com.airtel.helper.Interfaces.IDbHelper;
 
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -77,14 +76,12 @@ public class DbHelper implements IDbHelper {
         } catch (SQLException e) {
             ReportHelper.logValidationFailure("Couldn't get db connection", "DB connection", e.getMessage(),
                     "DB connection failure");
-        } finally {
-            this.closeConnection(connection);
         }
 
         return result;
     }
 
-    private void closeConnection(Connection connection) {
+   public    void closeConnection(Connection connection) {
         try {
             connection.close();
         } catch (SQLException e) {
@@ -193,6 +190,35 @@ public class DbHelper implements IDbHelper {
 
     }
 
+
+
+    /**
+     * This method perform any DML operation on sql on the basis of query passed in parameter
+     * @param connection
+     * @param query
+     * @return
+     */
+    public  boolean performSqlOperations(Connection connection,String query) {
+        PreparedStatement preparedStatement = null;
+        boolean result=true;
+
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            return preparedStatement.executeUpdate() == 1; // execute the preparedstatement and return result accordingly
+
+        } catch (SQLException ex) {
+            result=false;
+            ReportHelper.reporterLogging(false, "Error In Executing sql query " + ex.getMessage());
+
+        } finally {
+            try {
+                preparedStatement.close();
+            } catch (Exception ex) {
+                ReportHelper.reporterLogging(false, "Error In closing preparedStatement in sql  " + ex.getMessage());
+            }
+        }
+        return result;
+    }
 
 
 }

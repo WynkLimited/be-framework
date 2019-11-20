@@ -28,5 +28,11 @@ public interface IMongoHelper {
     boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
                                 String searchKey, String searchValue, Object mongoNewUpdatedObject);
 
+   boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
+                        String searchKey, String searchValue, Map mongoNewUpdatedObject);
+
     List<JSONObject> fetchDataFromMongoForMultipleKeys(MongoClient mongoClient, Map<String, String> map, String dataBaseName, String collectionName);
+
+    boolean updateMongoDocuments(MongoClient mongoClient, String collectionName, String dataBaseName,
+                                 String searchKey, String searchValue, Map mongoNewUpdatedObject,boolean updateMultipleDocuments);
 }
