@@ -23,6 +23,9 @@ public interface IResponseValidator {
                                    String propFilePath);
 
 
+     boolean validateJsonSchema(String response, String responseSchema, String id);
+
+
 
 
 }

@@ -22,5 +22,7 @@ public interface IDbHelper {
 
     List<Map<String, String>> convertResultToMap(ResultSet resultSet);
 
+    void closeConnection(Connection connection);
 
+   boolean performSqlOperations(Connection connection,String query);
 }

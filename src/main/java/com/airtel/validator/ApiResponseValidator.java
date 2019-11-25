@@ -151,7 +151,7 @@ public class ApiResponseValidator extends JsonParser {
      * @param id
      * @return
      */
-    protected boolean validateJsonSchema(String response, String responseSchema, String id) {
+    public boolean validateJsonSchema(String response, String responseSchema, String id) {
         boolean schemaValidationFlag = false;
         ComparatorReportGenerator compareHtmlObj = new ComparatorReportGenerator();
         try {

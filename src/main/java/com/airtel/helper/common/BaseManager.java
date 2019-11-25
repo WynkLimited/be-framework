@@ -134,6 +134,20 @@ public abstract class BaseManager extends ApiHelper implements IManager, IDbHelp
     }
 
     @Override
+    public boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
+                                       String searchKey, String searchValue, Map mongoNewUpdatedObject) {
+
+        return this._mongoHelper.updateMongoDocument(mongoClient, dataBaseName, collectionName, searchKey, searchValue, mongoNewUpdatedObject);
+    }
+
+    @Override
+    public boolean updateMongoDocuments(MongoClient mongoClient, String collectionName, String dataBaseName,
+                                       String searchKey, String searchValue, Map mongoNewUpdatedObject,boolean updateMultipleDocuments) {
+
+        return this._mongoHelper.updateMongoDocuments(mongoClient, collectionName, dataBaseName, searchKey, searchValue, mongoNewUpdatedObject,updateMultipleDocuments);
+    }
+
+    @Override
     public List<JSONObject> fetchDataFromMongoForMultipleKeys(MongoClient mongoClient, Map<String, String> map, String dataBaseName, String collectionName) {
         return this._mongoHelper.fetchDataFromMongoForMultipleKeys(mongoClient, map, dataBaseName, collectionName);
     }
@@ -332,4 +346,25 @@ public abstract class BaseManager extends ApiHelper implements IManager, IDbHelp
 	public Object sortArray(Object unsortedArrayObj) {
 		return this._jsonHelper.sortArray(unsortedArrayObj);
 	}
+
+	@Override
+	public boolean validateJsonSchema(String response, String responseSchema, String id)
+    {
+        return this._responsevalidator.validateJsonSchema(response,responseSchema,id);
+    }
+
+    @Override
+   public void closeConnection(Connection connection)
+   {
+         this._dbHelper.closeConnection(connection);
+   }
+
+    @Override
+    public  boolean performSqlOperations(Connection connection,String query)
+    {
+       return this._dbHelper.performSqlOperations(connection,query);
+    }
+
+
+
 }

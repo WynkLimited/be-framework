@@ -311,6 +311,27 @@ public class ApiHelper extends DataHelper
      * @param checkStatus
      * @return
      */
+    public  Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
+                                                   String url, Map<String, String> queryParams, boolean checkStatus)
+    {
+        return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus,null);
+    }
+
+
+
+    /**
+     * This method will be used for getting response of POST request with headers with query params
+     * This method can pass/fail non-200 HTTP status code based on checkStatus field
+     * value as false/true.
+     *
+     * @param body
+     * @param headers
+     * @param contentType
+     * @param url
+     * @param queryParams
+     * @param checkStatus
+     * @return
+     */
     public Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
                                             String url, Map<String, String> queryParams, boolean checkStatus,Map<String,String> formParams)
     {

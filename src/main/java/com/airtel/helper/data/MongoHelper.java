@@ -1,7 +1,6 @@
 package com.airtel.helper.data;
 
 import com.airtel.helper.Interfaces.IMongoHelper;
-import com.airtel.helper.common.ApiHelper;
 import com.airtel.helper.common.BaseTestClass;
 import com.airtel.helper.report.ReportHelper;
 import com.mongodb.BasicDBList;
@@ -121,6 +120,58 @@ public class MongoHelper extends BaseTestClass implements IMongoHelper {
 
     /**
      * this method find a document on the basis of search key & value and then
+     * update either single  mongo document or multiple mongo documents
+     * which is passed in parameter as mongoNewUpdatedObject as it is without converting it to string
+     * @param mongoClient
+     * @param collectionName
+     * @param dataBaseName
+     * @param searchKey
+     * @param searchValue
+     * @param mongoNewUpdatedObject
+     * @return
+     */
+    public  boolean updateMongoDocuments(MongoClient mongoClient, String collectionName, String dataBaseName,
+                                               String searchKey, String searchValue, Map mongoNewUpdatedObject,boolean updateMultipleDocuments) {
+        boolean updateStatus = true;
+        MongoCollection mongoCollection = null;
+        try {
+            mongoCollection = getCollection(mongoClient, dataBaseName, collectionName);
+            BasicDBObject query = new BasicDBObject();
+            query.append(searchKey, searchValue);
+            Bson newDocument = new Document("$set", mongoNewUpdatedObject);
+            if (updateMultipleDocuments)mongoCollection.updateMany(query, newDocument);
+            else
+                mongoCollection.findOneAndUpdate(query, newDocument);
+        } catch (Exception e) {
+            updateStatus = false;
+            ReportHelper.reporterLogging(false,
+                    "Error In updating Mongo Document datatabase " + dataBaseName + " collection  :  "
+                            + mongoCollection +" with exception -> "+e);
+        }
+
+        return updateStatus;
+    }
+
+    /**
+     *
+     * This method find a document on the basis of search key & value and then
+     * update only single mongo document for the Map passed as mongoNewUpdatedObject(key value pair ) in request
+     * @param mongoClient
+     * @param collectionName
+     * @param dataBaseName
+     * @param searchKey
+     * @param searchValue
+     * @param mongoNewUpdatedObject
+     * @return
+     */
+    public boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
+                                              String searchKey, String searchValue, Map mongoNewUpdatedObject) {
+        return updateMongoDocuments(mongoClient,collectionName,dataBaseName,searchKey,searchValue,mongoNewUpdatedObject,false);
+    }
+
+
+    /**
+     * this method find a document on the basis of search key & value and then
      * update a mongo document which is passed in parameter as mongoNewUpdatedObject
      *
      * @param mongoClient
@@ -131,8 +182,8 @@ public class MongoHelper extends BaseTestClass implements IMongoHelper {
      * @param mongoNewUpdatedObject
      * @return
      */
-    public boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
-                                       String searchKey, String searchValue, Object mongoNewUpdatedObject) {
+    public  boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
+                                              String searchKey, String searchValue, Object mongoNewUpdatedObject) {
         boolean updateStatus = true;
         MongoCollection mongoCollection = null;
         try {
