@@ -130,14 +130,14 @@ public abstract class BaseManager extends ApiHelper implements IManager, IDbHelp
     public boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
                                        String searchKey, String searchValue, Object mongoNewUpdatedObject) {
 
-        return this._mongoHelper.updateMongoDocument(mongoClient, dataBaseName, collectionName, searchKey, searchValue, mongoNewUpdatedObject);
+        return this._mongoHelper.updateMongoDocument(mongoClient, collectionName, dataBaseName,searchKey, searchValue, mongoNewUpdatedObject);
     }
 
     @Override
     public boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
                                        String searchKey, String searchValue, Map mongoNewUpdatedObject) {
 
-        return this._mongoHelper.updateMongoDocument(mongoClient, dataBaseName, collectionName, searchKey, searchValue, mongoNewUpdatedObject);
+        return this._mongoHelper.updateMongoDocument(mongoClient,collectionName, dataBaseName,searchKey, searchValue, mongoNewUpdatedObject);
     }
 
     @Override
