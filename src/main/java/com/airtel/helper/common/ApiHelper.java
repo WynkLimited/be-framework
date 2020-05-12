@@ -525,7 +525,7 @@ public class ApiHelper extends DataHelper
                 responseString = gson.toJson(json);
             }
             else
-    			responseString = apiResponse.asString();
+				responseString = decryptAPIResponse(apiResponse.getHeader("googleCookie"), apiResponse.asString());
         }
         else
             responseString = apiResponse.asString();
