@@ -524,6 +524,8 @@ public class ApiHelper extends DataHelper
                 JsonArray json = jsonElement.getAsJsonArray();
                 responseString = gson.toJson(json);
             }
+            else
+    			responseString = apiResponse.asString();
         }
         else
             responseString = apiResponse.asString();
