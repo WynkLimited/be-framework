@@ -40,637 +40,582 @@ import com.report.*;
  *
  * @author b0202849
  */
-public class ApiHelper extends DataHelper
-{
+public class ApiHelper extends DataHelper {
 
+	private Logger apiHelperLog;
+	private ReportHelper reporter;
+	private FileHelper fileHelper;
 
-    private Logger apiHelperLog;
-    private ReportHelper reporter;
-    private FileHelper fileHelper;
+	public ApiHelper() {
+		apiHelperLog = AirtelLoggingMgr.getLogger(ApiHelper.class);
+		reporter = new ReportHelper();
+		fileHelper = new FileHelper();
+	}
 
-    public ApiHelper()
-    {
-        apiHelperLog = AirtelLoggingMgr.getLogger(ApiHelper.class);
-        reporter = new ReportHelper();
-        fileHelper = new FileHelper();
-    }
+	private RequestSpecification prepareRequestParams(Map<String, String> queryParams, List<Header> headers,
+			String body, ContentType contentType, Map<String, String> formParams) {
+		RequestSpecification request = RestAssured.given().relaxedHTTPSValidation().redirects().follow(false);
+		if (null != queryParams) {
+			request.queryParams(queryParams);
+		}
 
-    private RequestSpecification prepareRequestParams(Map<String, String> queryParams, List<Header> headers,
-                                                      String body, ContentType contentType, Map<String, String> formParams)
-    {
-        RequestSpecification request = RestAssured.given().relaxedHTTPSValidation().redirects().follow(false);
-        if (null != queryParams)
-        {
-            request.queryParams(queryParams);
-        }
+		if (null != formParams) {
+			request.formParams(formParams);
+		}
 
-        if (null != formParams)
-        {
-            request.formParams(formParams);
-        }
+		if (headers != null)
+			request.headers(new Headers(headers));
+		if (body != null && !body.isEmpty()) {
+			request.body(body);
+		}
+		if (contentType != null)
+			request.contentType(contentType);
 
-        if (headers != null)
-            request.headers(new Headers(headers));
-        if (body != null && !body.isEmpty())
-        {
-            request.body(body);
-        }
-        if (contentType != null)
-            request.contentType(contentType);
+		return request;
+	}
 
-        return request;
-    }
+	/**
+	 * Generic method to fetch response for different type of API request
+	 *
+	 * @param requestUrl
+	 * @param requestType
+	 * @param body
+	 * @param queryParams
+	 * @param headers
+	 * @param checkStatus
+	 * @return
+	 */
+	public Response fetchApiResponse(String requestUrl, String requestType, String body,
+			Map<String, String> queryParams, List<Header> headers, ContentType contentType, boolean checkStatus,
+			Map<String, String> formParams) {
 
-    /**
-     * Generic method to fetch response for different type of API request
-     *
-     * @param requestUrl
-     * @param requestType
-     * @param body
-     * @param queryParams
-     * @param headers
-     * @param checkStatus
-     * @return
-     */
-    public Response fetchApiResponse(String requestUrl, String requestType, String body,
-                                     Map<String, String> queryParams, List<Header> headers, ContentType contentType, boolean checkStatus, Map<String, String> formParams)
-    {
+		Response apiResponse = null;
+		String requestLog = null;
+		RequestSpecification apiRequest = prepareRequestParams(queryParams, headers, body, contentType, formParams);
 
-        Response apiResponse = null;
-        String requestLog = null;
-        RequestSpecification apiRequest = prepareRequestParams(queryParams, headers, body, contentType, formParams);
+		requestLog = "Request body: " + body;
 
-        requestLog = "Request body: " + body;
+		String headerData = "";
 
-        String headerData = "";
+		if (headers != null) {
+			for (Header h : headers) {
+				headerData = headerData + h.getName() + " : " + h.getValue();
+			}
+		}
 
-        if (headers != null)
-        {
-            for (Header h : headers)
-            {
-                headerData = headerData + h.getName() + " : " + h.getValue();
-            }
-        }
+		if (queryParams != null)
+			requestLog = requestLog + "Query Params:" + queryParams.toString();
 
-        if (queryParams != null)
-            requestLog = requestLog + "Query Params:" + queryParams.toString();
+		switch (RequestType.valueOf(requestType.toUpperCase())) {
+		case GET:
+			apiResponse = apiRequest.get(requestUrl);
+			break;
+		case POST:
+			apiResponse = apiRequest.post(requestUrl);
+			break;
+		case PUT:
+			apiResponse = apiRequest.put(requestUrl);
+			break;
+		case PATCH:
+			apiResponse = apiRequest.patch(requestUrl);
+			break;
+		case DELETE:
+			apiResponse = apiRequest.delete(requestUrl);
+			break;
+		default:
+			apiResponse = apiRequest.head(requestUrl);
+			break;
+		}
 
-        switch (RequestType.valueOf(requestType.toUpperCase()))
-        {
-            case GET:
-                apiResponse = apiRequest.get(requestUrl);
-                break;
-            case POST:
-                apiResponse = apiRequest.post(requestUrl);
-                break;
-            case PUT:
-                apiResponse = apiRequest.put(requestUrl);
-                break;
-            case PATCH:
-                apiResponse = apiRequest.patch(requestUrl);
-                break;
-            case DELETE:
-                apiResponse = apiRequest.delete(requestUrl);
-                break;
-            default:
-                apiResponse = apiRequest.head(requestUrl);
-                break;
-        }
+		long responseTime = apiResponse.getTime();
+		String resString = formatResponse(apiResponse);
+		logRequestResponse(requestLog, resString, requestUrl, responseTime, headerData);
 
-        long responseTime = apiResponse.getTime();
-        String resString = formatResponse(apiResponse);
-        logRequestResponse(requestLog, resString, requestUrl, responseTime, headerData);
+		LogItemReq logItemReq = new LogItemReq();
+		logItemReq.setType(Constants.LOGITEMTYPE.APILog);
+		logItemReq.setHeaders(headerData);
+		logItemReq.setTargetApiUrl(requestUrl);
+		logItemReq.setResStatusCode(apiResponse.statusCode());
+		logItemReq.setMessage(resString);
+		SentinelLogger.info(logItemReq);
 
-        LogItemReq logItemReq = new LogItemReq();
-        logItemReq.setType(Constants.LOGITEMTYPE.APILog);
-        logItemReq.setHeaders(headerData);
-        logItemReq.setTargetApiUrl(requestUrl);
-        logItemReq.setResStatusCode(apiResponse.statusCode());
-        logItemReq.setMessage(resString);
-        SentinelLogger.info(logItemReq);
+		if (checkStatus && apiResponse.getStatusCode() != 200 && apiResponse.getStatusCode() != 204) {
+			ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
+					Integer.toString(apiResponse.getStatusCode()), "HTTP status check failure");
+			Assert.assertTrue(false);
+		}
+		return apiResponse;
+	}
 
-        if (checkStatus && apiResponse.getStatusCode() != 200 && apiResponse.getStatusCode() != 204)
-        {
-            ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
-                    Integer.toString(apiResponse.getStatusCode()), "HTTP status check failure");
-            Assert.assertTrue(false);
-        }
-        return apiResponse;
-    }
+	/**
+	 * This method will be used for getting response of GET request w/o headers.
+	 * This method will always fail non 200 HTTP response.
+	 *
+	 * @param queryParams
+	 * @param url
+	 * @return response
+	 */
+	public Response getResponse(Map<String, String> queryParams, String url) {
+		return getResponseWithHeaders(queryParams, null, url, true);
+	}
 
-    /**
-     * This method will be used for getting response of GET request w/o headers.
-     * This method will always fail non 200 HTTP response.
-     *
-     * @param queryParams
-     * @param url
-     * @return response
-     */
-    public Response getResponse(Map<String, String> queryParams, String url)
-    {
-        return getResponseWithHeaders(queryParams, null, url, true);
-    }
+	/**
+	 * This method will be used for getting response of GET request w/o headers.
+	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
+	 * value as false/true.
+	 *
+	 * @param queryParams
+	 * @param url
+	 * @param checkStatus
+	 * @return
+	 */
+	public Response getResponse(Map<String, String> queryParams, String url, boolean checkStatus) {
+		return getResponseWithHeaders(queryParams, null, url, checkStatus);
+	}
 
-    /**
-     * This method will be used for getting response of GET request w/o headers.
-     * This method can pass/fail non-200 HTTP status code based on checkStatus field
-     * value as false/true.
-     *
-     * @param queryParams
-     * @param url
-     * @param checkStatus
-     * @return
-     */
-    public Response getResponse(Map<String, String> queryParams, String url, boolean checkStatus)
-    {
-        return getResponseWithHeaders(queryParams, null, url, checkStatus);
-    }
+	/**
+	 * This method will be used for getting response of GET request with headers.
+	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
+	 * value as false/true.
+	 *
+	 * @param queryParams
+	 * @param headers
+	 * @param url
+	 * @return
+	 */
+	public Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url) {
+		return getResponseWithHeaders(queryParams, headers, url, true);
+	}
 
-    /**
-     * This method will be used for getting response of GET request with headers.
-     * This method can pass/fail non-200 HTTP status code based on checkStatus field
-     * value as false/true.
-     *
-     * @param queryParams
-     * @param headers
-     * @param url
-     * @return
-     */
-    public Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url)
-    {
-        return getResponseWithHeaders(queryParams, headers, url, true);
-    }
+	/**
+	 * This method will be used for getting response of GET request with headers.
+	 * This method will fail non 200 HTTP response.
+	 *
+	 * @param queryParams
+	 * @param headers
+	 * @param url
+	 * @param checkStatus
+	 * @return
+	 */
+	public Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url,
+			boolean checkStatus, Map<String, String> formParams) {
+		return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus, formParams);
+	}
 
-    /**
-     * This method will be used for getting response of GET request with headers.
-     * This method will fail non 200 HTTP response.
-     *
-     * @param queryParams
-     * @param headers
-     * @param url
-     * @param checkStatus
-     * @return
-     */
-    public Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url,
-                                           boolean checkStatus, Map<String, String> formParams)
-    {
-        return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus, formParams);
-    }
+	/**
+	 * This method will be used for getting response of GET request with headers.
+	 * This method will fail non 200 HTTP response.
+	 *
+	 * @param queryParams
+	 * @param headers
+	 * @param url
+	 * @param checkStatus
+	 * @return
+	 */
+	public Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url,
+			boolean checkStatus) {
+		return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus, null);
+	}
 
-    /**
-     * This method will be used for getting response of GET request with headers.
-     * This method will fail non 200 HTTP response.
-     *
-     * @param queryParams
-     * @param headers
-     * @param url
-     * @param checkStatus
-     * @return
-     */
-    public Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url,
-                                                  boolean checkStatus)
-    {
-        return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus, null);
-    }
+	/**
+	 * This method will be used for getting response of POST request w/o headers.
+	 * This method will always fail non 200 response.
+	 *
+	 * @param body
+	 * @param contentType
+	 * @param url
+	 * @return
+	 */
+	public Response postResponse(String body, ContentType contentType, String url) {
+		return postResponseWithHeaders(body, null, contentType, url, true);
+	}
 
-    /**
-     * This method will be used for getting response of POST request w/o headers.
-     * This method will always fail non 200 response.
-     *
-     * @param body
-     * @param contentType
-     * @param url
-     * @return
-     */
-    public Response postResponse(String body, ContentType contentType, String url)
-    {
-        return postResponseWithHeaders(body, null, contentType, url, true);
-    }
+	/**
+	 * This method will be used for getting response of POST request w/o headers.
+	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
+	 * value as false/true.
+	 *
+	 * @param body
+	 * @param contentType
+	 * @param url
+	 * @param checkStatus
+	 * @return
+	 */
+	public Response postResponse(String body, ContentType contentType, String url, boolean checkStatus) {
+		return postResponseWithHeaders(body, null, contentType, url, checkStatus);
+	}
 
-    /**
-     * This method will be used for getting response of POST request w/o headers.
-     * This method can pass/fail non-200 HTTP status code based on checkStatus field
-     * value as false/true.
-     *
-     * @param body
-     * @param contentType
-     * @param url
-     * @param checkStatus
-     * @return
-     */
-    public Response postResponse(String body, ContentType contentType, String url, boolean checkStatus)
-    {
-        return postResponseWithHeaders(body, null, contentType, url, checkStatus);
-    }
+	/**
+	 * This method will be used for getting response of POST request with headers.
+	 * This method will always fail non 200 response.
+	 *
+	 * @param body
+	 * @param headers
+	 * @param contentType
+	 * @param url
+	 * @return
+	 */
+	public Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType, String url) {
+		return postResponseWithHeaders(body, headers, contentType, url, true);
+	}
 
-    /**
-     * This method will be used for getting response of POST request with headers.
-     * This method will always fail non 200 response.
-     *
-     * @param body
-     * @param headers
-     * @param contentType
-     * @param url
-     * @return
-     */
-    public Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
-                                            String url)
-    {
-        return postResponseWithHeaders(body, headers, contentType, url, true);
-    }
+	/**
+	 * This method will be used for getting response of POST request with headers.
+	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
+	 * value as false/true.
+	 *
+	 * @param body
+	 * @param headers
+	 * @param contentType
+	 * @param url
+	 * @param checkStatus
+	 * @return
+	 */
+	public Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType, String url,
+			boolean checkStatus) {
+		return fetchApiResponse(url, "POST", body, null, headers, contentType, checkStatus, null);
+	}
 
-    /**
-     * This method will be used for getting response of POST request with headers.
-     * This method can pass/fail non-200 HTTP status code based on checkStatus field
-     * value as false/true.
-     *
-     * @param body
-     * @param headers
-     * @param contentType
-     * @param url
-     * @param checkStatus
-     * @return
-     */
-    public Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
-                                            String url, boolean checkStatus)
-    {
-        return fetchApiResponse(url, "POST", body, null, headers, contentType, checkStatus, null);
-    }
+	/**
+	 * This method will be used for getting response of POST request with headers
+	 * with query params This method can pass/fail non-200 HTTP status code based on
+	 * checkStatus field value as false/true.
+	 *
+	 * @param body
+	 * @param headers
+	 * @param contentType
+	 * @param url
+	 * @param queryParams
+	 * @param checkStatus
+	 * @return
+	 */
+	public Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType, String url,
+			Map<String, String> queryParams, boolean checkStatus) {
+		return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus, null);
+	}
 
+	/**
+	 * This method will be used for getting response of POST request with headers
+	 * with query params This method can pass/fail non-200 HTTP status code based on
+	 * checkStatus field value as false/true.
+	 *
+	 * @param body
+	 * @param headers
+	 * @param contentType
+	 * @param url
+	 * @param queryParams
+	 * @param checkStatus
+	 * @return
+	 */
+	public Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType, String url,
+			Map<String, String> queryParams, boolean checkStatus, Map<String, String> formParams) {
+		return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus, formParams);
+	}
 
-    /**
-     * This method will be used for getting response of POST request with headers with query params
-     * This method can pass/fail non-200 HTTP status code based on checkStatus field
-     * value as false/true.
-     *
-     * @param body
-     * @param headers
-     * @param contentType
-     * @param url
-     * @param queryParams
-     * @param checkStatus
-     * @return
-     */
-    public  Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
-                                                   String url, Map<String, String> queryParams, boolean checkStatus)
-    {
-        return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus,null);
-    }
+	/**
+	 * This method will be used for getting response of POST request w/o headers.
+	 * This method will always fail non 200 response.
+	 *
+	 * @param body
+	 * @param contentType
+	 * @param url
+	 * @return
+	 */
+	public Response putResponse(String body, ContentType contentType, String url) {
+		return putResponseWithHeaders(body, null, contentType, url, true);
+	}
 
+	/**
+	 * This method will be used for getting response of POST request w/o headers.
+	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
+	 * value as false/true.
+	 *
+	 * @param body
+	 * @param contentType
+	 * @param url
+	 * @param checkStatus
+	 * @return
+	 */
+	public Response putResponse(String body, ContentType contentType, String url, boolean checkStatus) {
+		return putResponseWithHeaders(body, null, contentType, url, checkStatus);
+	}
 
+	/**
+	 * This method will be used for getting response of POST request with headers.
+	 * This method will always fail non 200 response.
+	 *
+	 * @param body
+	 * @param headers
+	 * @param contentType
+	 * @param url
+	 * @return
+	 */
+	public Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType, String url) {
+		return putResponseWithHeaders(body, headers, contentType, url, true);
+	}
 
-    /**
-     * This method will be used for getting response of POST request with headers with query params
-     * This method can pass/fail non-200 HTTP status code based on checkStatus field
-     * value as false/true.
-     *
-     * @param body
-     * @param headers
-     * @param contentType
-     * @param url
-     * @param queryParams
-     * @param checkStatus
-     * @return
-     */
-    public Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
-                                            String url, Map<String, String> queryParams, boolean checkStatus,Map<String,String> formParams)
-    {
-        return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus,formParams);
-    }
+	/**
+	 * This method will be used for getting response of POST request with headers.
+	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
+	 * value as false/true.
+	 *
+	 * @param body
+	 * @param headers
+	 * @param contentType
+	 * @param url
+	 * @param checkStatus
+	 * @return
+	 */
+	public Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType, String url,
+			boolean checkStatus) {
+		return fetchApiResponse(url, "PUT", body, null, headers, contentType, checkStatus, null);
+	}
 
-    /**
-     * This method will be used for getting response of POST request w/o headers.
-     * This method will always fail non 200 response.
-     *
-     * @param body
-     * @param contentType
-     * @param url
-     * @return
-     */
-    public Response putResponse(String body, ContentType contentType, String url)
-    {
-        return putResponseWithHeaders(body, null, contentType, url, true);
-    }
+	/**
+	 * This method will be used for getting response of POST request with headers.
+	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
+	 * value as false/true.
+	 *
+	 * @param body
+	 * @param headers
+	 * @param contentType
+	 * @param url
+	 * @param checkStatus
+	 * @param formParams
+	 * @return
+	 */
+	public Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType, String url,
+			boolean checkStatus, Map<String, String> formParams) {
+		return fetchApiResponse(url, "PUT", body, null, headers, contentType, checkStatus, formParams);
+	}
 
-    /**
-     * This method will be used for getting response of POST request w/o headers.
-     * This method can pass/fail non-200 HTTP status code based on checkStatus field
-     * value as false/true.
-     *
-     * @param body
-     * @param contentType
-     * @param url
-     * @param checkStatus
-     * @return
-     */
-    public Response putResponse(String body, ContentType contentType, String url, boolean checkStatus)
-    {
-        return putResponseWithHeaders(body, null, contentType, url, checkStatus);
-    }
+	/**
+	 * This method will be used for getting response of POST request with headers
+	 * with query params This method can pass/fail non-200 HTTP status code based on
+	 * checkStatus field value as false/true.
+	 *
+	 * @param body
+	 * @param headers
+	 * @param contentType
+	 * @param url
+	 * @param queryParams
+	 * @param checkStatus
+	 * @return
+	 */
+	public Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType, String url,
+			Map<String, String> queryParams, boolean checkStatus) {
+		return fetchApiResponse(url, "PUT", body, queryParams, headers, contentType, checkStatus, null);
+	}
 
-    /**
-     * This method will be used for getting response of POST request with headers.
-     * This method will always fail non 200 response.
-     *
-     * @param body
-     * @param headers
-     * @param contentType
-     * @param url
-     * @return
-     */
-    public Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
-                                           String url)
-    {
-        return putResponseWithHeaders(body, headers, contentType, url, true);
-    }
+	/**
+	 * This method will be used for getting response of POST request with headers
+	 * with query params This method can pass/fail non-200 HTTP status code based on
+	 * checkStatus field value as false/true.
+	 *
+	 * @param body
+	 * @param headers
+	 * @param contentType
+	 * @param url
+	 * @param queryParams
+	 * @param checkStatus
+	 * @return
+	 */
+	public Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType, String url,
+			Map<String, String> queryParams, boolean checkStatus, Map<String, String> formParams) {
+		return fetchApiResponse(url, "PUT", body, queryParams, headers, contentType, checkStatus, formParams);
+	}
 
-    /**
-     * This method will be used for getting response of POST request with headers.
-     * This method can pass/fail non-200 HTTP status code based on checkStatus field
-     * value as false/true.
-     *
-     * @param body
-     * @param headers
-     * @param contentType
-     * @param url
-     * @param checkStatus
-     * @return
-     */
-    public Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
-                                           String url, boolean checkStatus)
-    {
-        return fetchApiResponse(url, "PUT", body, null, headers, contentType, checkStatus, null);
-    }
+	private void logRequestResponse(String request, String response, String url, long responseTime, String headers) {
+		String requestFilePath = "";
+		if (request != null)
+			requestFilePath = fileHelper.createRequestJsonFile(request, "");
+		String responseFilePath = fileHelper.createResponseJsonFile(response, "");
+		String reportFolder = reporter.getResultFileStringPath();
 
-    /**
-     * This method will be used for getting response of POST request with headers.
-     * This method can pass/fail non-200 HTTP status code based on checkStatus field
-     * value as false/true.
-     *
-     * @param body
-     * @param headers
-     * @param contentType
-     * @param url
-     * @param checkStatus
-     * @param formParams
-     * @return
-     */
-    public Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
-                                           String url, boolean checkStatus, Map<String, String> formParams)
-    {
-        return fetchApiResponse(url, "PUT", body, null, headers, contentType, checkStatus, formParams);
-    }
+		reporter.appendresultHTMLReport(reportFolder, url, "<a href='" + requestFilePath + "'>Request Data" + "</a>",
+				"<a href='" + responseFilePath + "'>Response Data" + "</a>",
+				"Response Time(in msec) :- " + String.valueOf(responseTime), "", "", headers);
 
+	}
 
-    /**
-     * This method will be used for getting response of POST request with headers with query params
-     * This method can pass/fail non-200 HTTP status code based on checkStatus field
-     * value as false/true.
-     *
-     * @param body
-     * @param headers
-     * @param contentType
-     * @param url
-     * @param queryParams
-     * @param checkStatus
-     * @return
-     */
-    public Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
-                                           String url, Map<String, String> queryParams, boolean checkStatus)
-    {
-        return fetchApiResponse(url, "PUT", body, queryParams, headers, contentType, checkStatus, null);
-    }
+	/**
+	 * Method to fetch logs from ES for a particular request ID. This method will be
+	 * used before comparison of logs in ES & api response. Collection name will be
+	 * the name of es logs collections where logs will be present.
+	 *
+	 * @param server
+	 * @param collectionName
+	 * @param keyName
+	 * @param value
+	 * @return
+	 */
+	public String fetchEsLogsResponse(String server, String collectionName, String keyName, String value) {
+		StringBuilder urlBuilder = new StringBuilder();
+		String url = urlBuilder.append("http://").append(server).append(":9200/").append(collectionName)
+				.append("_search").toString();
+		Map<String, String> queryParams = new HashMap<>();
+		queryParams.put("q", keyName + ":" + value);
+		Response esResponse = getResponse(queryParams, url);
+		return esResponse.asString();
+	}
 
+	/**
+	 * Format JSON and pretty print the response
+	 *
+	 * @param apiResponse
+	 * @return
+	 */
+	private String formatResponse(Response apiResponse) {
+		String responseString = null;
 
-    /**
-     * This method will be used for getting response of POST request with headers with query params
-     * This method can pass/fail non-200 HTTP status code based on checkStatus field
-     * value as false/true.
-     *
-     * @param body
-     * @param headers
-     * @param contentType
-     * @param url
-     * @param queryParams
-     * @param checkStatus
-     * @return
-     */
-    public Response putResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
-                                           String url, Map<String, String> queryParams, boolean checkStatus, Map<String, String> formParams)
-    {
-        return fetchApiResponse(url, "PUT", body, queryParams, headers, contentType, checkStatus, formParams);
-    }
+		if (apiResponse.contentType().contains(ContentType.JSON.toString()) && apiResponse.asString() != null) {
+			JsonParser parser = new JsonParser();
+			JsonElement jsonElement = parser.parse(apiResponse.asString());
+			Gson gson = new GsonBuilder().setPrettyPrinting().create();
+			if (jsonElement instanceof JsonObject) {
+				JsonObject json = jsonElement.getAsJsonObject();
+				responseString = gson.toJson(json);
+			} else if (jsonElement instanceof JsonArray) {
+				JsonArray json = jsonElement.getAsJsonArray();
+				responseString = gson.toJson(json);
+			} else if (apiResponse.getHeaders().hasHeaderWithName("googleCookie")) {
+				responseString = decryptAPIResponse(apiResponse.getHeader("googleCookie"), apiResponse.asString());
+			}
+		} else
+			responseString = apiResponse.asString();
+		return responseString;
+	}
 
+	/**
+	 * This method decrpyts api response on the basis of googleCookie in Response
+	 * header
+	 *
+	 * @param key
+	 * @param encrypted
+	 * @return
+	 */
+	public String decryptAPIResponse(String key, String encrypted) {
+		try {
+			KeySpec keySpec = new DESKeySpec(key.getBytes());
+			SecretKey secretKey = SecretKeyFactory.getInstance("DES").generateSecret(keySpec);
+			Cipher cipher = Cipher.getInstance("DES");
+			cipher.init(Cipher.DECRYPT_MODE, secretKey);
+			String encryptedData = encrypted.replaceAll("\"", "");
+			byte[] original = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
+			return new String(original);
+		} catch (Exception e) {
 
-    private void logRequestResponse(String request, String response, String url, long responseTime, String headers)
-    {
-        String requestFilePath = "";
-        if (request != null)
-            requestFilePath = fileHelper.createRequestJsonFile(request, "");
-        String responseFilePath = fileHelper.createResponseJsonFile(response, "");
-        String reportFolder = reporter.getResultFileStringPath();
+			ReportHelper.reporterLogging(false,
+					"Error in decrypting API response. Key = " + key + " Response = " + encrypted);
+			return "";
+		}
+	}
 
-        reporter.appendresultHTMLReport(reportFolder, url, "<a href='" + requestFilePath + "'>Request Data" + "</a>",
-                "<a href='" + responseFilePath + "'>Response Data" + "</a>",
-                "Response Time(in msec) :- " + String.valueOf(responseTime), "", "", headers);
+	/**
+	 * This method will be used for getting response of POST request with headers.
+	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
+	 * value as false/true.
+	 *
+	 * @param body
+	 * @param headers
+	 * @param contentType
+	 * @param url
+	 * @param statusCode
+	 * @return
+	 */
+	public Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType, String url,
+			int statusCode, Map<String, String> formParams) {
+		return fetchApiResponse(url, "POST", body, null, headers, contentType, statusCode, formParams);
+	}
 
+	/**
+	 * Generic method to fetch response for different type of API request
+	 *
+	 * @param requestUrl
+	 * @param requestType
+	 * @param body
+	 * @param queryParams
+	 * @param headers
+	 * @param statusCode
+	 * @return
+	 */
+	public Response fetchApiResponse(String requestUrl, String requestType, String body,
+			Map<String, String> queryParams, List<Header> headers, ContentType contentType, int statusCode,
+			Map<String, String> formParams) {
 
-    }
+		Response apiResponse = null;
+		String requestLog = null;
+		RequestSpecification apiRequest = prepareRequestParams(queryParams, headers, body, contentType, formParams);
 
-    /**
-     * Method to fetch logs from ES for a particular request ID. This method will be
-     * used before comparison of logs in ES & api response. Collection name will be
-     * the name of es logs collections where logs will be present.
-     *
-     * @param server
-     * @param collectionName
-     * @param keyName
-     * @param value
-     * @return
-     */
-    public String fetchEsLogsResponse(String server, String collectionName, String keyName, String value)
-    {
-        StringBuilder urlBuilder = new StringBuilder();
-        String url = urlBuilder.append("http://").append(server).append(":9200/").append(collectionName)
-                .append("_search").toString();
-        Map<String, String> queryParams = new HashMap<>();
-        queryParams.put("q", keyName + ":" + value);
-        Response esResponse = getResponse(queryParams, url);
-        return esResponse.asString();
-    }
+		requestLog = "Request body: " + body;
 
-    /**
-     * Format JSON and pretty print the response
-     *
-     * @param apiResponse
-     * @return
-     */
-    private String formatResponse(Response apiResponse)
-    {
-        String responseString = null;
+		if (queryParams != null)
+			requestLog = requestLog + "Query Params:" + queryParams.toString();
 
-        if (apiResponse.contentType().contains(ContentType.JSON.toString()) && apiResponse.asString() != null)
-        {
-            JsonParser parser = new JsonParser();
-            JsonElement jsonElement = parser.parse(apiResponse.asString());
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            if (jsonElement instanceof JsonObject)
-            {
-                JsonObject json = jsonElement.getAsJsonObject();
-                responseString = gson.toJson(json);
-            }
-            else if (jsonElement instanceof JsonArray)
-            {
-                JsonArray json = jsonElement.getAsJsonArray();
-                responseString = gson.toJson(json);
-            }
-        }
-        else
-            responseString = apiResponse.asString();
-        return responseString;
-    }
+		String headerData = null;
+		if (headers != null) {
+			headerData = "";
+			for (Header h : headers) {
+				headerData = headerData + h.getName() + " : " + h.getValue();
+			}
+		}
 
-    /**
-     * This method decrpyts api response on the basis of googleCookie in Response
-     * header
-     *
-     * @param key
-     * @param encrypted
-     * @return
-     */
-    public String decryptAPIResponse(String key, String encrypted)
-    {
-        try
-        {
-            KeySpec keySpec = new DESKeySpec(key.getBytes());
-            SecretKey secretKey = SecretKeyFactory.getInstance("DES").generateSecret(keySpec);
-            Cipher cipher = Cipher.getInstance("DES");
-            cipher.init(Cipher.DECRYPT_MODE, secretKey);
-            String encryptedData = encrypted.replaceAll("\"", "");
-            byte[] original = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
-            return new String(original);
-        }
-        catch (Exception e)
-        {
+		switch (requestType) {
+		case "GET":
+			apiResponse = apiRequest.get(requestUrl);
+			break;
+		case "POST":
+			apiResponse = apiRequest.post(requestUrl);
+			break;
+		case "PUT":
+			apiResponse = apiRequest.put(requestUrl);
+			break;
+		case "PATCH":
+			apiResponse = apiRequest.patch(requestUrl);
+			break;
+		case "DELETE":
+			apiResponse = apiRequest.delete(requestUrl);
+			break;
+		default:
+			apiResponse = apiRequest.head(requestUrl);
+			break;
+		}
 
-            ReportHelper.reporterLogging(false,
-                    "Error in decrypting API response. Key = " + key + " Response = " + encrypted);
-            return "";
-        }
-    }
+		long responseTime = apiResponse.getTime();
+		logRequestResponse(requestLog, formatResponse(apiResponse), requestUrl, responseTime, headerData);
 
-    /**
-     * This method will be used for getting response of POST request with headers.
-     * This method can pass/fail non-200 HTTP status code based on checkStatus field
-     * value as false/true.
-     *
-     * @param body
-     * @param headers
-     * @param contentType
-     * @param url
-     * @param statusCode
-     * @return
-     */
-    public Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType,
-                                            String url, int statusCode, Map<String, String> formParams)
-    {
-        return fetchApiResponse(url, "POST", body, null, headers, contentType, statusCode, formParams);
-    }
+		LogItemReq logItemReq = new LogItemReq();
+		logItemReq.setType(Constants.LOGITEMTYPE.APILog);
+		logItemReq.setHeaders(headerData);
+		logItemReq.setTargetApiUrl(requestUrl);
+		logItemReq.setResStatusCode(apiResponse.statusCode());
+		logItemReq.setMessage(formatResponse(apiResponse));
+		SentinelLogger.info(logItemReq);
 
-    /**
-     * Generic method to fetch response for different type of API request
-     *
-     * @param requestUrl
-     * @param requestType
-     * @param body
-     * @param queryParams
-     * @param headers
-     * @param statusCode
-     * @return
-     */
-    public Response fetchApiResponse(String requestUrl, String requestType, String body,
-                                     Map<String, String> queryParams, List<Header> headers, ContentType contentType, int statusCode, Map<String, String> formParams)
-    {
+		if (apiResponse.getStatusCode() != statusCode) {
+			ReportHelper.logValidationFailure("HTTP Status code not " + Integer.toString(statusCode),
+					Integer.toString(statusCode), Integer.toString(apiResponse.getStatusCode()),
+					"HTTP status check failure");
+			Assert.assertTrue(false);
+		}
+		return apiResponse;
+	}
 
-        Response apiResponse = null;
-        String requestLog = null;
-        RequestSpecification apiRequest = prepareRequestParams(queryParams, headers, body, contentType, formParams);
-
-        requestLog = "Request body: " + body;
-
-        if (queryParams != null)
-            requestLog = requestLog + "Query Params:" + queryParams.toString();
-
-        String headerData = null;
-        if (headers != null)
-        {
-            headerData = "";
-            for (Header h : headers)
-            {
-                headerData = headerData + h.getName() + " : " + h.getValue();
-            }
-        }
-
-        switch (requestType)
-        {
-            case "GET":
-                apiResponse = apiRequest.get(requestUrl);
-                break;
-            case "POST":
-                apiResponse = apiRequest.post(requestUrl);
-                break;
-            case "PUT":
-                apiResponse = apiRequest.put(requestUrl);
-                break;
-            case "PATCH":
-                apiResponse = apiRequest.patch(requestUrl);
-                break;
-            case "DELETE":
-                apiResponse = apiRequest.delete(requestUrl);
-                break;
-            default:
-                apiResponse = apiRequest.head(requestUrl);
-                break;
-        }
-
-        long responseTime = apiResponse.getTime();
-        logRequestResponse(requestLog, formatResponse(apiResponse), requestUrl,
-                responseTime, headerData);
-
-        LogItemReq logItemReq = new LogItemReq();
-        logItemReq.setType(Constants.LOGITEMTYPE.APILog);
-        logItemReq.setHeaders(headerData);
-        logItemReq.setTargetApiUrl(requestUrl);
-        logItemReq.setResStatusCode(apiResponse.statusCode());
-        logItemReq.setMessage( formatResponse(apiResponse));
-        SentinelLogger.info(logItemReq);
-
-        if (apiResponse.getStatusCode() != statusCode)
-        {
-            ReportHelper.logValidationFailure("HTTP Status code not " + Integer.toString(statusCode),
-                    Integer.toString(statusCode), Integer.toString(apiResponse.getStatusCode()),
-                    "HTTP status check failure");
-            Assert.assertTrue(false);
-        }
-        return apiResponse;
-    }
-
-    /**
-     * This method will be used for getting response of POST request with headers and query parameters.
-     * This method can pass/fail non-200 HTTP status code based on checkStatus field
-     * value as false/true.
-     *
-     * @param body
-     * @param queryParams
-     * @param headers
-     * @param contentType
-     * @param url
-     * @param checkStatus
-     * @return
-     */
-    public Response postResponseWithHeaders(String body, Map<String, String> queryParams, List<Header> headers, ContentType contentType,
-                                            String url, boolean checkStatus, Map<String, String> formParams)
-    {
-        return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus, formParams);
-    }
+	/**
+	 * This method will be used for getting response of POST request with headers
+	 * and query parameters. This method can pass/fail non-200 HTTP status code
+	 * based on checkStatus field value as false/true.
+	 *
+	 * @param body
+	 * @param queryParams
+	 * @param headers
+	 * @param contentType
+	 * @param url
+	 * @param checkStatus
+	 * @return
+	 */
+	public Response postResponseWithHeaders(String body, Map<String, String> queryParams, List<Header> headers,
+			ContentType contentType, String url, boolean checkStatus, Map<String, String> formParams) {
+		return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus, formParams);
+	}
 }
