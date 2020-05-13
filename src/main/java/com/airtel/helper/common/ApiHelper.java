@@ -470,7 +470,6 @@ public class ApiHelper extends DataHelper {
 	 */
 	private String formatResponse(Response apiResponse) {
 		String responseString = null;
-
 		if (apiResponse.contentType().contains(ContentType.JSON.toString()) && apiResponse.asString() != null) {
 			JsonParser parser = new JsonParser();
 			JsonElement jsonElement = parser.parse(apiResponse.asString());
@@ -483,13 +482,14 @@ public class ApiHelper extends DataHelper {
 				responseString = gson.toJson(json);
 			} else if (apiResponse.getHeaders().hasHeaderWithName("googleCookie")) {
 				 String decryptResponse = decryptAPIResponse(apiResponse.getHeader("googleCookie"), apiResponse.asString());
-				 JSONObject json = new JSONObject(decryptResponse);
+				 JsonObject json = gson.fromJson(decryptResponse,JsonObject.class);
 				 responseString = gson.toJson(json);
 			}
 		} else
 			responseString = apiResponse.asString();
 		return responseString;
 	}
+	
 
 	/**
 	 * This method decrpyts api response on the basis of googleCookie in Response
