@@ -22,9 +22,9 @@ public class GetAuthManager extends BaseManager implements Constants {
 	private String request;
 	private GetAuthRequest authRequest;
 
-	public GetAuthManager(String request, String mobileNumber, String httpMethod,String env,String endPoint,Map<String,String> queryParams) {
+	public GetAuthManager(String env,String rtn,String endPoint,String httpMethod,String request,Map<String,String> queryParams) {
 		authRequest = convertFromJson(defaultRequest, GetAuthRequest.class);
-		this.queryParams.put("number", mobileNumber);
+		this.queryParams.put("number", rtn);
 		this.queryParams.put("env", env);
 		this.request = setRequest(httpMethod,request,endPoint,queryParams);
 	}

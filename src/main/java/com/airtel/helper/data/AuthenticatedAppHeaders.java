@@ -18,10 +18,9 @@ public class AuthenticatedAppHeaders {
 	public AuthenticatedAppHeaders() {
 	}
 
-	public List<Header> getEncryptedHeader(String request, String mobileNumber, String httpMethod, String env,
-			String endPoint, Map<String, String> queryParams) {
+	public List<Header> getEncryptedHeader(String env,String rtn,String endPoint,String httpMethod,String request,Map<String,String> queryParams) {
 		headers = new ArrayList<>();
-		Response apiResponse = getAuthResponse(request, mobileNumber, httpMethod, env, endPoint, queryParams);
+		Response apiResponse = getAuthResponse(env,rtn,endPoint,httpMethod,request,queryParams);
 		if (apiResponse.contentType().contains(ContentType.JSON.toString()) && apiResponse.asString() != null
 				&& apiResponse.getStatusCode() == 200) {
 			GetAuthResponse authResponse = new GetAuthResponse(apiResponse);
@@ -37,9 +36,8 @@ public class AuthenticatedAppHeaders {
 
 	}
 
-	private Response getAuthResponse(String request, String mobileNumber, String httpMethod, String env,
-			String endPoint, Map<String, String> queryParams) {
-		GetAuthManager authManager = new GetAuthManager(request, mobileNumber, httpMethod, env, endPoint, queryParams);
+	private Response getAuthResponse(String env,String rtn,String endPoint,String httpMethod,String request,Map<String,String> queryParams) {
+		GetAuthManager authManager = new GetAuthManager(env,rtn,endPoint,httpMethod,request,queryParams);
 		Response authResponse = authManager.executeApi();
 		return authResponse;
 	}

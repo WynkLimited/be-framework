@@ -2,7 +2,6 @@ package com.airtel.dto;
 
 
 import java.util.Map;
-
 import com.airtel.helper.common.BaseManager;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -32,5 +31,4 @@ public class GetAuthRequest extends BaseManager{
     @Expose
     public String request;
 	
-
 }

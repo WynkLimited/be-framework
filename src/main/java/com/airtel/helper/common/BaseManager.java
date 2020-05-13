@@ -370,9 +370,9 @@ public abstract class BaseManager extends ApiHelper implements IManager, IDbHelp
        return this._dbHelper.performSqlOperations(connection,query);
     }
 
-    public List<Header> getAuthenticatedHeaders(String request, String mobileNumber, String httpMethod,String env,String endPoint,Map<String,String> queryParams)
+    public List<Header> getAuthenticatedHeaders(String env,String rtn,String endPoint,String httpMethod,String request,Map<String,String> queryParams)
     {
-    	return this._appHeaders.getEncryptedHeader(request, mobileNumber, httpMethod, env, endPoint, queryParams);
+    	return this._appHeaders.getEncryptedHeader(env,rtn,endPoint,httpMethod,request,queryParams);
     }
 
 
