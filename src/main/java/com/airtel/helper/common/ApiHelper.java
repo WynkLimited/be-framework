@@ -1,21 +1,24 @@
 package com.airtel.helper.common;
 
 import java.security.spec.KeySpec;
-import java.util.*;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
 
-import com.airtel.Models.Constants;
-import com.airtel.Models.LogItemReq;
-import com.airtel.helper.Interfaces.IJsonParser;
-import com.airtel.helper.constants.RequestType;
-import com.airtel.helper.data.DataHelper;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 import org.testng.Assert;
 
+import com.airtel.Models.Constants;
+import com.airtel.Models.LogItemReq;
+import com.airtel.helper.constants.RequestType;
+import com.airtel.helper.data.DataHelper;
 import com.airtel.helper.logging.AirtelLoggingMgr;
 import com.airtel.helper.report.FileHelper;
 import com.airtel.helper.report.ReportHelper;
@@ -25,6 +28,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.report.SentinelLogger;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -32,7 +36,6 @@ import io.restassured.http.Header;
 import io.restassured.http.Headers;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
-import com.report.*;
 /**
  * This class contains methods for generic functions over the API that includes
  * fetching response for GET/POST Request, marshaling & unmarshalling between
@@ -479,7 +482,9 @@ public class ApiHelper extends DataHelper {
 				JsonArray json = jsonElement.getAsJsonArray();
 				responseString = gson.toJson(json);
 			} else if (apiResponse.getHeaders().hasHeaderWithName("googleCookie")) {
-				responseString = decryptAPIResponse(apiResponse.getHeader("googleCookie"), apiResponse.asString());
+				 String decryptResponse = decryptAPIResponse(apiResponse.getHeader("googleCookie"), apiResponse.asString());
+				 JSONObject json = new JSONObject(decryptResponse);
+				 responseString = gson.toJson(json);
 			}
 		} else
 			responseString = apiResponse.asString();
