@@ -1,6 +1,7 @@
 package com.airtel.helper.common;
 
 import com.aerospike.client.*;
+import com.airtel.dto.GetAuthResponse;
 import com.airtel.helper.Interfaces.*;
 import com.airtel.helper.data.*;
 import com.airtel.validator.GenericComparator;
@@ -8,6 +9,8 @@ import com.google.gson.JsonArray;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
+import io.restassured.http.Header;
+import io.restassured.response.Response;
 import net.minidev.json.JSONArray;
 import org.json.JSONObject;
 
@@ -32,6 +35,7 @@ public abstract class BaseManager extends ApiHelper implements IManager, IDbHelp
     protected final MongoHelper _mongoHelper;
     protected final JsonParser _jsonHelper;
     protected final GenericComparator _responsevalidator;
+    protected final AuthenticatedAppHeaders _appHeaders;
 
     public BaseManager() {
 
@@ -40,6 +44,7 @@ public abstract class BaseManager extends ApiHelper implements IManager, IDbHelp
         _aeroSpikeHelper = new AerospikeHelper();
         _responsevalidator = new GenericComparator();
         _jsonHelper = new JsonParser();
+        _appHeaders = new AuthenticatedAppHeaders();
     }
 
 
@@ -365,6 +370,10 @@ public abstract class BaseManager extends ApiHelper implements IManager, IDbHelp
        return this._dbHelper.performSqlOperations(connection,query);
     }
 
+    public List<Header> getAuthenticatedHeaders(String request, String mobileNumber, String httpMethod,String env,String endPoint,Map<String,String> queryParams)
+    {
+    	return this._appHeaders.getEncryptedHeader(request, mobileNumber, httpMethod, env, endPoint, queryParams);
+    }
 
 
 }

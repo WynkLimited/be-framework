@@ -11,6 +11,8 @@ public interface Constants {
 	String INFLUX_USER = "automation";
 	String INFLUX_PASS = "automation";
 	String INFLUX_MEASUREMENT = "automation_stats";
+	String GETAUTH_URL = "http://10.5.245.76:8085";
+	String GETAUTH_ENDPOINT = "/getencryptedauth";
 
 	interface ERROR_CODE {
 		String CONFIGURATION_PROPERTY = "ERR_CFG_00";

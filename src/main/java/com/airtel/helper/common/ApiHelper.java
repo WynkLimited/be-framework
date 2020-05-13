@@ -12,7 +12,6 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
 
 import org.apache.logging.log4j.Logger;
-import org.json.JSONObject;
 import org.testng.Assert;
 
 import com.airtel.Models.Constants;
