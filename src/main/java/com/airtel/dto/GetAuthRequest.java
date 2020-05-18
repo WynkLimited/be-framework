@@ -2,7 +2,7 @@ package com.airtel.dto;
 
 
 import java.util.Map;
-import com.airtel.helper.common.BaseManager;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -13,7 +13,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class GetAuthRequest extends BaseManager{
+public class GetAuthRequest{
 
 	@SerializedName("method")
 	@Expose
