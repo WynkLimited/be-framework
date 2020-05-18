@@ -15,7 +15,7 @@ import io.restassured.response.Response;
 
 public class GetAuthManager extends BaseManager implements Constants {
 
-	public static final String defaultRequest = "{\"method\":\"\",\"endpoint\":\"/app/wl-service/airtel-selfcare/rest/ir/landingpage\",    \"params\":{\"siNumber\":\"9599330841\"},    \"body\":\"\"}";
+	public static final String defaultRequest = "{\"method\":\"\",\"endpoint\":\"/\",    \"params\":{\"siNumber\":\"\"},    \"body\":\"\"}";
 	private List<Header> headerList = new ArrayList<Header>();
 	private Map<String, String> queryParams = new HashMap<String, String>();
 	private Response response;

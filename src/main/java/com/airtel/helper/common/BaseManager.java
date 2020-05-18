@@ -1,19 +1,5 @@
 package com.airtel.helper.common;
 
-import com.aerospike.client.*;
-import com.airtel.dto.GetAuthResponse;
-import com.airtel.helper.Interfaces.*;
-import com.airtel.helper.data.*;
-import com.airtel.validator.GenericComparator;
-import com.google.gson.JsonArray;
-import com.mongodb.BasicDBObject;
-import com.mongodb.MongoClient;
-import com.mongodb.client.MongoCollection;
-import io.restassured.http.Header;
-import io.restassured.response.Response;
-import net.minidev.json.JSONArray;
-import org.json.JSONObject;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.sql.Connection;
@@ -21,6 +7,29 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.json.JSONObject;
+import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.Bin;
+import com.aerospike.client.Record;
+import com.airtel.helper.Interfaces.IAeroSpikeHelper;
+import com.airtel.helper.Interfaces.IDbHelper;
+import com.airtel.helper.Interfaces.IJsonParser;
+import com.airtel.helper.Interfaces.IManager;
+import com.airtel.helper.Interfaces.IMongoHelper;
+import com.airtel.helper.Interfaces.IResponseValidator;
+import com.airtel.helper.data.AerospikeHelper;
+import com.airtel.helper.data.AuthenticatedAppHeaders;
+import com.airtel.helper.data.DbHelper;
+import com.airtel.helper.data.JsonParser;
+import com.airtel.helper.data.MongoHelper;
+import com.airtel.validator.GenericComparator;
+import com.google.gson.JsonArray;
+import com.mongodb.BasicDBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
+
+import io.restassured.http.Header;
+import net.minidev.json.JSONArray;
 
 public abstract class BaseManager extends ApiHelper implements IManager, IDbHelper, IMongoHelper, IAeroSpikeHelper, IResponseValidator,IJsonParser {
 
