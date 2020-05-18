@@ -22,22 +22,23 @@ public class GetAuthManager extends BaseManager implements Constants {
 	private String request;
 	private GetAuthRequest authRequest;
 
-	public GetAuthManager(String env,String rtn,String endPoint,String httpMethod,String request,Map<String,String> queryParams) {
+	public GetAuthManager(String env, String rtn, String endPoint, String httpMethod, String request,
+			Map<String, String> queryParams) {
 		authRequest = convertFromJson(defaultRequest, GetAuthRequest.class);
 		this.queryParams.put("number", rtn);
 		this.queryParams.put("env", env);
-		this.request = setRequest(httpMethod,request,endPoint,queryParams);
+		this.request = setRequest(httpMethod, request, endPoint, queryParams);
 	}
 
 	public Response executeApi() {
 		String url = GETAUTH_URL + GETAUTH_ENDPOINT;
-		this.headerList.add(new Header("Authorization", "Basic Ymxvb2Rob3VuZDpGaXNoeVJlZEhlcnJpbmc="));
+		this.headerList.add(new Header("Authorization", APP_AUTHENTICATION_KEY));
 		response = postResponseWithHeaders(this.request, this.headerList, ContentType.JSON, url, this.queryParams,
 				false);
 		return response;
 	}
 
-	private String setRequest(String httpMethod,String request,String endPoint,Map<String,String> queryParams) {
+	private String setRequest(String httpMethod, String request, String endPoint, Map<String, String> queryParams) {
 		authRequest.setMethod(httpMethod);
 		authRequest.setEndpoint(endPoint);
 		authRequest.setParams(queryParams);
