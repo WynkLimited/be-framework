@@ -35,6 +35,7 @@ import io.restassured.http.Header;
 import io.restassured.http.Headers;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+
 /**
  * This class contains methods for generic functions over the API that includes
  * fetching response for GET/POST Request, marshaling & unmarshalling between
@@ -462,6 +463,27 @@ public class ApiHelper extends DataHelper {
 	}
 
 	/**
+	 * Parse response json String
+	 *
+	 * @param responseString
+	 * @return
+	 */
+	private String getParsedResponse(String apiResponse) {
+		String responseString = null;
+		JsonParser parser = new JsonParser();
+		JsonElement jsonElement = parser.parse(apiResponse);
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		if (jsonElement instanceof JsonObject) {
+			JsonObject json = jsonElement.getAsJsonObject();
+			responseString = gson.toJson(json);
+		} else if (jsonElement instanceof JsonArray) {
+			JsonArray json = jsonElement.getAsJsonArray();
+			responseString = gson.toJson(json);
+		}
+		return responseString;
+	}
+
+	/**
 	 * Format JSON and pretty print the response
 	 *
 	 * @param apiResponse
@@ -470,25 +492,17 @@ public class ApiHelper extends DataHelper {
 	private String formatResponse(Response apiResponse) {
 		String responseString = null;
 		if (apiResponse.contentType().contains(ContentType.JSON.toString()) && apiResponse.asString() != null) {
-			JsonParser parser = new JsonParser();
-			JsonElement jsonElement = parser.parse(apiResponse.asString());
-			Gson gson = new GsonBuilder().setPrettyPrinting().create();
-			if (jsonElement instanceof JsonObject) {
-				JsonObject json = jsonElement.getAsJsonObject();
-				responseString = gson.toJson(json);
-			} else if (jsonElement instanceof JsonArray) {
-				JsonArray json = jsonElement.getAsJsonArray();
-				responseString = gson.toJson(json);
-			} else if (apiResponse.getHeaders().hasHeaderWithName("googleCookie")) {
-				 String decryptResponse = decryptAPIResponse(apiResponse.getHeader("googleCookie"), apiResponse.asString());
-				 JsonObject json = gson.fromJson(decryptResponse,JsonObject.class);
-				 responseString = gson.toJson(json);
+			responseString = getParsedResponse(apiResponse.asString());
+			if (null == responseString && apiResponse.getHeaders().hasHeaderWithName("googleCookie")) {
+				String decryptResponse = decryptAPIResponse(apiResponse.getHeader("googleCookie"),
+						apiResponse.asString());
+				responseString = getParsedResponse(decryptResponse);
 			}
 		} else
 			responseString = apiResponse.asString();
 		return responseString;
+
 	}
-	
 
 	/**
 	 * This method decrpyts api response on the basis of googleCookie in Response
@@ -622,6 +636,5 @@ public class ApiHelper extends DataHelper {
 			ContentType contentType, String url, boolean checkStatus, Map<String, String> formParams) {
 		return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus, formParams);
 	}
-	
-	
+
 }
