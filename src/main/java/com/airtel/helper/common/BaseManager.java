@@ -418,9 +418,8 @@ public abstract class BaseManager extends ApiHelper
 	private Response executeApi(String env, String rtn, String endPoint, String httpMethod, String request,
 			Map<String, String> queryParams) {
 		GetAuthManager authManager = new GetAuthManager();
-		GetAuthRequest authRequest = convertFromJson(GetAuthManager.defaultRequest, GetAuthRequest.class);
 		String apiUrl = authManager.setUrl();
-		authManager.setRequest(authRequest, httpMethod, request, endPoint, queryParams);
+		GetAuthRequest authRequest = authManager.setRequest(httpMethod, request, endPoint, queryParams);
 		String apiRequest = convertToJson(authRequest);
 		List<Header> apiHeader = authManager.setHeaders();
 		Map<String, String> apiQueryParams = authManager.setQueryParams(env, rtn);

@@ -12,7 +12,6 @@ import io.restassured.http.Header;
 
 public class GetAuthManager implements Constants {
 
-	public static final String defaultRequest = "{\"method\":\"\",\"endpoint\":\"/\",    \"params\":{\"siNumber\":\"\"},    \"body\":\"\"}";
 	private List<Header> headerList = new ArrayList<Header>();
 	private Map<String, String> queryParams = new HashMap<String, String>();
 	private String url;
@@ -33,12 +32,10 @@ public class GetAuthManager implements Constants {
 		return headerList;
 	}
 
-	public void setRequest(GetAuthRequest authRequest, String httpMethod, String request, String endPoint,
+	public GetAuthRequest setRequest(String httpMethod, String request, String endPoint,
 			Map<String, String> queryParams) {
-		authRequest.setMethod(httpMethod);
-		authRequest.setEndpoint(endPoint);
-		authRequest.setParams(queryParams);
-		authRequest.setBody(request);
+		GetAuthRequest authRequest = new GetAuthRequest(httpMethod, endPoint, queryParams,request);
+		return authRequest;
 	}
 
 }
