@@ -1,11 +1,27 @@
 package com.airtel.helper.data;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
-import com.airtel.helper.report.ReportHelper;
-import net.minidev.json.JSONArray;
-import org.apache.logging.log4j.Level;
+import javax.xml.bind.JAXB;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.testng.Reporter;
@@ -13,9 +29,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import javax.xml.bind.JAXB;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import com.airtel.helper.report.ReportHelper;
 
 public class DataHelper {
     public Object readJsonFile(String file) {
