@@ -1,34 +1,28 @@
 package com.airtel.helper.common;
 
 import java.security.spec.KeySpec;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
-
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
-
 import com.airtel.Models.Constants;
 import com.airtel.Models.LogItemReq;
+import com.airtel.controller.GetAuthManager;
+import com.airtel.dto.GetAuthRequest;
+import com.airtel.dto.GetAuthResponse;
 import com.airtel.helper.constants.RequestType;
 import com.airtel.helper.data.DataHelper;
 import com.airtel.helper.logging.AirtelLoggingMgr;
 import com.airtel.helper.report.FileHelper;
 import com.airtel.helper.report.ReportHelper;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.report.SentinelLogger;
-
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
@@ -462,26 +456,7 @@ public class ApiHelper extends DataHelper {
 		return esResponse.asString();
 	}
 
-	/**
-	 * Parse response json String
-	 *
-	 * @param responseString
-	 * @return
-	 */
-	private String getParsedResponse(String apiResponse) {
-		String responseString = null;
-		JsonParser parser = new JsonParser();
-		JsonElement jsonElement = parser.parse(apiResponse);
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		if (jsonElement instanceof JsonObject) {
-			JsonObject json = jsonElement.getAsJsonObject();
-			responseString = gson.toJson(json);
-		} else if (jsonElement instanceof JsonArray) {
-			JsonArray json = jsonElement.getAsJsonArray();
-			responseString = gson.toJson(json);
-		}
-		return responseString;
-	}
+	
 
 	/**
 	 * Format JSON and pretty print the response
@@ -492,11 +467,11 @@ public class ApiHelper extends DataHelper {
 	private String formatResponse(Response apiResponse) {
 		String responseString = null;
 		if (apiResponse.contentType().contains(ContentType.JSON.toString()) && apiResponse.asString() != null) {
-			responseString = getParsedResponse(apiResponse.asString());
+			responseString = formatResponse(apiResponse.asString());
 			if (null == responseString && apiResponse.getHeaders().hasHeaderWithName("googleCookie")) {
 				String decryptResponse = decryptAPIResponse(apiResponse.getHeader("googleCookie"),
 						apiResponse.asString());
-				responseString = getParsedResponse(decryptResponse);
+				responseString = formatResponse(decryptResponse);
 			}
 		} else
 			responseString = apiResponse.asString();
@@ -635,6 +610,80 @@ public class ApiHelper extends DataHelper {
 	public Response postResponseWithHeaders(String body, Map<String, String> queryParams, List<Header> headers,
 			ContentType contentType, String url, boolean checkStatus, Map<String, String> formParams) {
 		return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus, formParams);
+	}
+
+
+	/**
+	 * This method will be used for getting App authenticated headers. This method can
+	 * pass fail based on API Response if non-200 HTTP status code and null
+	 *
+	 * @param env
+	 * @param rtn
+	 * @param endpoint
+	 * @param httpMethod
+	 * @param request
+	 * @param queryParams
+	 * @return
+	 */
+	public List<Header> getEncryptedHeader(String env, String rtn, String endpoint, String httpMethod, String request,
+			Map<String, String> queryParams) {
+		List<Header> headers = new ArrayList<>();
+		Response apiResponse = getAuthResponse(env, rtn, endpoint, httpMethod, request, queryParams);
+		if (apiResponse.contentType().contains(ContentType.JSON.toString()) && apiResponse.asString() != null
+				&& apiResponse.getStatusCode() == 200) {
+			GetAuthResponse authResponse = new GetAuthResponse(apiResponse);
+			headers.add(new Header("x-bsy-os", authResponse.getXBsyOs()));
+			headers.add(new Header("x-bsy-did", authResponse.getXBsyDid()));
+			headers.add(new Header("x-bsy-dt", authResponse.getXBsyDt()));
+			headers.add(new Header("x-bsy-bn", authResponse.getXBsyBn()));
+			headers.add(new Header("x-bsy-utkn", authResponse.getXBsyUtkn()));
+		} else
+			ReportHelper.logValidationFailure("User is not logged in", "Http Response code should be 200",
+					"Http Response code should is 500", "API Failure");
+		Assert.assertTrue(false);
+		return headers;
+
+	}
+
+	/**
+	 * This method will be used to return Api Response for GetAuth Api which in turn return authenticated App Headers*
+		 *
+	 * @param env
+	 * @param rtn
+	 * @param endpoint
+	 * @param httpMethod
+	 * @param request
+	 * @param queryParams
+	 * @return
+	 */
+	private Response getAuthResponse(String env, String rtn, String endPoint, String httpMethod, String request,
+			Map<String, String> queryParams) {
+		Response authResponse = executeApi(env, rtn, endPoint, httpMethod, request, queryParams);
+		return authResponse;
+	}
+
+	/**
+	 * This method will be used to execute Api Response for GetAuth Api which in turn return authenticated App Headers*
+		 *
+	 * @param env
+	 * @param rtn
+	 * @param endpoint
+	 * @param httpMethod
+	 * @param request
+	 * @param queryParams
+	 * @return
+	 */
+	private Response executeApi(String env, String rtn, String endPoint, String httpMethod, String request,
+			Map<String, String> queryParams) {
+		GetAuthManager authManager = new GetAuthManager();
+		String apiUrl = authManager.setUrl();
+		GetAuthRequest authRequest = authManager.setRequest(httpMethod, request, endPoint, queryParams);
+		String apiRequest = convertToJson(authRequest);
+		List<Header> apiHeader = authManager.setHeaders();
+		Map<String, String> apiQueryParams = authManager.setQueryParams(env, rtn);
+		Response response = postResponseWithHeaders(apiRequest, apiHeader, ContentType.JSON, apiUrl, apiQueryParams,
+				false);
+		return response;
 	}
 
 }
