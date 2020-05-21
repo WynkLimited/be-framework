@@ -251,7 +251,7 @@ public class JsonParser implements IJsonParser {
 	}
 
 	/**
-	 * Parse response json String
+	 * Format response json String in pretty Print
 	 *
 	 * @param responseString
 	 * @return
