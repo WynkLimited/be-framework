@@ -82,11 +82,10 @@ public class FileHelper {
 		return finalStr;
 	}
 
-	public String createRequestJsonFile(String jsonMsg, String fileName) {
+	public static String createRequestJsonFile(String jsonMsg, String fileName) {
 		String requestFilePath = null;
-		ReportHelper report = new ReportHelper();
 		try {
-			String resultFolder = report.getResultFolderpath();
+			String resultFolder = ReportHelper.getResultFolderpath();
 			resultFolder = resultFolder + "/Requests";
 			File resultFileFolder = new File(resultFolder);
 			resultFileFolder.delete();
@@ -98,7 +97,7 @@ public class FileHelper {
 			BufferedWriter resultFile = new BufferedWriter(new FileWriter(requestFilePath, true));
 			resultFile.append(jsonMsg);
 			resultFile.close();
-			requestFilePath = "." + requestFilePath.split(report.getResultFolderpath())[1];
+			requestFilePath = "." + requestFilePath.split(ReportHelper.getResultFolderpath())[1];
 			Reporter.log("<br><a href='" + requestFilePath + "'>Request_" + fileName + "</a><br>");
 		} catch (Exception e) {
 			logger.log(Level.ERROR, "Error while creating JSON file - " + e);
@@ -106,11 +105,10 @@ public class FileHelper {
 		return requestFilePath;
 	}
 
-	public String createResponseJsonFile(String jsonMsg, String fileName) {
+	public static String createResponseJsonFile(String jsonMsg, String fileName) {
 		String responseFilePath = null;
-		ReportHelper report = new ReportHelper();
 		try {
-			String resultFolder = report.getResultFolderpath();
+			String resultFolder = ReportHelper.getResultFolderpath();
 			resultFolder = resultFolder + "/Responses";
 			File resultFileFolder = new File(resultFolder);
 			resultFileFolder.delete();
@@ -122,7 +120,7 @@ public class FileHelper {
 			BufferedWriter resultFile = new BufferedWriter(new FileWriter(responseFilePath, true));
 			resultFile.append(jsonMsg);
 			resultFile.close();
-			responseFilePath = "." + responseFilePath.split(report.getResultFolderpath())[1];
+			responseFilePath = "." + responseFilePath.split(ReportHelper.getResultFolderpath())[1];
 			Reporter.log("<br><a href='" + responseFilePath + "'>Response_" + fileName + "</a><br>");
 		} catch (Exception e) {
 			logger.log(Level.ERROR, "Error while creating reponse JSON file - " + e);

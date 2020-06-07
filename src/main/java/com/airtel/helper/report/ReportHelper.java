@@ -11,19 +11,22 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.airtel.listener.testng.Vangaurd;
-import com.report.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.testng.ITestContext;
 import org.testng.ITestNGMethod;
 import org.testng.ITestResult;
 import org.testng.Reporter;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.Listeners;
 
-import com.airtel.helper.common.BaseTestClass;
 import com.airtel.helper.data.InfluxDbHelper;
 import com.airtel.helper.logging.AirtelLoggingMgr;
+import com.airtel.listener.testng.Vangaurd;
+import com.report.SentinelLogger;
 
 @Listeners(Vangaurd.class)
 public class ReportHelper implements ReportConstants {
@@ -35,8 +38,9 @@ public class ReportHelper implements ReportConstants {
     Date startTime = null;
     private static String resultFolderpath;
     private static Logger logger = AirtelLoggingMgr.getLogger(ReportHelper.class);
+    private static ThreadLocal<String> threadLocalResultFileStringPath = new ThreadLocal<String>();
 
-    public String getResultFolderpath() {
+    public static String getResultFolderpath() {
         return resultFolderpath;
     }
 
@@ -45,14 +49,14 @@ public class ReportHelper implements ReportConstants {
     }
 
     private static String suiteFileStringPath;
-    private static String resultFileStringPath;
+    //private static String resultFileStringPath;
 
-    public String getResultFileStringPath() {
-        return resultFileStringPath;
+    public static String getResultFileStringPath() {
+        return threadLocalResultFileStringPath.get();
     }
 
     public void setResultFileStringPath(String resultFileStringPath) {
-        ReportHelper.resultFileStringPath = resultFileStringPath;
+    	threadLocalResultFileStringPath.set(resultFileStringPath);
     }
 
     @BeforeSuite(alwaysRun = true)
@@ -129,14 +133,13 @@ public class ReportHelper implements ReportConstants {
     public void createinitialHTMLReport(Method method) {
         try {
             UUID randNo = UUID.randomUUID();
-
-            resultFileStringPath = resultFolderpath + "/" + method.getName().toString() + "_" + randNo + ".html";
-            BufferedWriter resultFile = new BufferedWriter(new FileWriter(resultFileStringPath, true));
+            setResultFileStringPath(resultFolderpath + "/" + method.getName().toString() + "_" + randNo + ".html");
+            BufferedWriter resultFile = new BufferedWriter(new FileWriter(getResultFileStringPath(), true));
             resultFile.append(REQ_RESP_LOG_TEMPLATE);
             resultFile.close();
-            setResultFileStringPath(resultFileStringPath);
+            //setResultFileStringPath(resultFileStringPath);
         } catch (Exception e) {
-            resultFileStringPath = null;
+        	setResultFileStringPath(null);
             logger.error("Initial error report not created - " + e);
         }
     }
@@ -177,13 +180,13 @@ public class ReportHelper implements ReportConstants {
             }
 
             count = count + 1;
-            String resultFilePath = resultFileStringPath.split("/Results")[1];
+            String resultFilePath = getResultFileStringPath().split("/Results")[1];
             resultFilePath = "." + resultFilePath;
 
             if (result.getStatus() != ITestResult.SKIP) {
                 appendMethodInformationInSuite(scenario,
                         result.getMethod().getMethodName() + "_" + String.valueOf(number), resultFilePath, status);
-                BufferedWriter resultFile = new BufferedWriter(new FileWriter(resultFileStringPath, true));
+                BufferedWriter resultFile = new BufferedWriter(new FileWriter(getResultFileStringPath(), true));
 
                 resultFile.append("</table></body></html>");
                 resultFile.close();
@@ -216,7 +219,7 @@ public class ReportHelper implements ReportConstants {
         }
     }
 
-    public void appendresultHTMLReport(String resultFileStringPath, String apiURL, String requestFile,
+    public static void appendresultHTMLReport(String resultFileStringPath, String apiURL, String requestFile,
                                        String responseFile, String message, String status, String comment,String headers) {
         try {
 
@@ -247,9 +250,8 @@ public class ReportHelper implements ReportConstants {
     }
 
     public static boolean reporterLogging(Boolean status, String sMessage) {
-        ReportHelper reportHelper = new ReportHelper();
         try {
-            reportHelper.appendresultHTMLReport(reportHelper.getResultFileStringPath(), "", "", "", sMessage,
+            appendresultHTMLReport(getResultFileStringPath(), "", "", "", sMessage,
                     String.valueOf(status), Thread.currentThread().getStackTrace()[2].getMethodName(),"");
             Reporter.log("<br>");
             if (status) {
