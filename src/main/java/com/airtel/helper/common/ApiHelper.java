@@ -92,6 +92,7 @@ public class ApiHelper extends DataHelper {
 			Map<String, String> queryParams, List<Header> headers, ContentType contentType, boolean checkStatus,
 			Map<String, String> formParams) {
 
+		LogItemReq logItemReq = null;
 		Response apiResponse = null;
 		String requestLog = null;
 		RequestSpecification apiRequest = prepareRequestParams(queryParams, headers, body, contentType, formParams);
@@ -134,13 +135,21 @@ public class ApiHelper extends DataHelper {
 		catch(Exception e) {
 			logRequestResponse(requestLog, null, requestUrl, 0, headerData);
 			ReportHelper.reporterLogging(false, ""+e.getMessage());
+			logItemReq = new LogItemReq();
+			logItemReq.setType(Constants.LOGITEMTYPE.APILog);
+			logItemReq.setHeaders(headerData);
+			logItemReq.setTargetApiUrl(requestUrl);
+			logItemReq.setResStatusCode(0);
+			logItemReq.setMessage(null);
+			SentinelLogger.info(logItemReq);
+			return apiResponse;
 		}
 
 		long responseTime = apiResponse.getTime();
 		String resString = formatResponse(apiResponse);
 		logRequestResponse(requestLog, resString, requestUrl, responseTime, headerData);
 
-		LogItemReq logItemReq = new LogItemReq();
+		logItemReq = new LogItemReq();
 		logItemReq.setType(Constants.LOGITEMTYPE.APILog);
 		logItemReq.setHeaders(headerData);
 		logItemReq.setTargetApiUrl(requestUrl);
