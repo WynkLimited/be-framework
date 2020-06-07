@@ -109,6 +109,7 @@ public class ApiHelper extends DataHelper {
 		if (queryParams != null)
 			requestLog = requestLog + "Query Params:" + queryParams.toString();
 
+		try {
 		switch (RequestType.valueOf(requestType.toUpperCase())) {
 		case GET:
 			apiResponse = apiRequest.get(requestUrl);
@@ -128,6 +129,11 @@ public class ApiHelper extends DataHelper {
 		default:
 			apiResponse = apiRequest.head(requestUrl);
 			break;
+		}
+		}
+		catch(Exception e) {
+			logRequestResponse(requestLog, null, requestUrl, 0, headerData);
+			ReportHelper.reporterLogging(false, ""+e.getMessage());
 		}
 
 		long responseTime = apiResponse.getTime();
