@@ -6,9 +6,9 @@ The version uses below versions of sentinel libraries
 
 | **Sentinel Component**  | **Version**  |
 |-------------------------|--------------|
-| Subscriber TestNg       |1.0.7         |
-| Transformer optimus-java|1.0.9         |
-| Sentinel models         |1.1.1         |
+| Subscriber TestNg       |1.1.0         |
+| Transformer optimus-java|1.1.1         |
+| Sentinel models         |2.0.3         |
 | Sentinel Log4j Appender |1.0.2         |
 
 ```
@@ -28,7 +28,7 @@ Add the following dependency in your LOB framework
 	<dependency>
 		<groupId>com.airtel.api-automation</groupId>
 		<artifactId>api-automation-framework</artifactId>
-		<version>1.4.28</version>
+		<version>1.4.40</version>
 	</dependency>
 ```
 
