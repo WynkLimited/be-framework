@@ -10,11 +10,7 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
-<<<<<<< HEAD
-
-=======
 import org.apache.logging.log4j.Logger;
->>>>>>> 4e7f218c2275b75e0858ca0c33e4a665572a7136
 import org.testng.Assert;
 import com.airtel.Models.Constants;
 import com.airtel.Models.LogItemReq;
