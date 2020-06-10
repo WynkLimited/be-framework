@@ -4,19 +4,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.json.JSONObject;
-
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Bin;
 import com.aerospike.client.Record;
-import com.airtel.controller.GetAuthManager;
-import com.airtel.dto.GetAuthRequest;
-import com.airtel.dto.GetAuthResponse;
 import com.airtel.helper.Interfaces.IAeroSpikeHelper;
 import com.airtel.helper.Interfaces.IDbHelper;
 import com.airtel.helper.Interfaces.IJsonParser;
@@ -27,16 +21,11 @@ import com.airtel.helper.data.AerospikeHelper;
 import com.airtel.helper.data.DbHelper;
 import com.airtel.helper.data.JsonParser;
 import com.airtel.helper.data.MongoHelper;
-import com.airtel.helper.report.ReportHelper;
 import com.airtel.validator.GenericComparator;
 import com.google.gson.JsonArray;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
-
-import io.restassured.http.ContentType;
-import io.restassured.http.Header;
-import io.restassured.response.Response;
 import net.minidev.json.JSONArray;
 
 public abstract class BaseManager extends ApiHelper
@@ -385,47 +374,6 @@ public abstract class BaseManager extends ApiHelper
 		return this._dbHelper.performSqlOperations(connection, query);
 	}
 
-	public List<Header> getAuthenticatedHeaders(String env, String rtn, String endPoint, String httpMethod,
-			String request, Map<String, String> queryParams) {
-		return getEncryptedHeader(env, rtn, endPoint, httpMethod, request, queryParams);
-	}
-
-	public List<Header> getEncryptedHeader(String env, String rtn, String endPoint, String httpMethod, String request,
-			Map<String, String> queryParams) {
-		List<Header> headers = new ArrayList<>();
-		Response apiResponse = getAuthResponse(env, rtn, endPoint, httpMethod, request, queryParams);
-		if (apiResponse.contentType().contains(ContentType.JSON.toString()) && apiResponse.asString() != null
-				&& apiResponse.getStatusCode() == 200) {
-			GetAuthResponse authResponse = new GetAuthResponse(apiResponse);
-			headers.add(new Header("x-bsy-os", authResponse.getXBsyOs()));
-			headers.add(new Header("x-bsy-did", authResponse.getXBsyDid()));
-			headers.add(new Header("x-bsy-dt", authResponse.getXBsyDt()));
-			headers.add(new Header("x-bsy-bn", authResponse.getXBsyBn()));
-			headers.add(new Header("x-bsy-utkn", authResponse.getXBsyUtkn()));
-		} else
-			ReportHelper.logValidationFailure("User is not logged in", "Http Response code should be 200",
-					"Http Response code should is 500", "API Failure");
-		return headers;
-
-	}
-
-	private Response getAuthResponse(String env, String rtn, String endPoint, String httpMethod, String request,
-			Map<String, String> queryParams) {
-		Response authResponse = executeApi(env, rtn, endPoint, httpMethod, request, queryParams);
-		return authResponse;
-	}
-
-	private Response executeApi(String env, String rtn, String endPoint, String httpMethod, String request,
-			Map<String, String> queryParams) {
-		GetAuthManager authManager = new GetAuthManager();
-		String apiUrl = authManager.setUrl();
-		GetAuthRequest authRequest = authManager.setRequest(httpMethod, request, endPoint, queryParams);
-		String apiRequest = convertToJson(authRequest);
-		List<Header> apiHeader = authManager.setHeaders();
-		Map<String, String> apiQueryParams = authManager.setQueryParams(env, rtn);
-		Response response = postResponseWithHeaders(apiRequest, apiHeader, ContentType.JSON,apiUrl, apiQueryParams,
-				false);
-		return response;
-	}
+	
 
 }
