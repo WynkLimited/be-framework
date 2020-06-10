@@ -31,7 +31,7 @@ import org.xml.sax.InputSource;
 
 import com.airtel.helper.report.ReportHelper;
 
-public class DataHelper {
+public class DataHelper  extends JsonParser{
     public Object readJsonFile(String file) {
         JSONParser parser = new JSONParser();
         Object object = null;
@@ -229,5 +229,7 @@ public class DataHelper {
         }
         return value;
     }
+    
+	
 }
 
