@@ -1,4 +1,4 @@
-package com.airtel.helper.common;
+}package com.airtel.helper.common;
 
 import java.security.spec.KeySpec;
 import java.util.ArrayList;
@@ -653,9 +653,11 @@ public class ApiHelper extends DataHelper {
 			headers.add(new Header("x-bsy-bn", authResponse.getXBsyBn()));
 			headers.add(new Header("x-bsy-utkn", authResponse.getXBsyUtkn()));
 		} else
+        {
 			ReportHelper.logValidationFailure("User is not logged in", "Http Response code should be 200",
 					"Http Response code should is 500", "API Failure");
 		Assert.assertTrue(false);
+        }
 		return headers;
 
 	}
