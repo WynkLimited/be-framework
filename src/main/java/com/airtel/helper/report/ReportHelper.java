@@ -196,6 +196,7 @@ public class ReportHelper implements ReportConstants {
 				resultFile.append("</table></body></html>");
 				resultFile.close();
 			}
+			System.clearProperty("Test Status");
 		} catch (IOException e) {
 			logger.error("Report not completed - " + e);
 		}
