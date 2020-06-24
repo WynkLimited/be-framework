@@ -105,36 +105,36 @@ public class ApiHelper extends DataHelper {
 			requestLog = requestLog + "Query Params:" + queryParams.toString();
 
 		try {
-		switch (RequestType.valueOf(requestType.toUpperCase())) {
-		case GET:
-			apiResponse = apiRequest.get(requestUrl);
-			break;
-		case POST:
-			apiResponse = apiRequest.post(requestUrl);
-			break;
-		case PUT:
-			apiResponse = apiRequest.put(requestUrl);
-			break;
-		case PATCH:
-			apiResponse = apiRequest.patch(requestUrl);
-			break;
-		case DELETE:
-			apiResponse = apiRequest.delete(requestUrl);
-			break;
-		default:
-			apiResponse = apiRequest.head(requestUrl);
-			break;
-		}
-		}
-		catch(Exception e) {
+			switch (RequestType.valueOf(requestType.toUpperCase())) {
+			case GET:
+				apiResponse = apiRequest.get(requestUrl);
+				break;
+			case POST:
+				apiResponse = apiRequest.post(requestUrl);
+				break;
+			case PUT:
+				apiResponse = apiRequest.put(requestUrl);
+				break;
+			case PATCH:
+				apiResponse = apiRequest.patch(requestUrl);
+				break;
+			case DELETE:
+				apiResponse = apiRequest.delete(requestUrl);
+				break;
+			default:
+				apiResponse = apiRequest.head(requestUrl);
+				break;
+			}
+		} catch (Exception e) {
 			logRequestResponse(requestLog, null, requestUrl, 0, headerData);
-			ReportHelper.reporterLogging(false, ""+e.getMessage());
+			ReportHelper.reporterLogging(false, "" + e.getMessage());
 			logItemReq = new LogItemReq();
 			logItemReq.setType(Constants.LOGITEMTYPE.APILog);
 			logItemReq.setHeaders(headerData);
 			logItemReq.setTargetApiUrl(requestUrl);
 			logItemReq.setResStatusCode(0);
 			logItemReq.setMessage(null);
+			logItemReq.setRequest(body);
 			SentinelLogger.info(logItemReq);
 			return apiResponse;
 		}
@@ -149,6 +149,7 @@ public class ApiHelper extends DataHelper {
 		logItemReq.setTargetApiUrl(requestUrl);
 		logItemReq.setResStatusCode(apiResponse.statusCode());
 		logItemReq.setMessage(resString);
+		logItemReq.setRequest(body);
 		SentinelLogger.info(logItemReq);
 
 		if (checkStatus && apiResponse.getStatusCode() != 200 && apiResponse.getStatusCode() != 204) {
@@ -471,8 +472,6 @@ public class ApiHelper extends DataHelper {
 		return esResponse.asString();
 	}
 
-	
-
 	/**
 	 * Format JSON and pretty print the response
 	 *
@@ -598,6 +597,7 @@ public class ApiHelper extends DataHelper {
 		logItemReq.setTargetApiUrl(requestUrl);
 		logItemReq.setResStatusCode(apiResponse.statusCode());
 		logItemReq.setMessage(formatResponse(apiResponse));
+		logItemReq.setRequest(body);
 		SentinelLogger.info(logItemReq);
 
 		if (apiResponse.getStatusCode() != statusCode) {
@@ -627,10 +627,9 @@ public class ApiHelper extends DataHelper {
 		return fetchApiResponse(url, "POST", body, queryParams, headers, contentType, checkStatus, formParams);
 	}
 
-
 	/**
-	 * This method will be used for getting App authenticated headers. This method can
-	 * pass fail based on API Response if non-200 HTTP status code and null
+	 * This method will be used for getting App authenticated headers. This method
+	 * can pass fail based on API Response if non-200 HTTP status code and null
 	 *
 	 * @param env
 	 * @param rtn
@@ -652,19 +651,19 @@ public class ApiHelper extends DataHelper {
 			headers.add(new Header("x-bsy-dt", authResponse.getXBsyDt()));
 			headers.add(new Header("x-bsy-bn", authResponse.getXBsyBn()));
 			headers.add(new Header("x-bsy-utkn", authResponse.getXBsyUtkn()));
-		} else
-        {
+		} else {
 			ReportHelper.logValidationFailure("User is not logged in", "Http Response code should be 200",
 					"Http Response code should is 500", "API Failure");
-		Assert.assertTrue(false);
-        }
+			Assert.assertTrue(false);
+		}
 		return headers;
 
 	}
 
 	/**
-	 * This method will be used to return Api Response for GetAuth Api which in turn return authenticated App Headers*
-		 *
+	 * This method will be used to return Api Response for GetAuth Api which in turn
+	 * return authenticated App Headers*
+	 *
 	 * @param env
 	 * @param rtn
 	 * @param endpoint
@@ -680,8 +679,9 @@ public class ApiHelper extends DataHelper {
 	}
 
 	/**
-	 * This method will be used to execute Api Response for GetAuth Api which in turn return authenticated App Headers*
-		 *
+	 * This method will be used to execute Api Response for GetAuth Api which in
+	 * turn return authenticated App Headers*
+	 *
 	 * @param env
 	 * @param rtn
 	 * @param endpoint
