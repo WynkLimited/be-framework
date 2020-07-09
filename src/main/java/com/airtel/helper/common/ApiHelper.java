@@ -145,9 +145,10 @@ public class ApiHelper
                 break;
         }
 
+        System.out.println(apiResponse.statusCode());  System.out.println(apiResponse.print());
         long responseTime = apiResponse.getTime();
         logRequestResponse(requestLog, formatResponse(apiResponse), requestUrl, responseTime, headerData);
-        if (checkStatus && apiResponse.getStatusCode() != 200 && apiResponse.getStatusCode() != 204)
+        if (checkStatus && apiResponse.getStatusCode() != 200 && apiResponse.getStatusCode() != 202 && apiResponse.getStatusCode() != 204)
         {
             ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
                     Integer.toString(apiResponse.getStatusCode()), "HTTP status check failure");
@@ -230,6 +231,21 @@ public class ApiHelper
                                                   boolean checkStatus,Map<String,String> formParams)
     {
         return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus,formParams);
+    }
+    /**
+     * This method will be used for getting response of GET request with headers.
+     * This method will fail non 200 HTTP response.
+     *
+     * @param queryParams
+     * @param headers
+     * @param url
+     * @param checkStatus
+     * @return
+     */
+    public static Response deleteResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url,
+                                                  boolean checkStatus)
+    {
+        return fetchApiResponse(url, "DELETE", null, queryParams, headers, null, checkStatus,null);
     }
 
     /**
@@ -485,7 +501,7 @@ public class ApiHelper
         if (request != null)
             requestFilePath = fileHelper.createRequestJsonFile(request, "");
         String responseFilePath = fileHelper.createResponseJsonFile(response, "");
-        String reportFolder = reporter.getResultFileStringPath();
+        String reportFolder = reporter.getResultFileStringPath(); 
         reporter.appendresultHTMLReport(reportFolder, url, "<a href='" + requestFilePath + "'>Request Data" + "</a>",
                 "<a href='" + responseFilePath + "'>Response Data" + "</a>",
                 "Response Time(in msec) :- " + String.valueOf(responseTime), "", "", headers);
