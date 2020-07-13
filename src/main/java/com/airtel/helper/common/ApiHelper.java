@@ -234,6 +234,22 @@ public class ApiHelper extends DataHelper {
 		return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus, null);
 	}
 
+    /**
+     * This method will be used for getting response of GET request with headers.
+     * This method will fail non 200 HTTP response.
+     *
+     * @param queryParams
+     * @param headers
+     * @param url
+     * @param checkStatus
+     * @return
+     */
+    public Response deleteResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url,
+                                                     boolean checkStatus)
+    {
+        return fetchApiResponse(url, "DELETE", null, queryParams, headers, null, checkStatus,null);
+    }
+
 	/**
 	 * This method will be used for getting response of POST request w/o headers.
 	 * This method will always fail non 200 response.
