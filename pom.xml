@@ -173,12 +173,6 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>com.airtel.sentinelModels</groupId>
-			<artifactId>sentinel-Models</artifactId>
-			<version>2.0.5</version>
-		</dependency>
-
 	</dependencies>
 
 	<distributionManagement>
