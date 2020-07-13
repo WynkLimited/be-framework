@@ -148,7 +148,8 @@ public class ApiHelper
        
         long responseTime = apiResponse.getTime();
         logRequestResponse(requestLog, formatResponse(apiResponse), requestUrl, responseTime, headerData);
-        if (checkStatus && apiResponse.getStatusCode() != 200 && apiResponse.getStatusCode() != 202 && apiResponse.getStatusCode() != 204)
+        List<Integer> successCode = new ArrayList<>(Arrays.asList(200,202,204));
+        if (checkStatus && ! (successCode.contains(apiResponse.getStatusCode())))
         {
             ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
                     Integer.toString(apiResponse.getStatusCode()), "HTTP status check failure");
