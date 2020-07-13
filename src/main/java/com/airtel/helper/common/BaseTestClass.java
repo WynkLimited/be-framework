@@ -15,10 +15,10 @@ public class BaseTestClass {
         jsonHelper = new JsonParser();
     }
 
-    protected Connection connection = null;
-    protected MongoClient mongoClient = null;
-    protected AerospikeClient aeroSpikeClient = null;
-    protected JsonParser jsonHelper = null;
+    protected static Connection connection = null;
+    protected static MongoClient mongoClient = null;
+    protected static AerospikeClient aeroSpikeClient = null;
+    protected static JsonParser jsonHelper = null;
 
 
     @AfterClass

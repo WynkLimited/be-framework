@@ -29,6 +29,7 @@ import io.restassured.http.Header;
 import io.restassured.http.Headers;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import net.minidev.json.JSONArray;
 
 /**
  * This class contains methods for generic functions over the API that includes
@@ -37,7 +38,9 @@ import io.restassured.specification.RequestSpecification;
  *
  * @author b0202849
  */
+
 public class ApiHelper extends DataHelper {
+
 
 	private Logger apiHelperLog;
 	private ReportHelper reporter;
@@ -152,8 +155,9 @@ public class ApiHelper extends DataHelper {
 		logItemReq.setRequest(body);
 		SentinelLogger.info(logItemReq);
 
-		if (checkStatus && apiResponse.getStatusCode() != 200 && apiResponse.getStatusCode() != 204) {
-			ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
+		if (checkStatus && ! (com.airtel.helper.constants.Constants.SUCCESS_CODE.contains(apiResponse.getStatusCode())))
+		{
+			ReportHelper.logValidationFailure("HTTP Status code is not in 2XX series. ", "2xx",
 					Integer.toString(apiResponse.getStatusCode()), "HTTP status check failure");
 			Assert.assertTrue(false);
 		}
@@ -666,7 +670,7 @@ public class ApiHelper extends DataHelper {
 	 *
 	 * @param env
 	 * @param rtn
-	 * @param endpoint
+	 * @param endPoint
 	 * @param httpMethod
 	 * @param request
 	 * @param queryParams
@@ -684,7 +688,7 @@ public class ApiHelper extends DataHelper {
 	 *
 	 * @param env
 	 * @param rtn
-	 * @param endpoint
+	 * @param endPoint
 	 * @param httpMethod
 	 * @param request
 	 * @param queryParams
