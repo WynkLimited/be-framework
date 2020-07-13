@@ -1,5 +1,8 @@
-
 package com.airtel.helper.constants;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public interface Constants {
 
@@ -11,6 +14,7 @@ public interface Constants {
 	String INFLUX_USER = "automation";
 	String INFLUX_PASS = "automation";
 	String INFLUX_MEASUREMENT = "automation_stats";
+    List<Integer> SUCCESS_CODE = new ArrayList<>(Arrays.asList(200,202,204));
 
 	interface ERROR_CODE {
 		String CONFIGURATION_PROPERTY = "ERR_CFG_00";
