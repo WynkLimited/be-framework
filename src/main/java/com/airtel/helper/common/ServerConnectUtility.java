@@ -176,7 +176,7 @@ public class ServerConnectUtility {
 	 * This method will read data from a log file as per command provided in
 	 * parameter and return list of all lines of command output
 	 * 
-	 * Example of command - 1. "cat "+ CommonConstant.SERVER_LOG_FILE + " | grep "
+	 * Example of command - 1. "cat "+ CommonConstants.SERVER_LOG_FILE + " | grep "
 	 * + searchObj.getCorrelationKey() + " | grep ErrorCodesLogEntry" 2. "cat
 	 * /opt/logs/webapi.log |grep abc | grep ERROR"
 	 * 
