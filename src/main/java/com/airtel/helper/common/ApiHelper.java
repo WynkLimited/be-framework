@@ -49,6 +49,7 @@ import io.restassured.http.Headers;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import net.minidev.json.JSONArray;
+import com.airtel.helper.constants.Constants;
 
 /**
  * This class contains methods for generic functions over the API that includes
@@ -148,10 +149,9 @@ public class ApiHelper
        
         long responseTime = apiResponse.getTime();
         logRequestResponse(requestLog, formatResponse(apiResponse), requestUrl, responseTime, headerData);
-        List<Integer> successCode = new ArrayList<>(Arrays.asList(200,202,204));
-        if (checkStatus && ! (successCode.contains(apiResponse.getStatusCode())))
+        if (checkStatus && ! (Constants.SUCCESS_CODE.contains(apiResponse.getStatusCode())))
         {
-            ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
+            ReportHelper.logValidationFailure("HTTP Status code is not in 2XX series. ", "200"
                     Integer.toString(apiResponse.getStatusCode()), "HTTP status check failure");
             Assert.assertTrue(false);
         }
