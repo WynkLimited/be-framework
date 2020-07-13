@@ -151,7 +151,7 @@ public class ApiHelper
         logRequestResponse(requestLog, formatResponse(apiResponse), requestUrl, responseTime, headerData);
         if (checkStatus && ! (Constants.SUCCESS_CODE.contains(apiResponse.getStatusCode())))
         {
-            ReportHelper.logValidationFailure("HTTP Status code is not in 2XX series. ", "200"
+            ReportHelper.logValidationFailure("HTTP Status code is not in 2XX series. ", "2xx",
                     Integer.toString(apiResponse.getStatusCode()), "HTTP status check failure");
             Assert.assertTrue(false);
         }
