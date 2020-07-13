@@ -145,7 +145,7 @@ public class ApiHelper
                 break;
         }
 
-        System.out.println(apiResponse.statusCode());  System.out.println(apiResponse.print());
+       
         long responseTime = apiResponse.getTime();
         logRequestResponse(requestLog, formatResponse(apiResponse), requestUrl, responseTime, headerData);
         if (checkStatus && apiResponse.getStatusCode() != 200 && apiResponse.getStatusCode() != 202 && apiResponse.getStatusCode() != 204)
