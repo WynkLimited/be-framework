@@ -36,8 +36,7 @@ public class ComparatorReportGenerator implements ReportConstants {
 	}
 
 	public String createCompartorReport(String request) {
-		ReportHelper report = new ReportHelper();
-		String resultFolder = report.getResultFolderpath();
+		String resultFolder = ReportHelper.getResultFolderpath();
 		resultFolder = resultFolder + "/comparatorReport";
 		File resultFileFolder = new File(resultFolder);
 		resultFileFolder.mkdir();

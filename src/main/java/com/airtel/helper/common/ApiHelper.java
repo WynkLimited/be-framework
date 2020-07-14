@@ -6,12 +6,14 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
-import org.apache.logging.log4j.Logger;
+
 import org.testng.Assert;
+
 import com.airtel.Models.Constants;
 import com.airtel.Models.LogItemReq;
 import com.airtel.controller.GetAuthManager;
@@ -19,17 +21,16 @@ import com.airtel.dto.GetAuthRequest;
 import com.airtel.dto.GetAuthResponse;
 import com.airtel.helper.constants.RequestType;
 import com.airtel.helper.data.DataHelper;
-import com.airtel.helper.logging.AirtelLoggingMgr;
 import com.airtel.helper.report.FileHelper;
 import com.airtel.helper.report.ReportHelper;
 import com.report.SentinelLogger;
+
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
 import io.restassured.http.Headers;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
-import net.minidev.json.JSONArray;
 
 /**
  * This class contains methods for generic functions over the API that includes
@@ -40,17 +41,6 @@ import net.minidev.json.JSONArray;
  */
 
 public class ApiHelper extends DataHelper {
-
-
-	private Logger apiHelperLog;
-	private ReportHelper reporter;
-	private FileHelper fileHelper;
-
-	public ApiHelper() {
-		apiHelperLog = AirtelLoggingMgr.getLogger(ApiHelper.class);
-		reporter = new ReportHelper();
-		fileHelper = new FileHelper();
-	}
 
 	private RequestSpecification prepareRequestParams(Map<String, String> queryParams, List<Header> headers,
 			String body, ContentType contentType, Map<String, String> formParams) {
@@ -106,7 +96,7 @@ public class ApiHelper extends DataHelper {
 
 		if (queryParams != null)
 			requestLog = requestLog + "Query Params:" + queryParams.toString();
-
+		
 		try {
 			switch (RequestType.valueOf(requestType.toUpperCase())) {
 			case GET:
@@ -461,11 +451,11 @@ public class ApiHelper extends DataHelper {
 	private void logRequestResponse(String request, String response, String url, long responseTime, String headers) {
 		String requestFilePath = "";
 		if (request != null)
-			requestFilePath = fileHelper.createRequestJsonFile(request, "");
-		String responseFilePath = fileHelper.createResponseJsonFile(response, "");
-		String reportFolder = reporter.getResultFileStringPath();
+			requestFilePath = FileHelper.createRequestJsonFile(request, "");
+		String responseFilePath = FileHelper.createResponseJsonFile(response, "");
+		String reportFolder = ReportHelper.getResultFileStringPath();
 
-		reporter.appendresultHTMLReport(reportFolder, url, "<a href='" + requestFilePath + "'>Request Data" + "</a>",
+		ReportHelper.appendresultHTMLReport(reportFolder, url, "<a href='" + requestFilePath + "'>Request Data" + "</a>",
 				"<a href='" + responseFilePath + "'>Response Data" + "</a>",
 				"Response Time(in msec) :- " + String.valueOf(responseTime), "", "", headers);
 
