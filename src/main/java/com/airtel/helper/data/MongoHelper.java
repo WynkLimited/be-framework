@@ -1,5 +1,6 @@
 package com.airtel.helper.data;
 
+import com.airtel.helper.Interfaces.IMongoHelper;
 import com.airtel.helper.common.ApiHelper;
 import com.airtel.helper.common.BaseTestClass;
 import com.airtel.helper.report.ReportHelper;
@@ -22,7 +23,7 @@ import java.util.Map;
 /**
  * Created by b0200202 on 12/6/17.
  */
-public class MongoHelper extends BaseTestClass {
+public class MongoHelper extends BaseTestClass  implements IMongoHelper {
 
 	public  MongoClient getMongoClient (String serverIp, Integer port) {
 		if (mongoClient ==null){
