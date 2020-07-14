@@ -1,5 +1,8 @@
-
 package com.airtel.helper.constants;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public interface Constants {
 
@@ -14,6 +17,7 @@ public interface Constants {
 	String GETAUTH_URL = "http://10.5.245.76:8085";
 	String GETAUTH_ENDPOINT = "/getencryptedauth";
 	String APP_AUTHENTICATION_KEY="Basic Ymxvb2Rob3VuZDpGaXNoeVJlZEhlcnJpbmc=";
+    List<Integer> SUCCESS_CODE = new ArrayList<>(Arrays.asList(200,202,204));
 
 	interface ERROR_CODE {
 		String CONFIGURATION_PROPERTY = "ERR_CFG_00";

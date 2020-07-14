@@ -6,12 +6,14 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
-import org.apache.logging.log4j.Logger;
+
 import org.testng.Assert;
+
 import com.airtel.Models.Constants;
 import com.airtel.Models.LogItemReq;
 import com.airtel.controller.GetAuthManager;
@@ -22,6 +24,7 @@ import com.airtel.helper.data.DataHelper;
 import com.airtel.helper.report.FileHelper;
 import com.airtel.helper.report.ReportHelper;
 import com.report.SentinelLogger;
+
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
@@ -36,6 +39,7 @@ import io.restassured.specification.RequestSpecification;
  *
  * @author b0202849
  */
+
 public class ApiHelper extends DataHelper {
 
 	private RequestSpecification prepareRequestParams(Map<String, String> queryParams, List<Header> headers,
@@ -141,8 +145,9 @@ public class ApiHelper extends DataHelper {
 		logItemReq.setRequest(body);
 		SentinelLogger.info(logItemReq);
 
-		if (checkStatus && apiResponse.getStatusCode() != 200 && apiResponse.getStatusCode() != 204) {
-			ReportHelper.logValidationFailure("HTTP Status code not 200", "200",
+		if (checkStatus && ! (com.airtel.helper.constants.Constants.SUCCESS_CODE.contains(apiResponse.getStatusCode())))
+		{
+			ReportHelper.logValidationFailure("HTTP Status code is not in 2XX series. ", "2xx",
 					Integer.toString(apiResponse.getStatusCode()), "HTTP status check failure");
 			Assert.assertTrue(false);
 		}
@@ -218,6 +223,22 @@ public class ApiHelper extends DataHelper {
 			boolean checkStatus) {
 		return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus, null);
 	}
+
+    /**
+     * This method will be used for getting response of GET request with headers.
+     * This method will fail non 200 HTTP response.
+     *
+     * @param queryParams
+     * @param headers
+     * @param url
+     * @param checkStatus
+     * @return
+     */
+    public Response deleteResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url,
+                                                     boolean checkStatus)
+    {
+        return fetchApiResponse(url, "DELETE", null, queryParams, headers, null, checkStatus,null);
+    }
 
 	/**
 	 * This method will be used for getting response of POST request w/o headers.
@@ -655,7 +676,7 @@ public class ApiHelper extends DataHelper {
 	 *
 	 * @param env
 	 * @param rtn
-	 * @param endpoint
+	 * @param endPoint
 	 * @param httpMethod
 	 * @param request
 	 * @param queryParams
@@ -673,7 +694,7 @@ public class ApiHelper extends DataHelper {
 	 *
 	 * @param env
 	 * @param rtn
-	 * @param endpoint
+	 * @param endPoint
 	 * @param httpMethod
 	 * @param request
 	 * @param queryParams
