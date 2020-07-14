@@ -14,6 +14,10 @@
 			</Policies>
 			<DefaultRolloverStrategy max="10" />
 		</RollingRandomAccessFile>
+        <SentinelAppender name="SentinelAppender">
+            <PatternLayout
+                    pattern="%d [%t] %-5level %logger{36} - %msg%n%throwable"/>
+        </SentinelAppender>
 	</Appenders>
 
 	<Loggers>
@@ -21,6 +25,7 @@
 		<Logger name="com" level="DEBUG" additivity="false">
 			<AppenderRef ref="AppFile" />
 			<AppenderRef ref="CONSOLE" />
+            <AppenderRef ref="SentinelAppender"/>
 		</Logger>
 	</Loggers>
 

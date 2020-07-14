@@ -14,6 +14,8 @@ public interface ReportConstants {
 	final static String REQ_RESP_LOG_TEMPLATE = "<html></head><body><title>API Test Report</title><table style=table-layout:fixed; width:40px border = '1'><tr><th>API URL</th><th>Headers</th><th>Request</th><th>Response</th><th>Message</th><th>Status</th><th>Calling Method</th></tr>";
 	final static String TEST_PASS_TAG = "<td bgcolor='#00FF7F'>";
 	final static String TEST_FAIL_TAG = "<td bgcolor='#FF4500'>";
+	final static String TEST_WARN_TAG = "<td bgcolor='#FFEA62'>";
 
 	final static String COMPARATOR_REPORT_TITLE = "<html></head><body><title>Compare Engine Response</title><table border = '1'><tr><th>Operation Type</th><th>Field Name</th><th>Expected value</th><th>Test build value</th></tr>";
+	final static String TESTRESULT_WARNING = "Warning";
 }

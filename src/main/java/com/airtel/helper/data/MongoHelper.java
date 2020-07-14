@@ -1,5 +1,6 @@
 package com.airtel.helper.data;
 
+import com.airtel.helper.Interfaces.IMongoHelper;
 import com.airtel.helper.common.ApiHelper;
 import com.airtel.helper.common.BaseTestClass;
 import com.airtel.helper.report.ReportHelper;
@@ -22,9 +23,9 @@ import java.util.Map;
 /**
  * Created by b0200202 on 12/6/17.
  */
-public class MongoHelper extends BaseTestClass {
+public class MongoHelper extends BaseTestClass  implements IMongoHelper {
 
-	public static MongoClient connectToMongoDBServer(String serverIp, Integer port) {
+	public  MongoClient getMongoClient (String serverIp, Integer port) {
 		if (mongoClient ==null){
 			synchronized (MongoHelper.class){
 				if (mongoClient ==null){
@@ -36,20 +37,20 @@ public class MongoHelper extends BaseTestClass {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public static MongoCollection getCollection(MongoClient mongoClient, String dataBase, String collection) {
+	public MongoCollection getCollection(MongoClient mongoClient, String dataBase, String collection) {
 
 		MongoDatabase mongoDatabase = mongoClient.getDatabase(dataBase);
 		return mongoDatabase.getCollection(collection);
 
 	}
 
-	public static BasicDBObject getMongoDBQuery(String key, Object value) {
+	public BasicDBObject getMongoDBQuery(String key, Object value) {
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put(key, value);
 		return searchQuery;
 	}
 
-	public static BasicDBObject prepareMongoQueryFromMultipleKeys(Map<String, String> map) {
+	public  BasicDBObject prepareMongoQueryFromMultipleKeys(Map<String, String> map) {
 
 		BasicDBObject andQuery = new BasicDBObject();
 		BasicDBList basicDBList = new BasicDBList();
@@ -61,7 +62,7 @@ public class MongoHelper extends BaseTestClass {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public static List<Object> getResultFromMongo(MongoCollection mongoCollection, BasicDBObject searchQuery) {
+	public List<Object> getResultFromMongo(MongoCollection mongoCollection, BasicDBObject searchQuery) {
 		FindIterable findIterable = mongoCollection.find(searchQuery);
 		MongoCursor mongoCursor = findIterable.iterator();
 		List<Object> mongoAsObjectResult = new ArrayList<>();
@@ -73,12 +74,12 @@ public class MongoHelper extends BaseTestClass {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public static List<JSONObject> parseMongoDocuments(List<Object> resultFromMongoAsObject) {
+	public  List<JSONObject> parseMongoDocuments(List<Object> resultFromMongoAsObject) {
 
 		List<JSONObject> jsonObjectListOfMongo = new ArrayList<>();
 		Iterator<Object> mongoResultIterator = resultFromMongoAsObject.iterator();
 		while (mongoResultIterator.hasNext()) {
-			JSONObject jsonObject = new JSONObject(ApiHelper.convertToJson(mongoResultIterator.next()));
+			JSONObject jsonObject = new JSONObject(jsonHelper.convertToJson(mongoResultIterator.next()));
 			jsonObjectListOfMongo.add(jsonObject);
 		}
 
@@ -87,7 +88,7 @@ public class MongoHelper extends BaseTestClass {
 
 	/**
 	 * This method delete mongo document
-	 * 
+	 *
 	 * @param mongoClient
 	 * @param mongoValue
 	 * @param dataBaseName
@@ -95,12 +96,12 @@ public class MongoHelper extends BaseTestClass {
 	 * @return
 	 */
 
-	public static boolean findMongoDocumentAndDeleteIt(MongoClient mongoClient, String key, Object mongoValue,
-			String dataBaseName, String collectionName) {
+	public  boolean findMongoDocumentAndDeleteIt(MongoClient mongoClient, String key, Object mongoValue,
+													   String dataBaseName, String collectionName) {
 		boolean mongoDeleteion = true;
-		BasicDBObject query = MongoHelper.getMongoDBQuery(key, mongoValue);
-		MongoCollection mongoCollection = MongoHelper.getCollection(mongoClient, dataBaseName, collectionName);
-		List<Object> resultFromMongoAsObject = MongoHelper.getResultFromMongo(mongoCollection, query);
+		BasicDBObject query = getMongoDBQuery(key, mongoValue);
+		MongoCollection mongoCollection = getCollection(mongoClient, dataBaseName, collectionName);
+		List<Object> resultFromMongoAsObject = getResultFromMongo(mongoCollection, query);
 
 		if (!resultFromMongoAsObject.isEmpty()) {
 			Document mongoDocument;
@@ -127,7 +128,7 @@ public class MongoHelper extends BaseTestClass {
 	/**
 	 * this method find a document on the basis of search key & value and then
 	 * update a mongo document which is passed in parameter as mongoNewUpdatedObject
-	 * 
+	 *
 	 * @param mongoClient
 	 * @param collectionName
 	 * @param dataBaseName
@@ -136,12 +137,12 @@ public class MongoHelper extends BaseTestClass {
 	 * @param mongoNewUpdatedObject
 	 * @return
 	 */
-	public static boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
-			String searchKey, String searchValue, Object mongoNewUpdatedObject) {
+	public  boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
+											  String searchKey, String searchValue, Object mongoNewUpdatedObject) {
 		boolean updateStatus = true;
 		MongoCollection mongoCollection = null;
 		try {
-			mongoCollection = MongoHelper.getCollection(mongoClient, dataBaseName, collectionName);
+			mongoCollection = getCollection(mongoClient, dataBaseName, collectionName);
 			BasicDBObject query = new BasicDBObject();
 			query.append(searchKey, searchValue);
 			BasicDBObject updatedDocument = BasicDBObject.parse(mongoNewUpdatedObject.toString());
@@ -171,9 +172,9 @@ public class MongoHelper extends BaseTestClass {
 	 * @param mongoNewUpdatedObject
 	 * @return
 	 */
-	public static boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
-											   String searchKey, String searchValue, Map mongoNewUpdatedObject) {
-	return updateMongoDocuments(mongoClient,collectionName,dataBaseName,searchKey,searchValue,mongoNewUpdatedObject,false);
+	public  boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
+											  String searchKey, String searchValue, Map mongoNewUpdatedObject) {
+		return updateMongoDocuments(mongoClient,collectionName,dataBaseName,searchKey,searchValue,mongoNewUpdatedObject,false);
 	}
 
 
@@ -190,18 +191,18 @@ public class MongoHelper extends BaseTestClass {
 	 * @param mongoNewUpdatedObject
 	 * @return
 	 */
-	public static boolean updateMongoDocuments(MongoClient mongoClient, String collectionName, String dataBaseName,
-											  String searchKey, String searchValue, Map mongoNewUpdatedObject,boolean updateMultipleDocuments) {
+	public  boolean updateMongoDocuments(MongoClient mongoClient, String collectionName, String dataBaseName,
+											   String searchKey, String searchValue, Map mongoNewUpdatedObject,boolean updateMultipleDocuments) {
 		boolean updateStatus = true;
 		MongoCollection mongoCollection = null;
 		try {
-			mongoCollection = MongoHelper.getCollection(mongoClient, dataBaseName, collectionName);
+			mongoCollection = getCollection(mongoClient, dataBaseName, collectionName);
 			BasicDBObject query = new BasicDBObject();
 			query.append(searchKey, searchValue);
 			Bson newDocument = new Document("$set", mongoNewUpdatedObject);
 			if (updateMultipleDocuments)mongoCollection.updateMany(query, newDocument);
 			else
-			mongoCollection.findOneAndUpdate(query, newDocument);
+				mongoCollection.findOneAndUpdate(query, newDocument);
 		} catch (Exception e) {
 			updateStatus = false;
 			ReportHelper.reporterLogging(false,
