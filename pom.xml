@@ -103,7 +103,7 @@
 		<dependency>
 			<groupId>com.airtel.subTest-Ng</groupId>
 			<artifactId>subscriber-testNg</artifactId>
-			<version>1.1.1</version>
+			<version>1.1.2</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.jayway.jsonpath/json-path -->
