@@ -1,5 +1,6 @@
 package com.report;
 
+import com.airtel.Models.DebugLogItemReq;
 import com.airtel.Models.LogItemReq;
 import com.airtel.helper.logging.AirtelLoggingMgr;
 import org.apache.logging.log4j.Logger;
@@ -11,6 +12,11 @@ public class SentinelLogger
 
 
     public static void info(LogItemReq message)
+    {
+        logger.info(message);
+    }
+
+    public static void info(DebugLogItemReq message)
     {
         logger.info(message);
     }
