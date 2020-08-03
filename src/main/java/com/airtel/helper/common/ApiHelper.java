@@ -125,7 +125,6 @@ public class ApiHelper extends DataHelper {
 			logRequestResponse(requestLog, null, requestUrl, 0, headerData);
 			ReportHelper.reporterLogging(false, "" + e.getMessage());
 			logItemReq = new LogItemReq();
-			logItemReq.setType(Constants.LOGITEMTYPE.APILog);
 			logItemReq.setHeaders(headerData);
 			logItemReq.setTargetApiUrl(requestUrl);
 			logItemReq.setResStatusCode(0);
@@ -141,7 +140,6 @@ public class ApiHelper extends DataHelper {
 		logRequestResponse(requestLog, resString, requestUrl, responseTime, headerData);
 
 		logItemReq = new LogItemReq();
-		logItemReq.setType(Constants.LOGITEMTYPE.APILog);
 		logItemReq.setHeaders(headerData);
 		logItemReq.setTargetApiUrl(requestUrl);
 		logItemReq.setResStatusCode(apiResponse.statusCode());
@@ -610,7 +608,6 @@ public class ApiHelper extends DataHelper {
 		logRequestResponse(requestLog, formatResponse(apiResponse), requestUrl, responseTime, headerData);
 
 		LogItemReq logItemReq = new LogItemReq();
-		logItemReq.setType(Constants.LOGITEMTYPE.APILog);
 		logItemReq.setHeaders(headerData);
 		logItemReq.setTargetApiUrl(requestUrl);
 		logItemReq.setResStatusCode(apiResponse.statusCode());

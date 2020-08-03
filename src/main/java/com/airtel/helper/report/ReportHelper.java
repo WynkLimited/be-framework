@@ -272,19 +272,16 @@ public class ReportHelper implements ReportConstants {
 					Thread.currentThread().getStackTrace()[2].getMethodName(), "");
 			Reporter.log("<br>");
 			if (status.equalsIgnoreCase("True")) {
-				debugLogItemReq.setType(Constants.LOGITEMTYPE.DEBUGLog);
 				debugLogItemReq.setAssertStatus("SUCCESS");
 				debugLogItemReq.setMessage(sMessage);
 				Reporter.log("<Font Color=#008000> PASS </Font>" + sMessage);
 				SentinelLogger.info(debugLogItemReq);
 			} else if (status.equalsIgnoreCase(TESTRESULT_WARNING)) {
-				debugLogItemReq.setType(Constants.LOGITEMTYPE.DEBUGLog);
 				debugLogItemReq.setAssertStatus("SUCCESS");
 				debugLogItemReq.setMessage(TESTRESULT_WARNING + ": " + sMessage);
 				Reporter.log("<Font Color=#FFEA62> WARN </Font>" + sMessage);
 				SentinelLogger.info(debugLogItemReq);
 			} else {
-				debugLogItemReq.setType(Constants.LOGITEMTYPE.DEBUGLog);
 				debugLogItemReq.setAssertStatus("FAILED");
 				debugLogItemReq.setMessage(sMessage);
 				Reporter.log("<Font Color=red> FAIL </Font> " + sMessage);

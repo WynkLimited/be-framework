@@ -4,6 +4,7 @@ import com.airtel.Models.DebugLogItemReq;
 import com.airtel.Models.LogItemReq;
 import com.airtel.helper.logging.AirtelLoggingMgr;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.Message;
 
 public class SentinelLogger
 {
@@ -11,12 +12,7 @@ public class SentinelLogger
     private static Logger logger = AirtelLoggingMgr.getLogger(SentinelLogger.class);
 
 
-    public static void info(LogItemReq message)
-    {
-        logger.info(message);
-    }
-
-    public static void info(DebugLogItemReq message)
+    public static void info(Message message)
     {
         logger.info(message);
     }
