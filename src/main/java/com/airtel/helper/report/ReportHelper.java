@@ -281,7 +281,12 @@ public class ReportHelper implements ReportConstants {
 				debugLogItemReq.setMessage(TESTRESULT_WARNING + ": " + sMessage);
 				Reporter.log("<Font Color=#FFEA62> WARN </Font>" + sMessage);
 				SentinelLogger.info(debugLogItemReq);
-			} else {
+			} else if (status.equalsIgnoreCase("TESTRESULT_HTMLREPORT")) {
+				debugLogItemReq.setAssertStatus("FAILED");
+				debugLogItemReq.setMessage(sMessage);
+				Reporter.log("<Font Color=red> FAIL </Font> " + sMessage);
+			}
+			else {
 				debugLogItemReq.setAssertStatus("FAILED");
 				debugLogItemReq.setMessage(sMessage);
 				Reporter.log("<Font Color=red> FAIL </Font> " + sMessage);
@@ -338,7 +343,7 @@ public class ReportHelper implements ReportConstants {
 					"<textarea disabled rows='7' cols='55'>" + actualValue + "</textarea>");
 			compareHtmlObj.appendFinalHTMLReport(compareFilePath);
 			String differenceHTMLLink = "<a href='" + linkCompareFilePath + "'>" + failureType + "</a>";
-			ReportHelper.reporterLogging(false, differenceHTMLLink);
+			ReportHelper.reporterLogging("TESTRESULT_HTMLREPORT", differenceHTMLLink);
 		} catch (Exception e) {
 			logger.error("File path is not specified correctly - " + e);
 		}
