@@ -18,4 +18,5 @@ public interface ReportConstants {
 
 	final static String COMPARATOR_REPORT_TITLE = "<html></head><body><title>Compare Engine Response</title><table border = '1'><tr><th>Operation Type</th><th>Field Name</th><th>Expected value</th><th>Test build value</th></tr>";
 	final static String TESTRESULT_WARNING = "Warning";
+	final static String TESTRESULT_HTMLREPORT = "HtmlReporting";
 }

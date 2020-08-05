@@ -6,8 +6,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import com.airtel.helper.constants.Constants;
 import com.airtel.helper.data.DataHelper;
 import com.airtel.helper.data.JsonParser;
+import com.airtel.helper.report.ReportConstants;
 import org.testng.Reporter;
 
 import com.airtel.helper.report.ComparatorReportGenerator;
@@ -134,7 +136,7 @@ public class ApiResponseValidator extends JsonParser {
             if (differenceCounter > 0) {
                 ReportHelper.reporterLogging(false,diffValues.toString().replace(",","\n"));
                 String differenceHTMLLink = "<a href='" + linkCompareFilePath + "'>Differences Link</a>";
-                ReportHelper.reporterLogging("TESTRESULT_HTMLREPORT", differenceHTMLLink);
+                ReportHelper.reporterLogging(ReportConstants.TESTRESULT_HTMLREPORT, differenceHTMLLink);
                 return false;
             }
         } catch (Exception e) {
@@ -176,7 +178,7 @@ public class ApiResponseValidator extends JsonParser {
                 logFailureInReporter(compareFilePath, "JSON SCHEMA  COMPARISION", "-", errorText, "-");
                 compareHtmlObj.appendFinalHTMLReport(compareFilePath);
                 String differenceHTMLLink = "<a href='" + linkCompareFilePath + "'>Differences Link</a>";
-                ReportHelper.reporterLogging("TESTRESULT_HTMLREPORT", differenceHTMLLink);
+                ReportHelper.reporterLogging(ReportConstants.TESTRESULT_HTMLREPORT, differenceHTMLLink);
             } else
                 schemaValidationFlag = true;
 
