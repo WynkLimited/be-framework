@@ -277,7 +277,7 @@ public class ReportHelper implements ReportConstants {
 				Reporter.log("<Font Color=#008000> PASS </Font>" + sMessage);
 				SentinelLogger.info(debugLogItemReq);
 			} else if (status.equalsIgnoreCase(TESTRESULT_WARNING)) {
-				debugLogItemReq.setAssertStatus("SUCCESS");
+				debugLogItemReq.setAssertStatus("WARNING");
 				debugLogItemReq.setMessage(TESTRESULT_WARNING + ": " + sMessage);
 				Reporter.log("<Font Color=#FFEA62> WARN </Font>" + sMessage);
 				SentinelLogger.info(debugLogItemReq);
