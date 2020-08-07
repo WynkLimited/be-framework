@@ -1,12 +1,15 @@
 package com.airtel.validator;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import com.airtel.helper.constants.Constants;
 import com.airtel.helper.data.DataHelper;
 import com.airtel.helper.data.JsonParser;
+import com.airtel.helper.report.ReportConstants;
 import org.testng.Reporter;
 
 import com.airtel.helper.report.ComparatorReportGenerator;
@@ -105,6 +108,7 @@ public class ApiResponseValidator extends JsonParser {
             JsonNode responseAct = objMapper.readTree(responseActual);
             JsonNode jsonDiff = JsonDiff.asJson(responseExp, responseAct);
             Set<String> dndCompareValues = null;
+            Set<String> diffValues = new HashSet<>();
 
             if (propFilePath != null && !propFilePath.isEmpty()) {
                 dndCompareValues = new DataHelper().getAllProperty(propFilePath);
@@ -123,17 +127,16 @@ public class ApiResponseValidator extends JsonParser {
                             .map(dataValue -> diffValueJsonNode.asText()).orElse(null);
                     String parentValue = Optional.ofNullable(responseExp.at(diffPath))
                             .map(value -> responseExp.at(diffPath).asText()).orElse(null);
-
+                    diffValues.add("Actual Value  for " + diffPath + " is " + diffValue  + " and expectedValue is " + parentValue);
                     logFailureInReporter(compareFilePath, operationType.toUpperCase(), diffPath, diffValue,
                             parentValue);
                 }
             }
 
             if (differenceCounter > 0) {
-                compareHtmlObj.appendFinalHTMLReport(compareFilePath);
+                ReportHelper.reporterLogging(false,diffValues.toString().replace(",","\n"));
                 String differenceHTMLLink = "<a href='" + linkCompareFilePath + "'>Differences Link</a>";
-
-                ReportHelper.reporterLogging(false, differenceHTMLLink);
+                ReportHelper.reporterLogging(ReportConstants.TESTRESULT_HTMLREPORT, differenceHTMLLink);
                 return false;
             }
         } catch (Exception e) {
@@ -175,7 +178,7 @@ public class ApiResponseValidator extends JsonParser {
                 logFailureInReporter(compareFilePath, "JSON SCHEMA  COMPARISION", "-", errorText, "-");
                 compareHtmlObj.appendFinalHTMLReport(compareFilePath);
                 String differenceHTMLLink = "<a href='" + linkCompareFilePath + "'>Differences Link</a>";
-                ReportHelper.reporterLogging(false, differenceHTMLLink);
+                ReportHelper.reporterLogging(ReportConstants.TESTRESULT_HTMLREPORT, differenceHTMLLink);
             } else
                 schemaValidationFlag = true;
 

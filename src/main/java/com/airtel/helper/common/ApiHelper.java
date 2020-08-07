@@ -82,6 +82,7 @@ public class ApiHelper extends DataHelper {
 		LogItemReq logItemReq = null;
 		Response apiResponse = null;
 		String requestLog = null;
+		String queryParamLog = "";
 		RequestSpecification apiRequest = prepareRequestParams(queryParams, headers, body, contentType, formParams);
 
 		requestLog = "Request body: " + body;
@@ -94,8 +95,10 @@ public class ApiHelper extends DataHelper {
 			}
 		}
 
-		if (queryParams != null)
-			requestLog = requestLog + "Query Params:" + queryParams.toString();
+		if (queryParams != null) {
+            requestLog = requestLog + "Query Params:" + queryParams.toString();
+            queryParamLog = queryParams.toString();
+        }
 		
 		try {
 			switch (RequestType.valueOf(requestType.toUpperCase())) {
@@ -122,12 +125,12 @@ public class ApiHelper extends DataHelper {
 			logRequestResponse(requestLog, null, requestUrl, 0, headerData);
 			ReportHelper.reporterLogging(false, "" + e.getMessage());
 			logItemReq = new LogItemReq();
-			logItemReq.setType(Constants.LOGITEMTYPE.APILog);
 			logItemReq.setHeaders(headerData);
 			logItemReq.setTargetApiUrl(requestUrl);
 			logItemReq.setResStatusCode(0);
 			logItemReq.setMessage(null);
 			logItemReq.setRequest(body);
+			logItemReq.setQueryParams(queryParamLog);
 			SentinelLogger.info(logItemReq);
 			return apiResponse;
 		}
@@ -137,12 +140,12 @@ public class ApiHelper extends DataHelper {
 		logRequestResponse(requestLog, resString, requestUrl, responseTime, headerData);
 
 		logItemReq = new LogItemReq();
-		logItemReq.setType(Constants.LOGITEMTYPE.APILog);
 		logItemReq.setHeaders(headerData);
 		logItemReq.setTargetApiUrl(requestUrl);
 		logItemReq.setResStatusCode(apiResponse.statusCode());
 		logItemReq.setMessage(resString);
 		logItemReq.setRequest(body);
+        logItemReq.setQueryParams(queryParamLog);
 		SentinelLogger.info(logItemReq);
 
 		if (checkStatus && ! (com.airtel.helper.constants.Constants.SUCCESS_CODE.contains(apiResponse.getStatusCode())))
@@ -562,12 +565,15 @@ public class ApiHelper extends DataHelper {
 
 		Response apiResponse = null;
 		String requestLog = null;
+		String queryParamsLog = "";
 		RequestSpecification apiRequest = prepareRequestParams(queryParams, headers, body, contentType, formParams);
 
 		requestLog = "Request body: " + body;
 
-		if (queryParams != null)
-			requestLog = requestLog + "Query Params:" + queryParams.toString();
+		if (queryParams != null) {
+            requestLog = requestLog + "Query Params:" + queryParams.toString();
+            queryParamsLog=queryParams.toString();
+        }
 
 		String headerData = null;
 		if (headers != null) {
@@ -602,12 +608,12 @@ public class ApiHelper extends DataHelper {
 		logRequestResponse(requestLog, formatResponse(apiResponse), requestUrl, responseTime, headerData);
 
 		LogItemReq logItemReq = new LogItemReq();
-		logItemReq.setType(Constants.LOGITEMTYPE.APILog);
 		logItemReq.setHeaders(headerData);
 		logItemReq.setTargetApiUrl(requestUrl);
 		logItemReq.setResStatusCode(apiResponse.statusCode());
 		logItemReq.setMessage(formatResponse(apiResponse));
 		logItemReq.setRequest(body);
+		logItemReq.setQueryParams(queryParamsLog);
 		SentinelLogger.info(logItemReq);
 
 		if (apiResponse.getStatusCode() != statusCode) {

@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.airtel.Models.Constants;
+import com.airtel.Models.DebugLogItemReq;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.testng.ITestContext;
@@ -264,19 +266,31 @@ public class ReportHelper implements ReportConstants {
 	}
 
 	public static boolean reporterLogging(String status, String sMessage) {
+        DebugLogItemReq debugLogItemReq = new DebugLogItemReq();
 		try {
 			appendresultHTMLReport(getResultFileStringPath(), "", "", "", sMessage, String.valueOf(status),
 					Thread.currentThread().getStackTrace()[2].getMethodName(), "");
 			Reporter.log("<br>");
 			if (status.equalsIgnoreCase("True")) {
+				debugLogItemReq.setAssertStatus("SUCCESS");
+				debugLogItemReq.setMessage(sMessage);
 				Reporter.log("<Font Color=#008000> PASS </Font>" + sMessage);
-				SentinelLogger.info(sMessage);
+				SentinelLogger.info(debugLogItemReq);
 			} else if (status.equalsIgnoreCase(TESTRESULT_WARNING)) {
+				debugLogItemReq.setAssertStatus("WARNING");
+				debugLogItemReq.setMessage(TESTRESULT_WARNING + ": " + sMessage);
 				Reporter.log("<Font Color=#FFEA62> WARN </Font>" + sMessage);
-				SentinelLogger.info(TESTRESULT_WARNING + ": " + sMessage);
-			} else {
+				SentinelLogger.info(debugLogItemReq);
+			} else if (status.equalsIgnoreCase(TESTRESULT_HTMLREPORT)) {
+				debugLogItemReq.setAssertStatus("FAILED");
+				debugLogItemReq.setMessage(sMessage);
 				Reporter.log("<Font Color=red> FAIL </Font> " + sMessage);
-				SentinelLogger.error(sMessage);
+			}
+			else {
+				debugLogItemReq.setAssertStatus("FAILED");
+				debugLogItemReq.setMessage(sMessage);
+				Reporter.log("<Font Color=red> FAIL </Font> " + sMessage);
+				SentinelLogger.info(debugLogItemReq);
 			}
 
 		} catch (Exception e) {
@@ -329,7 +343,7 @@ public class ReportHelper implements ReportConstants {
 					"<textarea disabled rows='7' cols='55'>" + actualValue + "</textarea>");
 			compareHtmlObj.appendFinalHTMLReport(compareFilePath);
 			String differenceHTMLLink = "<a href='" + linkCompareFilePath + "'>" + failureType + "</a>";
-			ReportHelper.reporterLogging(false, differenceHTMLLink);
+			ReportHelper.reporterLogging(TESTRESULT_HTMLREPORT, differenceHTMLLink);
 		} catch (Exception e) {
 			logger.error("File path is not specified correctly - " + e);
 		}
