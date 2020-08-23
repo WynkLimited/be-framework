@@ -284,7 +284,7 @@ public class ApiHelper extends DataHelper {
 	public Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType, String url) {
 		return postResponseWithHeaders(body, headers, contentType, url, true);
 	}
-
+	
 	/**
 	 * This method will be used for getting response of POST request with headers.
 	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
@@ -717,6 +717,10 @@ public class ApiHelper extends DataHelper {
 		Response response = postResponseWithHeaders(apiRequest, apiHeader, ContentType.JSON, apiUrl, apiQueryParams,
 				false);
 		return response;
+	}
+	
+	public Response responseWithAllParameter(String body, String method, List<Header> headers, String url) {
+		return fetchApiResponse(url, method, body, null, headers, ContentType.JSON, false, null);
 	}
 
 }
