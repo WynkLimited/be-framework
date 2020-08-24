@@ -6,13 +6,13 @@ The version uses below versions of sentinel libraries
 
 | **Sentinel Component**  | **Version**  |
 |-------------------------|--------------|
-| Subscriber TestNg       |1.1.2         |
-| Transformer optimus-java|1.1.3         |
-| Sentinel models         |2.0.5         |
-| Sentinel Log4j Appender |1.0.4         |
+| Subscriber TestNg       |1.1.5       |
+| Transformer optimus-java|1.1.5         |
+| Sentinel models         |2.0.6         |
+| Sentinel Log4j Appender |1.0.6         |
 
 ```
-Latest Version: 1.4.44
+Latest Version: 1.4.47   
 ```
 
 - You can checkout this implementation using git tags:
