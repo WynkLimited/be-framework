@@ -223,7 +223,7 @@ public class ApiHelper extends DataHelper {
 	 */
 	public Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url,
 			boolean checkStatus) {
-		return fetchApiResponse(url, "GET", null, queryParams, headers, ContentType.JSON, checkStatus, null);
+		return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus, null);
 	}
 
     /**
