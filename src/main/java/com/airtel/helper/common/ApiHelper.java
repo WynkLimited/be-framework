@@ -12,9 +12,9 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
 
+import com.google.inject.internal.util.$SourceProvider;
+import io.restassured.config.ConnectionConfig;
 import org.testng.Assert;
-
-import com.airtel.Models.Constants;
 import com.airtel.Models.LogItemReq;
 import com.airtel.controller.GetAuthManager;
 import com.airtel.dto.GetAuthRequest;
@@ -44,7 +44,8 @@ public class ApiHelper extends DataHelper {
 
 	private RequestSpecification prepareRequestParams(Map<String, String> queryParams, List<Header> headers,
 			String body, ContentType contentType, Map<String, String> formParams) {
-		RequestSpecification request = RestAssured.given().relaxedHTTPSValidation().redirects().follow(false);
+		RestAssured.config = RestAssured.config().connectionConfig(new ConnectionConfig().closeIdleConnectionsAfterEachResponse());
+		RequestSpecification request = RestAssured.given().config(RestAssured.config).relaxedHTTPSValidation().redirects().follow(false);
 		if (null != queryParams) {
 			request.queryParams(queryParams);
 		}
@@ -147,7 +148,8 @@ public class ApiHelper extends DataHelper {
 		logItemReq.setRequest(body);
         logItemReq.setQueryParams(queryParamLog);
 		SentinelLogger.info(logItemReq);
-
+		System.out.println("Response code is " + apiResponse.getStatusCode());
+		System.out.println("Response String is " + apiResponse.asString());
 		if (checkStatus && ! (com.airtel.helper.constants.Constants.SUCCESS_CODE.contains(apiResponse.getStatusCode())))
 		{
 			ReportHelper.logValidationFailure("HTTP Status code is not in 2XX series. ", "2xx",

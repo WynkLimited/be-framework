@@ -28,7 +28,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import net.minidev.json.JSONArray;
 
-public abstract class BaseManager extends ApiHelper
+public abstract class BaseManager extends WiremockHelper
 		implements IManager, IDbHelper, IMongoHelper, IAeroSpikeHelper, IResponseValidator, IJsonParser {
 
 	/*
@@ -373,6 +373,8 @@ public abstract class BaseManager extends ApiHelper
 	public boolean performSqlOperations(Connection connection, String query) {
 		return this._dbHelper.performSqlOperations(connection, query);
 	}
+
+
 
 	
 
