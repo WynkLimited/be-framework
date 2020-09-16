@@ -44,8 +44,7 @@ public class ApiHelper extends DataHelper {
 
 	private RequestSpecification prepareRequestParams(Map<String, String> queryParams, List<Header> headers,
 			String body, ContentType contentType, Map<String, String> formParams) {
-		RestAssured.config = RestAssured.config().connectionConfig(new ConnectionConfig().closeIdleConnectionsAfterEachResponse());
-		RequestSpecification request = RestAssured.given().config(RestAssured.config).relaxedHTTPSValidation().redirects().follow(false);
+		RequestSpecification request = RestAssured.given().relaxedHTTPSValidation().redirects().follow(false);
 		if (null != queryParams) {
 			request.queryParams(queryParams);
 		}
@@ -100,7 +99,6 @@ public class ApiHelper extends DataHelper {
             requestLog = requestLog + "Query Params:" + queryParams.toString();
             queryParamLog = queryParams.toString();
         }
-		
 		try {
 			switch (RequestType.valueOf(requestType.toUpperCase())) {
 			case GET:
@@ -123,6 +121,7 @@ public class ApiHelper extends DataHelper {
 				break;
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			logRequestResponse(requestLog, null, requestUrl, 0, headerData);
 			ReportHelper.reporterLogging(false, "" + e.getMessage());
 			logItemReq = new LogItemReq();
@@ -148,8 +147,6 @@ public class ApiHelper extends DataHelper {
 		logItemReq.setRequest(body);
         logItemReq.setQueryParams(queryParamLog);
 		SentinelLogger.info(logItemReq);
-		System.out.println("Response code is " + apiResponse.getStatusCode());
-		System.out.println("Response String is " + apiResponse.asString());
 		if (checkStatus && ! (com.airtel.helper.constants.Constants.SUCCESS_CODE.contains(apiResponse.getStatusCode())))
 		{
 			ReportHelper.logValidationFailure("HTTP Status code is not in 2XX series. ", "2xx",
@@ -226,7 +223,7 @@ public class ApiHelper extends DataHelper {
 	 */
 	public Response getResponseWithHeaders(Map<String, String> queryParams, List<Header> headers, String url,
 			boolean checkStatus) {
-		return fetchApiResponse(url, "GET", null, queryParams, headers, null, checkStatus, null);
+		return fetchApiResponse(url, "GET", null, queryParams, headers, ContentType.JSON, checkStatus, null);
 	}
 
     /**
@@ -719,10 +716,6 @@ public class ApiHelper extends DataHelper {
 		Response response = postResponseWithHeaders(apiRequest, apiHeader, ContentType.JSON, apiUrl, apiQueryParams,
 				false);
 		return response;
-	}
-	
-	public Response responseWithAllParameter(String body, String method, List<Header> headers, String url) {
-		return fetchApiResponse(url, method, body, null, headers, ContentType.JSON, false, null);
 	}
 
 }

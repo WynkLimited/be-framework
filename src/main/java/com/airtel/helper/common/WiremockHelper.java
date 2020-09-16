@@ -5,6 +5,7 @@ import java.util.*;
 import com.airtel.helper.constants.Constants;
 import com.google.common.net.HttpHeaders;
 import io.restassured.http.ContentType;
+import org.testng.Assert;
 import org.testng.Reporter;
 import io.restassured.response.Response;
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -26,6 +27,9 @@ public class WiremockHelper extends ApiHelper {
 				break;
 			case "GET":
 				request.setUrlPath(url);
+				break;
+			default:
+				request.setUrl(url);
 				break;
 		}
 		return request;
@@ -60,12 +64,14 @@ public class WiremockHelper extends ApiHelper {
 			if (response.getStatusCode() == 200 || response.getStatusCode() == 201) {
 				Reporter.log("API : [ createStubMapping ] Stub Mapping Created. || Status Code : " + response.getStatusCode());
 					WiremockRequest responseDto = convertFromJson(response.asString(), WiremockRequest.class);
-					ID = responseDto.getId();
+					ID = responseDto.getUuid();
 			} else {
 				Reporter.log("API : [ createStubMapping ] Stub Mapping not Created. || Status Code : " + response.getStatusCode());
+				Assert.assertTrue(false);
 			}
 		} catch (Exception error) {
 			Reporter.log("Error : [ createStubMapping ] ::: " + error.getMessage());
+			Assert.assertTrue(false);
 		}
 		return ID;
 	}
@@ -77,6 +83,7 @@ public class WiremockHelper extends ApiHelper {
 			Reporter.log("API : [ saveStubMapping ] Stub Mapping Saved. || Status Code : " + response.getStatusCode());
 		} else {
 			Reporter.log("API : [ saveStubMapping ] Stub Mapping not Created. || Status Code : " + response.getStatusCode());
+			Assert.assertTrue(false);
 		}
 	}
 
@@ -87,6 +94,7 @@ public class WiremockHelper extends ApiHelper {
 			Reporter.log("API : [ resetStubMapping ] Reset Mapping Saved. || Status Code : " + response.getStatusCode());
 		} else {
 			Reporter.log("API : [ resetStubMapping ] Reset Mapping not Created. || Status Code : " + response.getStatusCode());
+			Assert.assertTrue(false);
 		}
 	}
 
@@ -96,31 +104,35 @@ public class WiremockHelper extends ApiHelper {
 			response = postResponseWithHeaders(request, null, ContentType.JSON, mockUrl + Constants.WIREMOCK_MAPPINGS_CREATE);
 			if (response.getStatusCode() == 200 || response.getStatusCode() == 201) {
 				Reporter.log("API : [ createStubMapping ] Stub Mapping Created. || Status Code : " + response.getStatusCode());
-				WiremockResponseDTO responseDto = convertFromJson(response.asString(), WiremockResponseDTO.class);
+				WiremockRequest responseDto = convertFromJson(response.asString(), WiremockRequest.class);
 				ID = responseDto.getId();
 			} else {
 				Reporter.log("API : [ createStubMapping ] Stub Mapping not Created. || Status Code : " + response.getStatusCode());
+				Assert.assertTrue(false);
 			}
 		} catch (Exception error) {
 			Reporter.log("Error : [ createStubMapping ] ::: " + error.getMessage());
+			Assert.assertTrue(false);
 		}
 		return ID;
 	}
 
-	public WiremockResponseDTO getSpecificStubMapping(String mockUrl, String stubId) {
-		WiremockResponseDTO responseDto = null;
+	public WiremockRequest getSpecificStubMapping(String mockUrl, String stubId) {
+		WiremockRequest responseDto = null;
 		try {
-			String endpoint = Constants.GET_WIREMOCK_MAPPING.replace("$id", stubId);
-			response = getResponse(null, mockUrl + endpoint, true);
+			String url = mockUrl+Constants.GET_WIREMOCK_MAPPING.replace("$id", stubId);
+			response = getResponse(null, url, true);
 			if (response.getStatusCode() == 200 || response.getStatusCode() == 201) {
 				Reporter.log("API : [ getSpecificStubMapping ] get specific stub mapping. || Status Code : " + response.getStatusCode());
-				responseDto = convertFromJson(response.asString(), WiremockResponseDTO.class);
+				responseDto = convertFromJson(response.asString(), WiremockRequest.class);
 
 			} else {
 				Reporter.log("API : [ getSpecificStubMapping ] not able to get specific stub mapping. || Status Code : " + response.getStatusCode());
+				Assert.assertTrue(false);
 			}
 		} catch (Exception error) {
 			Reporter.log("Error : [ getSpecificStubMapping ] ::: " + error.getMessage());
+			Assert.assertTrue(false);
 		}
 		return responseDto;
 	}
@@ -133,28 +145,29 @@ public class WiremockHelper extends ApiHelper {
 				Reporter.log("API : [ modifySpecificStubMapping ] modify specific stub mapping. || Status Code : " + response.getStatusCode());
 			} else {
 				Reporter.log("API : [ modifySpecificStubMapping ] not able to modify specific stub mapping. || Status Code : " + response.getStatusCode());
+				Assert.assertTrue(false);
 			}
 		} catch (Exception error) {
 			Reporter.log("Error : [ modifySpecificStubMapping ] ::: " + error.getMessage());
+			Assert.assertTrue(false);
 		}
 	}
 
-	public WiremockResponseDTO deleteSpecificStubMapping(String mockUrl, String stubId) {
+	public void deleteSpecificStubMapping(String mockUrl, String stubId) {
 		WiremockResponseDTO responseDto = null;
 		try {
 			String endpoint = Constants.GET_WIREMOCK_MAPPING.replace("$id", stubId);
 			response = deleteResponseWithHeaders(null, null,mockUrl + endpoint, true);
 			if (response.getStatusCode() == 200 || response.getStatusCode() == 201) {
 				Reporter.log("API : [ deleteSpecificStubMapping ] delete specific stub mapping. || Status Code : " + response.getStatusCode());
-				responseDto = convertFromJson(response.asString(), WiremockResponseDTO.class);
-
 			} else {
 				Reporter.log("API : [ deleteSpecificStubMapping ] not able to delete specific stub mapping. || Status Code : " + response.getStatusCode());
+				Assert.assertTrue(false);
 			}
 		} catch (Exception error) {
 			Reporter.log("Error : [ deleteSpecificStubMapping ] ::: " + error.getMessage());
+			Assert.assertTrue(false);
 		}
-		return responseDto;
 	}
 
 
@@ -173,9 +186,11 @@ public class WiremockHelper extends ApiHelper {
 				Reporter.log("API : [ startWiremockRecording ] start wiremock recording. || Status Code : " + response.getStatusCode());
 			} else {
 				Reporter.log("API : [ startWiremockRecording ] not able to start wiremock recording. || Status Code : " + response.getStatusCode());
+				Assert.assertTrue(false);
 			}
 		} catch (Exception error) {
 			Reporter.log("Error : [ startWiremockRecording ] ::: " + error.getMessage());
+			Assert.assertTrue(false);
 		}
 	}
 
@@ -189,37 +204,13 @@ public class WiremockHelper extends ApiHelper {
 				Reporter.log("API : [ stopWiremockRecording ] stop wiremock recording. || Status Code : " + response.getStatusCode());
 	        }else {
 	        	Reporter.log("API : [ stopWiremockRecording ] not able to stop wiremock recording. || Status Code : " + response.getStatusCode());
-	        }
+				Assert.assertTrue(false);
+			}
 		} catch(Exception error) {
 			Reporter.log("Error : [ stopWiremockRecording ] ::: " + error.getMessage() );
+			Assert.assertTrue(false);
 		}
 		return recordResponse;
 	}
-
-	public static void main(String agrs[]) {
-		WiremockHelper wiremockHelper = new WiremockHelper();
-		Map<String,Object> headers = new HashMap<>();
-		headers.put("Content-Type","application/json");
-		headers.put(HttpHeaders.CONNECTION,"close");
-		Map<String,Object> params = new HashMap<>();
-		Map<String,String> lob = new HashMap<>();
-		lob.put("matches","Mobility");
-		params.put("lineOfBusiness",lob);
-
-		List<Map<String,Object>> bodyPattern = new ArrayList<>();
-		Map<String,Object> patterns = new HashMap<>();
-		patterns.put("equalToJson","{\"msisdn\":\"919007819561\",\"applicationId\":\"BILLING\",\"otp\":\"000000\",\"token\":null,\"operationName\":\"UNAUTH_OUTSTANDING\",\"attributes\":null}");
-		patterns.put("ignoreArrayOrder",true);
-		patterns.put("ignoreExtraElements",true);
-		bodyPattern.add(patterns);
-
-
-		String id = wiremockHelper.createStubMapping("http://10.5.118.52:8085",1,params,null,
-				bodyPattern,"v1/services/jain0001","GET",200,headers,"{\"status_info\":{\"code\":\"200\",\"message\":\"Success1111111\"},\"params\":{\"requestId\":\"6316949828900152880\",\"uri\":\"\\\\/v1\\\\/services\\\\/917494874665?lineOfBusiness=Mobility\"},\"services\":[{\"si\":\"917494874665\",\"cust_ac_no\":\"1-56442923248\",\"imsi\":\"204032220857675\",\"si_sts\":\"ACTIVE\",\"circle\":\"Haryana\",\"cust_cat\":\"1\",\"cust_class\":\"Corporate\",\"res_addrss_address1\":\"Sector 40\",\"res_addrss_address2\":\"Gurugram\",\"res_addrss_city\":\"Gurgaon\",\"res_addrss_state\":\"Haryana\",\"res_addrss_pincode\":\"122016\",\"res_addrss_country\":\"356\",\"inst_addrss_address1\":\"Sector 40\",\"inst_addrss_address2\":\"Gurugram\",\"inst_addrss_city\":\"Gurgaon\",\"inst_addrss_state\":\"Haryana\",\"inst_addrss_pincode\":\"122016\",\"inst_addrss_country\":\"356\",\"cors_addrss_address1\":\"Gurugram\",\"cors_addrss_address2\":\"Gurugram\",\"cors_addrss_address3\":\"dfdwt\",\"cors_addrss_city\":\"Gurgaon\",\"cors_addrss_state\":\"Haryana\",\"cors_addrss_pincode\":\"122016\",\"cors_addrss_country\":\"356\",\"cust_type\":\"B2B\",\"ivr_lang\":\"ENG\",\"act_date\":\"20200515152538\",\"adh_acquired\":\"N\",\"prod_type\":\"Airtel Mobility Data B2B\",\"ndnc\":[],\"parent_ac_no\":\"1-51512507585\",\"root_ac_no\":\"1-51509819112\",\"is_billable\":\"0\",\"si_lob\":\"POSTPAID\",\"si_is_btfly\":\"1\",\"payto_bill_ac\":\"1-51512507585\",\"devices\":{}}]}");
-		wiremockHelper.saveStubMapping("http://10.5.118.52:8085");
-		System.out.println(wiremockHelper.getSpecificStubMapping("10.5.118.52:8085",id));
-	}
-
-
 
 }
