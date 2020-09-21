@@ -497,7 +497,7 @@ public class ApiHelper extends DataHelper {
 			if (null == responseString && apiResponse.getHeaders().hasHeaderWithName("googleCookie")) {
 				String decryptResponse = decryptAPIResponse(apiResponse.getHeader("googleCookie"),
 						apiResponse.asString());
-				responseString = formatResponse(decryptResponse);
+				responseString = decryptResponse;
 			}
 		} else
 			responseString = apiResponse.asString();
