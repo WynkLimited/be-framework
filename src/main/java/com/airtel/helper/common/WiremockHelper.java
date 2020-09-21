@@ -85,7 +85,7 @@ public class WiremockHelper extends ApiHelper {
 
 	public String createStubMapping(String mockUrl, Integer priority, Map<String, Object> queryParams,
 			Map<String, Object> requestHeaders, List<Map<String, Object>> bodyPatterns, String requestUrl,
-			String httpMethod, Integer httpStatus, Map<String, Object> responseHeaders, String responseBody) {
+			String httpMethod, Integer httpStatus, Map<String, Object> responseHeaders, String responseBody,boolean isSave) {
 		String ID = null;
 		String request = prepareStubRequest(priority, queryParams, requestHeaders, bodyPatterns, requestUrl, httpMethod,
 				httpStatus, responseHeaders, responseBody);
@@ -102,6 +102,8 @@ public class WiremockHelper extends ApiHelper {
 						+ response.getStatusCode());
 				Assert.assertTrue(false);
 			}
+			if(isSave)
+				saveStubMapping(mockUrl);
 		} catch (Exception error) {
 			Reporter.log("Error : [ createStubMapping ] ::: " + error.getMessage());
 			Assert.assertTrue(false);
@@ -132,7 +134,7 @@ public class WiremockHelper extends ApiHelper {
 		}
 	}
 
-	public String createStubMapping(String mockUrl, String request) {
+	public String createStubMapping(String mockUrl, String request,boolean isSave) {
 		String ID = null;
 		try {
 			response = postResponseWithHeaders(request, null, ContentType.JSON,
@@ -147,6 +149,8 @@ public class WiremockHelper extends ApiHelper {
 						+ response.getStatusCode());
 				Assert.assertTrue(false);
 			}
+			if(isSave)
+				saveStubMapping(mockUrl);
 		} catch (Exception error) {
 			Reporter.log("Error : [ createStubMapping ] ::: " + error.getMessage());
 			Assert.assertTrue(false);
