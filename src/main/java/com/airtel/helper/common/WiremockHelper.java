@@ -170,7 +170,7 @@ public class WiremockHelper extends ApiHelper {
 	}
 
 	public String createStubMapping(String mockUrl, Integer priority, String httpMethod, String urlPathPattern,
-			String proxyBaseUrl) {
+			String proxyBaseUrl,boolean isSave) {
 		String ID = null;
 		String request = prepareStubRequest(priority, httpMethod, urlPathPattern, proxyBaseUrl);
 		try {
@@ -186,6 +186,8 @@ public class WiremockHelper extends ApiHelper {
 						+ response.getStatusCode());
 				Assert.assertTrue(false);
 			}
+			if(isSave)
+				saveStubMapping(mockUrl);
 		} catch (Exception error) {
 			Reporter.log("Error : [ createStubMapping ] ::: " + error.getMessage());
 			Assert.assertTrue(false);
