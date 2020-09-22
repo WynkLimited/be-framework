@@ -12,7 +12,7 @@ The version uses below versions of sentinel libraries
 | Sentinel Log4j Appender |1.0.7         |
 
 ```
-Latest Version: 1.4.47   
+Latest Version: 1.4.48  
 ```
 
 - You can checkout this implementation using git tags:
