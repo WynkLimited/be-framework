@@ -12,9 +12,9 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
 
+import com.google.inject.internal.util.$SourceProvider;
+import io.restassured.config.ConnectionConfig;
 import org.testng.Assert;
-
-import com.airtel.Models.Constants;
 import com.airtel.Models.LogItemReq;
 import com.airtel.controller.GetAuthManager;
 import com.airtel.dto.GetAuthRequest;
@@ -99,7 +99,6 @@ public class ApiHelper extends DataHelper {
             requestLog = requestLog + "Query Params:" + queryParams.toString();
             queryParamLog = queryParams.toString();
         }
-		
 		try {
 			switch (RequestType.valueOf(requestType.toUpperCase())) {
 			case GET:
@@ -122,6 +121,7 @@ public class ApiHelper extends DataHelper {
 				break;
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			logRequestResponse(requestLog, null, requestUrl, 0, headerData);
 			ReportHelper.reporterLogging(false, "" + e.getMessage());
 			logItemReq = new LogItemReq();
@@ -147,7 +147,6 @@ public class ApiHelper extends DataHelper {
 		logItemReq.setRequest(body);
         logItemReq.setQueryParams(queryParamLog);
 		SentinelLogger.info(logItemReq);
-
 		if (checkStatus && ! (com.airtel.helper.constants.Constants.SUCCESS_CODE.contains(apiResponse.getStatusCode())))
 		{
 			ReportHelper.logValidationFailure("HTTP Status code is not in 2XX series. ", "2xx",
@@ -284,7 +283,7 @@ public class ApiHelper extends DataHelper {
 	public Response postResponseWithHeaders(String body, List<Header> headers, ContentType contentType, String url) {
 		return postResponseWithHeaders(body, headers, contentType, url, true);
 	}
-
+	
 	/**
 	 * This method will be used for getting response of POST request with headers.
 	 * This method can pass/fail non-200 HTTP status code based on checkStatus field
@@ -498,7 +497,7 @@ public class ApiHelper extends DataHelper {
 			if (null == responseString && apiResponse.getHeaders().hasHeaderWithName("googleCookie")) {
 				String decryptResponse = decryptAPIResponse(apiResponse.getHeader("googleCookie"),
 						apiResponse.asString());
-				responseString = formatResponse(decryptResponse);
+				responseString = decryptResponse;
 			}
 		} else
 			responseString = apiResponse.asString();
