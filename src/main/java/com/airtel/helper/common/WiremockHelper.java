@@ -147,7 +147,7 @@ public class WiremockHelper extends ApiHelper {
 			} else {
 				Reporter.log("API : [ createStubMapping ] Stub Mapping not Created. || Status Code : "
 						+ response.getStatusCode());
-				Assert.assertTrue(	false);
+				Assert.assertTrue(false);
 			}
 			if(isSave)
 				saveStubMapping(mockUrl);
