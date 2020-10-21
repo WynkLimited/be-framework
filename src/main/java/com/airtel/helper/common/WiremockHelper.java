@@ -220,10 +220,11 @@ public class WiremockHelper extends ApiHelper {
 	public void modifySpecificStubMapping(String mockUrl, String request, String stubId) {
 		try {
 			String endpoint = Constants.GET_WIREMOCK_MAPPING.replace("$id", stubId);
-			response = putResponse(request, ContentType.JSON, endpoint, true);
+			response = putResponse(request, ContentType.JSON, mockUrl + endpoint, true);
 			if (response.getStatusCode() == 200 || response.getStatusCode() == 201) {
 				Reporter.log("API : [ modifySpecificStubMapping ] modify specific stub mapping. || Status Code : "
 						+ response.getStatusCode());
+				saveStubMapping(mockUrl);
 			} else {
 				Reporter.log(
 						"API : [ modifySpecificStubMapping ] not able to modify specific stub mapping. || Status Code : "
