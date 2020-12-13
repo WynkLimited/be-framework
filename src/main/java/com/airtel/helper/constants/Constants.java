@@ -15,9 +15,15 @@ public interface Constants {
 	String INFLUX_PASS = "automation";
 	String INFLUX_MEASUREMENT = "automation_stats";
 	String GETAUTH_URL = "http://10.5.245.76:8085";
+	String WIREMOCK_MAPPINGS_CREATE = "/__admin/mappings";
+	String WIREMOCK_MAPPINGS_SAVE = "/__admin/mappings/save";
+	String WIREMOCK_MAPPINGS_RESET = "/__admin/requests/reset";
+	String GET_WIREMOCK_MAPPING = "/__admin/mappings/$id";
+	String RECORDSTART_WIREMOCK_MAPPING = "/__admin/recordings/start";
+	String RECORDSTOP_WIREMOCK_MAPPING = "/__admin/recordings/stop";
 	String GETAUTH_ENDPOINT = "/getencryptedauth";
 	String APP_AUTHENTICATION_KEY="Basic Ymxvb2Rob3VuZDpGaXNoeVJlZEhlcnJpbmc=";
-    List<Integer> SUCCESS_CODE = new ArrayList<>(Arrays.asList(200,202,204));
+    List<Integer> SUCCESS_CODE = new ArrayList<>(Arrays.asList(200,201,202,204));
 
 	interface ERROR_CODE {
 		String CONFIGURATION_PROPERTY = "ERR_CFG_00";

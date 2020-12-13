@@ -257,7 +257,7 @@ public class JsonParser implements IJsonParser {
 	 * @return
 	 */
 	public String formatResponse(String apiResponse) {
-		String responseString = apiResponse;
+		String responseString = null;
 		JsonElement jsonElement = parse(apiResponse);
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		if (jsonElement instanceof JsonObject) {
