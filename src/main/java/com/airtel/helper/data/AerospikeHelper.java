@@ -3,8 +3,8 @@ package com.airtel.helper.data;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import com.aerospike.client.*;
+import com.aerospike.client.Record;
 import com.aerospike.client.policy.BatchPolicy;
 import com.aerospike.client.policy.ClientPolicy;
 import com.aerospike.client.policy.ScanPolicy;
