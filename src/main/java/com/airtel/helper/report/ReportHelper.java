@@ -82,8 +82,7 @@ public class ReportHelper implements ReportConstants {
 			resultFile.append(DETAILED_REPORT_BODY_START + "Test Scenario" + REPORT_COLUMN_END);
 			resultFile.append(DETAILED_REPORT_BODY_START + "Test Scenario File" + REPORT_COLUMN_END);
 			resultFile.append(DETAILED_REPORT_BODY_START + "Status" + REPORT_COLUMN_END);
-			//Addition code added
-			resultFile.append("<td width=150  align=\"center\" bgcolor=\"#e63d00\"><FONT COLOR=\"#E0E0E0\" FACE=\"Arial\" SIZE=2><b>Exception</b></td>");
+			resultFile.append(DETAILED_REPORT_BODY_START+"Exception"+REPORT_COLUMN_END);
 			resultFile.close();
 			setResultFolderpath(resultFolderpath);
 		} catch (IOException ex) {
