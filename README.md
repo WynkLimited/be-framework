@@ -6,7 +6,7 @@ The version uses below versions of sentinel libraries
 
 | **Sentinel Component**  | **Version**  |
 |-------------------------|--------------|
-| Subscriber TestNg       |1.1.7       |
+| Subscriber TestNg       |1.1.8       |
 | Transformer optimus-java|1.1.7         |
 | Sentinel models         |2.0.7         |
 | Sentinel Log4j Appender |1.0.7         |
