@@ -6,10 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import com.airtel.Models.Constants;
 import com.airtel.Models.DebugLogItemReq;
@@ -29,6 +26,7 @@ import com.airtel.helper.data.InfluxDbHelper;
 import com.airtel.helper.logging.AirtelLoggingMgr;
 import com.airtel.listener.testng.Vangaurd;
 import com.report.SentinelLogger;
+import org.testng.internal.Utils;
 
 @Listeners(Vangaurd.class)
 public class ReportHelper implements ReportConstants {
@@ -84,6 +82,7 @@ public class ReportHelper implements ReportConstants {
 			resultFile.append(DETAILED_REPORT_BODY_START + "Test Scenario" + REPORT_COLUMN_END);
 			resultFile.append(DETAILED_REPORT_BODY_START + "Test Scenario File" + REPORT_COLUMN_END);
 			resultFile.append(DETAILED_REPORT_BODY_START + "Status" + REPORT_COLUMN_END);
+			resultFile.append(DETAILED_REPORT_BODY_START+"Exception"+REPORT_COLUMN_END);
 			resultFile.close();
 			setResultFolderpath(resultFolderpath);
 		} catch (IOException ex) {
@@ -192,7 +191,7 @@ public class ReportHelper implements ReportConstants {
 
 			if (result.getStatus() != ITestResult.SKIP) {
 				appendMethodInformationInSuite(scenario,
-						result.getMethod().getMethodName() + "_" + String.valueOf(number), resultFilePath, status);
+						result.getMethod().getMethodName() + "_" + String.valueOf(number), resultFilePath, status,result.getThrowable());
 				BufferedWriter resultFile = new BufferedWriter(new FileWriter(getResultFileStringPath(), true));
 
 				resultFile.append("</table></body></html>");
@@ -204,8 +203,37 @@ public class ReportHelper implements ReportConstants {
 		}
 	}
 
+	public String logException(String methodName, Throwable exception){
+		String exceptionFilePath="";
+
+		try {
+			UUID randNo = UUID.randomUUID();
+			exceptionFilePath = resultFolderpath + "/" + methodName + "_Exception_" + randNo + ".html";
+			String stackTraceLine="";
+			String str = Utils.stackTrace(exception, true)[0];
+			BufferedWriter resultFile = new BufferedWriter(new FileWriter(exceptionFilePath, true));
+			resultFile.append("<html></head><body><title>Exception Stack Trace</title>");
+			Scanner scanner = new Scanner(str);
+			while(scanner.hasNext()) {
+				stackTraceLine = scanner.nextLine();
+				resultFile.append(stackTraceLine+"<br>");
+			}
+			resultFile.close();
+		}
+		catch (Exception e){
+			logger.error("Exception not reported - " + e);
+		}
+		return exceptionFilePath;
+	}
+
 	public void appendMethodInformationInSuite(String scenarioName, String methodName, String methodFilePath,
-			String status) {
+			String status,Throwable exception) {
+		boolean hasThrowable = exception != null;
+		String exceptionFilePath="";
+		if(hasThrowable) {
+			exceptionFilePath = logException(methodName, exception);
+			exceptionFilePath = "." + exceptionFilePath.split("/Results")[1];
+		}
 		try {
 			String statusTag = null;
 			if (status.equalsIgnoreCase("Pass")) {
@@ -222,6 +250,11 @@ public class ReportHelper implements ReportConstants {
 			resultFile.append("<td>" + scenarioName + "</td>");
 			resultFile.append("<td><a href='" + methodFilePath + "' />" + methodName + "</td>");
 			resultFile.append(statusTag + status + "</td>");
+			//Add Exception in report
+			if(!exceptionFilePath.equals(""))
+				resultFile.append("<td><a href='"+exceptionFilePath+"'/> Exception </td>");
+			else
+				resultFile.append("<td></td>");
 			resultFile.append("</tr>");
 			resultFile.close();
 		} catch (IOException e) {
