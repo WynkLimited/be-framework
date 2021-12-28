@@ -58,7 +58,8 @@ public class ReportHelper {
 		resultFolder.mkdir();
 
 		Date date = new Date();
-		SimpleDateFormat oDateFormat = new SimpleDateFormat("dd_MM_YY");
+		SimpleDateFormat oDateFormat = new SimpleDateFormat("dd_MM_yy"); 
+      // Keep the year as 'yy' rather than 'YY' else it will auto-increment the year in advance. 
 		newDate = oDateFormat.format(date);
 
 		resultFolderpath = resultsFolderPath + "/Result_" + newDate;
