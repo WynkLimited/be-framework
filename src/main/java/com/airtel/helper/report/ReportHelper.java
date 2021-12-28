@@ -88,6 +88,55 @@ public class ReportHelper implements ReportConstants {
 		} catch (IOException ex) {
 			logger.error("Result file creation failed with exception - " + ex);
 		}
+		resultFolder.mkdir();
+
+		Date date = new Date();
+		SimpleDateFormat oDateFormat = new SimpleDateFormat("dd_MM_yy"); 
+      // Keep the year as 'yy' rather than 'YY' else it will auto-increment the year in advance. 
+		newDate = oDateFormat.format(date);
+
+		resultFolderpath = resultsFolderPath + "/Result_" + newDate;
+		File resultFileFolder = new File(resultFolderpath);
+		resultFileFolder.mkdir();
+
+		suiteFileStringPath = resultsFolderPath + "/AirtelTestResult_" + newDate + ".html";
+		date = new Date();
+		oDateFormat = new SimpleDateFormat("dd/MMM/yyyy hh:mm:s");
+		String sRunStartTime = oDateFormat.format(date);
+		String sUserReq = System.getenv("ComputerName");
+		String sEnvName = System.getProperty("os.name");
+		String sReleaseName = "API Automation";
+		BufferedWriter resultFile = new BufferedWriter(new FileWriter(suiteFileStringPath, false));
+		resultFile.append(
+				"<html><HEAD><TITLE>Automation Report</TITLE></HEAD><body><h4 align=\"center\"><FONT COLOR=\"660066\" FACE=\"Arial\"SIZE=5><b>API Automation Test Report</b>");
+		resultFile.append("<table cellspacing=1 cellpadding=1   border=1> <tr>");
+		resultFile.append("<h4> <FONT COLOR=\"660000\" FACE=\"Arial\" SIZE=4.5> Test Details :</h4>");
+		resultFile.append(
+				"<td width=150 align=\"left\" bgcolor=\"#e63d00\"><FONT COLOR=\"#E0E0E0\" FACE=\"Arial\" SIZE=2.75><b>Run Start Date Time</b></td>");
+		resultFile.append("<td width=150 align=\"left\"><FONT COLOR=\"#385daa\" FACE=\"Arial\" SIZE=2.75><b>"
+				+ sRunStartTime + "</b></td></tr>");
+		resultFile.append(
+				"<tr  border=1><td width=150 align=\"left\" bgcolor=\"#e63d00\"><FONT COLOR=\"#E0E0E0\" FACE=\"Arial\" SIZE=2.75><b>User Requested</b></td>");
+		resultFile.append("<td width=150 align=\"left\"><FONT COLOR=\"#385daa\" FACE=\"Arial\" SIZE=2.75><b>" + sUserReq
+				+ "</b></td></tr>");
+		resultFile.append(
+				"<tr  border=1><td width=150 align=\"left\" bgcolor=\"#e63d00\"><FONT COLOR=\"#E0E0E0\" FACE=\"Arial\" SIZE=2.75><b>Environment</b></td>");
+		resultFile.append("<td width=150 align=\"left\"><FONT COLOR=\"#385daa\" FACE=\"Arial\" SIZE=2.75><b>" + sEnvName
+				+ "</b></td></tr>");
+		resultFile.append(
+				"<tr><td  border=1 width=150 align=\"left\" bgcolor=\"#e63d00\"><FONT COLOR=\"#E0E0E0\" FACE=\"Arial\" SIZE=2.75><b>Release</b></td>");
+		resultFile.append("<td  border=1 width=150 align=\"left\"><FONT COLOR=\"#385daa\" FACE=\"Arial\" SIZE=2.75><b>"
+				+ sReleaseName + "</b></td></tr></table>");
+		resultFile.append(
+				"<h4> <FONT COLOR=\"660000\" FACE=\"Arial\" SIZE=4.5> Detailed Report :</h4><table  border=1 cellspacing=1  cellpadding=1 ><tr>");
+		resultFile.append(
+				"<td width=150  align=\"center\" bgcolor=\"#e63d00\"><FONT COLOR=\"#E0E0E0\" FACE=\"Arial\" SIZE=2><b>Test Scenario</b></td>");
+		resultFile.append(
+				"<td width=150 align=\"center\" bgcolor=\"#e63d00\"><FONT COLOR=\"#E0E0E0\" FACE=\"Arial\" SIZE=2><b>Test Scenario File</b></td>");
+		resultFile.append(
+				"<td width=150 align=\"center\" bgcolor=\"#e63d00\"><FONT COLOR=\"#E0E0E0\" FACE=\"Arial\" SIZE=2><b>Status</b></td>");
+		resultFile.close();
+		setResultFolderpath(resultFolderpath);
 	}
 
 	@AfterSuite(alwaysRun = true)
