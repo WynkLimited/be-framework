@@ -141,6 +141,7 @@ public class ApiResponseValidator extends JsonParser {
             }
         } catch (Exception e) {
             ReportHelper.logValidationFailure("Exception in comparison", "", e.getMessage(), "Exception");
+            e.printStackTrace();
         }
         return true;
     }

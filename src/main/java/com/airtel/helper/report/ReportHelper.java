@@ -8,7 +8,6 @@ import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import com.airtel.Models.Constants;
 import com.airtel.Models.DebugLogItemReq;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
@@ -60,10 +59,11 @@ public class ReportHelper implements ReportConstants {
 	}
 
 	@BeforeSuite(alwaysRun = true)
-	public void beforeSuite() {
+	public void beforeSuite() throws IOException {
+		File resultFolder = null;
 		String resultsFolderPath = "./Results";
 		try {
-			File resultFolder = new File(resultsFolderPath);
+			resultFolder = new File(resultsFolderPath);
 			FileUtils.deleteDirectory(resultFolder);
 			resultFolder.mkdir();
 
