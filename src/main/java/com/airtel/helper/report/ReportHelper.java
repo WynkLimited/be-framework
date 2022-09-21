@@ -27,7 +27,7 @@ import com.airtel.listener.testng.Vangaurd;
 import com.report.SentinelLogger;
 import org.testng.internal.Utils;
 
-@Listeners(Vangaurd.class)
+//@Listeners(Vangaurd.class)
 public class ReportHelper implements ReportConstants {
 
 	static int count = 0;
