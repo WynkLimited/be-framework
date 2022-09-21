@@ -259,7 +259,7 @@ public class ReportHelper implements ReportConstants {
 			UUID randNo = UUID.randomUUID();
 			exceptionFilePath = resultFolderpath + "/" + methodName + "_Exception_" + randNo + ".html";
 			String stackTraceLine="";
-			String str = Utils.stackTrace(exception, true)[0];
+			String str = Utils.longStackTrace(exception, true);
 			BufferedWriter resultFile = new BufferedWriter(new FileWriter(exceptionFilePath, true));
 			resultFile.append("<html></head><body><title>Exception Stack Trace</title>");
 			Scanner scanner = new Scanner(str);
