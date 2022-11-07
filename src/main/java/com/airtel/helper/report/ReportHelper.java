@@ -20,6 +20,7 @@ import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Listeners;
+import org.testng.annotations.Test;
 
 import com.airtel.helper.data.InfluxDbHelper;
 import com.airtel.helper.logging.AirtelLoggingMgr;
@@ -82,7 +83,8 @@ public class ReportHelper implements ReportConstants {
 			resultFile.append(DETAILED_REPORT_BODY_START + "Test Scenario" + REPORT_COLUMN_END);
 			resultFile.append(DETAILED_REPORT_BODY_START + "Test Scenario File" + REPORT_COLUMN_END);
 			resultFile.append(DETAILED_REPORT_BODY_START + "Status" + REPORT_COLUMN_END);
-			resultFile.append(DETAILED_REPORT_BODY_START+"Exception"+REPORT_COLUMN_END);
+			resultFile.append(DETAILED_REPORT_BODY_START + "Exception" + REPORT_COLUMN_END);
+
 			resultFile.close();
 			setResultFolderpath(resultFolderpath);
 		} catch (IOException ex) {
@@ -91,8 +93,9 @@ public class ReportHelper implements ReportConstants {
 		resultFolder.mkdir();
 
 		Date date = new Date();
-		SimpleDateFormat oDateFormat = new SimpleDateFormat("dd_MM_yy"); 
-      // Keep the year as 'yy' rather than 'YY' else it will auto-increment the year in advance. 
+		SimpleDateFormat oDateFormat = new SimpleDateFormat("dd_MM_yy");
+		// Keep the year as 'yy' rather than 'YY' else it will auto-increment the year
+		// in advance.
 		newDate = oDateFormat.format(date);
 
 		resultFolderpath = resultsFolderPath + "/Result_" + newDate;
@@ -135,6 +138,8 @@ public class ReportHelper implements ReportConstants {
 				"<td width=150 align=\"center\" bgcolor=\"#e63d00\"><FONT COLOR=\"#E0E0E0\" FACE=\"Arial\" SIZE=2><b>Test Scenario File</b></td>");
 		resultFile.append(
 				"<td width=150 align=\"center\" bgcolor=\"#e63d00\"><FONT COLOR=\"#E0E0E0\" FACE=\"Arial\" SIZE=2><b>Status</b></td>");
+		resultFile.append(
+				"<td width=150 align=\"center\" bgcolor=\"#e63d00\"><FONT COLOR=\"#E0E0E0\" FACE=\"Arial\" SIZE=2><b>TestcaseId</b></td>");
 		resultFile.close();
 		setResultFolderpath(resultFolderpath);
 	}
@@ -202,9 +207,11 @@ public class ReportHelper implements ReportConstants {
 			int number = testNGMethod.getCurrentInvocationCount();
 			String status = "Pass";
 			String scenario = "";
+			String testName = "";
 
 			if (result.getParameters().length != 0) {
 				for (Object parameter : result.getParameters()) {
+
 					if (parameter instanceof Map && ((((Map) (parameter)).containsKey("TC_DESCRIPTION"))
 							|| ((Map) (parameter)).containsKey("TCDESCRIPTION"))) {
 
@@ -223,6 +230,18 @@ public class ReportHelper implements ReportConstants {
 				}
 			}
 
+			if (result.getTestName() == null) {
+				
+				Method method = result.getMethod().getConstructorOrMethod().getMethod();
+				Test test = method.getAnnotation(Test.class);
+				testName = test.testName();
+				System.out.println("test name" + testName);
+
+				
+				
+
+			}
+
 			if (System.getProperty("Test Status") != null
 					&& TESTRESULT_WARNING.equalsIgnoreCase(System.getProperty("Test Status"))) {
 				status = TESTRESULT_WARNING;
@@ -239,8 +258,9 @@ public class ReportHelper implements ReportConstants {
 			resultFilePath = "." + resultFilePath;
 
 			if (result.getStatus() != ITestResult.SKIP) {
-				appendMethodInformationInSuite(scenario,
-						result.getMethod().getMethodName() + "_" + String.valueOf(number), resultFilePath, status,result.getThrowable());
+				appendMethodInformationInSuite(scenario, testName,
+						result.getMethod().getMethodName() + "_" + String.valueOf(number), resultFilePath, status,
+						result.getThrowable());
 				BufferedWriter resultFile = new BufferedWriter(new FileWriter(getResultFileStringPath(), true));
 
 				resultFile.append("</table></body></html>");
@@ -252,34 +272,33 @@ public class ReportHelper implements ReportConstants {
 		}
 	}
 
-	public String logException(String methodName, Throwable exception){
-		String exceptionFilePath="";
+	public String logException(String methodName, Throwable exception) {
+		String exceptionFilePath = "";
 
 		try {
 			UUID randNo = UUID.randomUUID();
 			exceptionFilePath = resultFolderpath + "/" + methodName + "_Exception_" + randNo + ".html";
-			String stackTraceLine="";
+			String stackTraceLine = "";
 			String str = Utils.longStackTrace(exception, true);
 			BufferedWriter resultFile = new BufferedWriter(new FileWriter(exceptionFilePath, true));
 			resultFile.append("<html></head><body><title>Exception Stack Trace</title>");
 			Scanner scanner = new Scanner(str);
-			while(scanner.hasNext()) {
+			while (scanner.hasNext()) {
 				stackTraceLine = scanner.nextLine();
-				resultFile.append(stackTraceLine+"<br>");
+				resultFile.append(stackTraceLine + "<br>");
 			}
 			resultFile.close();
-		}
-		catch (Exception e){
+		} catch (Exception e) {
 			logger.error("Exception not reported - " + e);
 		}
 		return exceptionFilePath;
 	}
 
-	public void appendMethodInformationInSuite(String scenarioName, String methodName, String methodFilePath,
-			String status,Throwable exception) {
+	public void appendMethodInformationInSuite(String scenarioName, String testName, String methodName,
+			String methodFilePath, String status, Throwable exception) {
 		boolean hasThrowable = exception != null;
-		String exceptionFilePath="";
-		if(hasThrowable) {
+		String exceptionFilePath = "";
+		if (hasThrowable) {
 			exceptionFilePath = logException(methodName, exception);
 			exceptionFilePath = "." + exceptionFilePath.split("/Results")[1];
 		}
@@ -299,9 +318,11 @@ public class ReportHelper implements ReportConstants {
 			resultFile.append("<td>" + scenarioName + "</td>");
 			resultFile.append("<td><a href='" + methodFilePath + "' />" + methodName + "</td>");
 			resultFile.append(statusTag + status + "</td>");
-			//Add Exception in report
-			if(!exceptionFilePath.equals(""))
-				resultFile.append("<td><a href='"+exceptionFilePath+"'/> Exception </td>");
+			resultFile.append("<td>" + testName + "</td>");
+
+			// Add Exception in report
+			if (!exceptionFilePath.equals(""))
+				resultFile.append("<td><a href='" + exceptionFilePath + "'/> Exception </td>");
 			else
 				resultFile.append("<td></td>");
 			resultFile.append("</tr>");
@@ -348,7 +369,7 @@ public class ReportHelper implements ReportConstants {
 	}
 
 	public static boolean reporterLogging(String status, String sMessage) {
-        DebugLogItemReq debugLogItemReq = new DebugLogItemReq();
+		DebugLogItemReq debugLogItemReq = new DebugLogItemReq();
 		try {
 			appendresultHTMLReport(getResultFileStringPath(), "", "", "", sMessage, String.valueOf(status),
 					Thread.currentThread().getStackTrace()[2].getMethodName(), "");
@@ -367,8 +388,7 @@ public class ReportHelper implements ReportConstants {
 				debugLogItemReq.setAssertStatus("FAILED");
 				debugLogItemReq.setMessage(sMessage);
 				Reporter.log("<Font Color=red> FAIL </Font> " + sMessage);
-			}
-			else {
+			} else {
 				debugLogItemReq.setAssertStatus("FAILED");
 				debugLogItemReq.setMessage(sMessage);
 				Reporter.log("<Font Color=red> FAIL </Font> " + sMessage);
