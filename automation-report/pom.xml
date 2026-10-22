@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.airtel.api-automation</groupId>
+		<artifactId>backend-automation-framework</artifactId>
+		<version>1.0.0</version>
+	</parent>
+	<artifactId>automation-report</artifactId>
+	<name>automation-report</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.airtel.api-automation</groupId>
+			<artifactId>automation-exceptions</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.airtel.api-automation</groupId>
+			<artifactId>automation-logging</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.aventstack</groupId>
+			<artifactId>chaintest-testng</artifactId>
+		</dependency>
+		<!-- BDD LOBs: ChainTest Cucumber plugin (optional so pure TestNG LOBs can exclude) -->
+		<dependency>
+			<groupId>com.aventstack</groupId>
+			<artifactId>chaintest-cucumber-jvm</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.influxdb</groupId>
+			<artifactId>influxdb-java</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.airtel.sentinelModels</groupId>
+			<artifactId>sentinel-Models</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.airtel.subTest-Ng</groupId>
+			<artifactId>subscriber-testNg</artifactId>
+		</dependency>
+	</dependencies>
+</project>

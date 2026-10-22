@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.airtel.api-automation</groupId>
+		<artifactId>backend-automation-framework</artifactId>
+		<version>1.0.0</version>
+	</parent>
+	<!-- Single dependency for LOB projects: pulls all framework modules transitively -->
+	<artifactId>automation-bundle</artifactId>
+	<name>automation-bundle</name>
+	<packaging>pom</packaging>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.airtel.api-automation</groupId>
+			<artifactId>automation-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.airtel.api-automation</groupId>
+			<artifactId>automation-validator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.airtel.api-automation</groupId>
+			<artifactId>automation-data</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.airtel.api-automation</groupId>
+			<artifactId>automation-report</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.airtel.api-automation</groupId>
+			<artifactId>automation-logging</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.airtel.api-automation</groupId>
+			<artifactId>automation-exceptions</artifactId>
+		</dependency>
+	</dependencies>
+</project>
