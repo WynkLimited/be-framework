@@ -1,90 +1,154 @@
-# Sentinel Support with Base Manager Implementation (Beta)
+# Backend Automation Framework
 
-This is beta version that supports integration with sentinel logging and Base Manager.
-Full version will be updated over this version only
-The version uses below versions of sentinel libraries
-
-| **Sentinel Component**  | **Version**  |
-|-------------------------|--------------|
-| Subscriber TestNg       |1.1.8       |
-| Transformer optimus-java|1.1.7         |
-| Sentinel models         |2.0.7         |
-| Sentinel Log4j Appender |1.0.7         |
+Multi-module Java **21** API automation library for LOB projects (TestNG or BDD/Cucumber).
 
 ```
-Latest Version: 1.4.50  
+GroupId:  com.airtel.api-automation
+Version:  1.0.0
+Artifact: automation-bundle | automation-core | …
 ```
 
-- You can checkout this implementation using git tags:
+## Modules
 
-```shell
-git clone https://code.airtelworld.in:7999/api/automation-framework.git
-git checkout v1.4.29
+| Module | Contents |
+|--------|----------|
+| `automation-exceptions` | `GenericException`, `ErrorCode`, `@CatchException` |
+| `automation-logging` | `AirtelLoggingMgr`, `AirtelConfigService`, `Constants` |
+| `automation-report` | HTML `ReportHelper`, ChainTest, `ReportSelector` (TESTNG/BDD), FileHelper, Influx, SentinelLogger |
+| `automation-data` | Excel / DB / Mongo / Aerospike / JSON / Data helpers |
+| `automation-validator` | JSON compare & schema validators |
+| `automation-core` | `ApiHelper`, `BaseManager`, WireMock, DTOs |
+| `automation-bundle` | Aggregator POM — single LOB dependency |
+
+Source lives under each module (`automation-*/src/main/...`). There is **no** root `src/main`. IDE folders (`.settings`, `.classpath`, `.project`, `.vscode`) are gitignored.
+
+## Add to an LOB (e.g. clm-be-automation)
+
+**All modules:**
+
+```xml
+<dependency>
+  <groupId>com.airtel.api-automation</groupId>
+  <artifactId>automation-bundle</artifactId>
+  <version>1.0.0</version>
+  <type>pom</type>
+</dependency>
 ```
 
-- To use or migrate 
-Add the following dependency in your LOB framework
-``` xml
-	<dependency>
-		<groupId>com.airtel.api-automation</groupId>
-		<artifactId>api-automation-framework</artifactId>
-		<version>1.4.40</version>
-	</dependency>
+**Or core only** (pulls data / validator / report / logging transitively):
+
+```xml
+<dependency>
+  <groupId>com.airtel.api-automation</groupId>
+  <artifactId>automation-core</artifactId>
+  <version>1.0.0</version>
+</dependency>
 ```
 
-- How to use base manager, can be found [here](https://code.airtelworld.in:7990/bitbucket/projects/API/repos/automation-framework/browse?at=refs%2Ftags%2Fv1.4.28)
-- Sample project( wrt. same version of above sentinel libraries) using sentinel logging can be found  [here](https://code.airtelworld.in:7990/bitbucket/projects/API/repos/sentinel-sampleonboard/browse?at=refs%2Ftags%2Fv1.0.7)
-- How to use Sentinel TestNg Subscriber can be found [here](https://code.airtelworld.in:7990/bitbucket/projects/API/repos/sentinel-subscriber-testng/browse?at=refs%2Ftags%2Fv1.0.7)
+Until published to Nexus, install locally:
 
-**Overview**
+```bash
+mvn clean install -DskipTests
+```
 
-This is core automation framework that is extended in LOB frameworks for API automation. API automation frameworks for LOBs are wrapper over this framework and leverage TestNg for automation & validations. The framework has all important functionality for accessing APIs, validating APIs, comparing JSONs & pulling data from different databases.
+### Migrate from 1.4.x
 
-Project extending this framework should have the mentioned package structure:
+Replace:
 
-src/main/java/constants - Containing all LOB specific constansts.
-src/main/java/controller - All methods hitting specific API, validating API functionality are included as part of these package.
-src/main/java/helper - LOB specific helper methods can be added here. Example: starting and stopping a  specific process on the server.
-src/main/java/dto - Request or response pojo, if required should be put as part of this package.
-config - All configuration should be put as part of this package.
-src/main/test - Test classes are mentioned in src/test/java. No business or validation logic should be put in here. All tests should be light weight and use methods mentioned in controller or helper classes for validating test case. *TestClasses should alway extend ReportHelper for automated report logging.*
+```xml
+<artifactId>api-automation-framework</artifactId>
+<version>1.4.x</version>
+```
 
-**Use cases solved using the framework**
+with `automation-bundle` or `automation-core` at `1.0.0`. Packages remain under `com.airtel.helper.*`.
 
-- *Comparison b/w 2 JSON on same structure:* For discovery APIs or GET API, comparison b/w 2 JSON is used across all LOBs.
-- *Comparison b/w 2 JSON on different structure:* For certain use cases, validation of API needs to be carried out with child API or downstream API. For those use cases, this methodology is used.
-- *Schema and response code validation:* Basic schema & response code validation that should be done for all API is easily integratable using the framework
-- *Data validation with different database:* For transaction APIs, data validations are done with downstreams like Mongo, Oracle, Aerospike etc. Ready to use methods for fetching data from these DB can be wrapped and used for validation.
+## Reporting (TESTNG vs BDD)
 
+LOB chooses once:
 
-**How to include**
+```properties
+# src/test/resources/automation-report.properties
+automation.report.framework=TESTNG
+# or
+automation.report.framework=BDD
+```
 
-Add the following dependency in your LOB framework
+Or: `-Dautomation.report.framework=BDD`
 
-		<dependency>
-			<groupId>com.airtel.api-automation</groupId>
-			<artifactId>api-automation-framework</artifactId>
-			<version>1.4.20</version>
-		</dependency>
+| Mode | What runs |
+|------|-----------|
+| `TESTNG` | HTML `ReportHelper` + ChainTest via `AirtelReportListener` |
+| `BDD` | ChainTest Cucumber plugin; HTML suite lifecycle skipped |
 
-**Important Functionality**
+**TestNG LOB**
 
-*1. API related functionalities*
+```java
+@Listeners(AirtelReportListener.class)
+public class BaseTest extends ReportHelper { }
+```
 
-ApiHelper.java contains all important functions w.r.t accessing API, converting DTO to objects & vice-versa, reading configurations and fetching values at jPath.
-Example: methods like ‘getResponseWithHeaders, postResponseWithHeaders, convertToJson’ and the like.
+**BDD LOB** (add Cucumber plugin dep if needed):
 
-*2. API Validations*
+```xml
+<dependency>
+  <groupId>com.aventstack</groupId>
+  <artifactId>chaintest-cucumber-jvm</artifactId>
+  <version>1.0.12</version>
+</dependency>
+```
 
-ApiResponseValidator.java contains methods for validations of API like schema validations and Json comparator. GenericComparator.java is used for comparing 2 different structured JSON by leveraging Json Paths. JsonComparator is a wrapper on zsonpatch and helps in providing difference b/w 2 JSON of same object. 
+```java
+@CucumberOptions(plugin = {
+  ReportFrameworkConfig.CUCUMBER_CHAINTEST_PLUGIN
+})
+public class RunCukes extends AbstractTestNGCucumberTests { }
+```
 
-*3. Report Helpers*
+| Report | Output |
+|--------|--------|
+| Custom HTML | `./Results/...` |
+| ChainTest | `target/chaintest/Index.html` |
 
-ReportHelper.java has all method related to reporting. Functionality like automated reporting for accessing API, validation failures in comparison and method for logging additional information are leveraged from this class.
-This class has to be extended by each Test class. It initialises the report file at the beginning of each class and flushes it at the end of it.
-The results of each suite/individual run are also pushed to InfluxDb for monitoring.
+### Exception reporting
 
-*4. Data Helpers*
+```java
+@Listeners(AirtelReportListener.class) // or CatchExceptionListener alone
+@CatchException
+public class BaseTest extends ReportHelper { }
+```
 
-The package for data helpers have functionality w.r.t fetching data from multiple data sources like MongoDB, OracleSQL, Aerospike and Excel. 
-TestDataHelper.java class has multiple implementations of @DataProvider annotation of TestNg. It fetches data from different sources and feeds it into the DataProvider of TestNg.
+On failure, framework `GenericException` / `ErrorCode` are logged to the HTML report. The test still fails.
+
+## Suggested LOB layout
+
+```
+src/main/java/.../constants
+src/main/java/.../controller   # API flows (use ApiHelper / BaseManager)
+src/main/java/.../helper
+src/main/java/.../dto
+src/main/resources/            # configs; override automation-report.properties / chaintest.properties
+src/test/java/...              # thin tests or Cucumber glue — no heavy business logic
+```
+
+- **TestNG:** test classes extend `ReportHelper` and register `AirtelReportListener`.
+- **BDD:** features → step defs → controllers/helpers; reporting via ChainTest plugin + hooks as needed.
+
+## Main capabilities
+
+| Area | Classes |
+|------|---------|
+| HTTP / RestAssured | `ApiHelper`, `BaseManager` |
+| Mocks | `WiremockHelper` |
+| Validations | `ApiResponseValidator`, `GenericComparator` |
+| Data | `DbHelper`, `MongoHelper`, `AerospikeHelper`, `ExcelHelper`, `TestDataHelper` |
+| Config | `AirtelConfigService`, `Constants` |
+| Reports | `ReportHelper`, `AirtelReportListener`, ChainTest |
+
+## Sentinel libraries
+
+| Component | Version |
+|-----------|---------|
+| Subscriber TestNG | 1.1.8 |
+| Transformer optimus-java | 1.1.7 |
+| Sentinel models | 2.0.7 |
+| Sentinel Log4j Appender | 1.0.7 |
