@@ -5,15 +5,14 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.airtel.api-automation</groupId>
-	<artifactId>backend-automation-framework</artifactId>
-	<version>1.0.0</version>
+	<artifactId>api-automation</artifactId>
+	<version>1.0.1</version>
 	<packaging>pom</packaging>
-	<name>backend-automation-framework</name>
+	<name>api-automation</name>
 	<description>Multi-module API automation framework</description>
 
 	<modules>
 		<module>automation-exceptions</module>
-		<module>automation-logging</module>
 		<module>automation-report</module>
 		<module>automation-data</module>
 		<module>automation-validator</module>
@@ -24,7 +23,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.release>21</maven.compiler.release>
-		<log4j.version>2.25.5</log4j.version>
+		<slf4j.version>2.0.17</slf4j.version>
 		<mongodb.version>5.2.1</mongodb.version>
 		<lombok.version>1.18.38</lombok.version>
 		<testng.version>7.10.2</testng.version>
@@ -45,11 +44,6 @@
 			<dependency>
 				<groupId>com.airtel.api-automation</groupId>
 				<artifactId>automation-exceptions</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.airtel.api-automation</groupId>
-				<artifactId>automation-logging</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -75,14 +69,9 @@
 
 			<!-- External -->
 			<dependency>
-				<groupId>org.apache.logging.log4j</groupId>
-				<artifactId>log4j-core</artifactId>
-				<version>${log4j.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.logging.log4j</groupId>
-				<artifactId>log4j-api</artifactId>
-				<version>${log4j.version}</version>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>${slf4j.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.testng</groupId>
@@ -130,16 +119,6 @@
 				<version>1.1.1</version>
 			</dependency>
 			<dependency>
-				<groupId>com.google.guava</groupId>
-				<artifactId>guava</artifactId>
-				<version>33.4.0-jre</version>
-			</dependency>
-			<dependency>
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
-				<version>1.3.5</version>
-			</dependency>
-			<dependency>
 				<groupId>com.jayway.jsonpath</groupId>
 				<artifactId>json-path</artifactId>
 				<version>2.9.0</version>
@@ -167,11 +146,6 @@
 			<dependency>
 				<groupId>org.mongodb</groupId>
 				<artifactId>mongodb-driver-sync</artifactId>
-				<version>${mongodb.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.mongodb</groupId>
-				<artifactId>mongodb-driver-legacy</artifactId>
 				<version>${mongodb.version}</version>
 			</dependency>
 			<dependency>

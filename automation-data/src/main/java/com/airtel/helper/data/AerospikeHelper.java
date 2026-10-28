@@ -1,115 +1,117 @@
 package com.airtel.helper.data;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import com.aerospike.client.*;
+import java.util.Objects;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.Bin;
+import com.aerospike.client.Host;
+import com.aerospike.client.Key;
 import com.aerospike.client.Record;
 import com.aerospike.client.policy.BatchPolicy;
 import com.aerospike.client.policy.ClientPolicy;
-import com.aerospike.client.policy.ScanPolicy;
 import com.aerospike.client.policy.WritePolicy;
 import com.airtel.helper.Interfaces.IAeroSpikeHelper;
-import com.airtel.helper.common.BaseTestClass;
-import com.airtel.helper.report.ReportHelper;
 
 /**
- * Created by b0200202 on 12/6/17.
+ * Aerospike helper using the current Java client APIs.
  */
-public class AerospikeHelper extends BaseTestClass implements IAeroSpikeHelper {
+public class AerospikeHelper implements IAeroSpikeHelper {
 
-    ////Port = 3000
-    public AerospikeClient getAeroSpikeClientForMultipleNodes(List<String> serverIpList,int port) {
-        ClientPolicy policy = new ClientPolicy();
-        Host[] hosts = new Host[serverIpList.size()];
-        for (int i = 0; i < hosts.length; i++)
-            hosts[i] = new Host(serverIpList.get(i), port);
-        aeroSpikeClient = new AerospikeClient(policy, hosts);
-        return aeroSpikeClient;
+	private static final Logger log = LoggerFactory.getLogger(AerospikeHelper.class);
 
-    }
+	private volatile AerospikeClient aeroSpikeClient;
 
-    ///port : 30000
-    public AerospikeClient getAeroSpikeClientForSingleNode(String serverIp,int port) {
-        aeroSpikeClient = new AerospikeClient(serverIp, port);
-        return aeroSpikeClient;
-    }
+	@Override
+	public AerospikeClient getAeroSpikeClientForMultipleNodes(List<String> serverIpList, int port) {
+		Objects.requireNonNull(serverIpList, "serverIpList");
+		ClientPolicy policy = new ClientPolicy();
+		Host[] hosts = serverIpList.stream().map(ip -> new Host(ip, port)).toArray(Host[]::new);
+		aeroSpikeClient = new AerospikeClient(policy, hosts);
+		log.info("Aerospike multi-node client created for {} hosts on port {}", hosts.length, port);
+		return aeroSpikeClient;
+	}
 
-    public Record[] getMultipleRecordFromPKList(AerospikeClient client, String nameSpace, String set,
-                                                List<String> pkList, String binName) {
+	@Override
+	public AerospikeClient getAeroSpikeClientForSingleNode(String serverIp, int port) {
+		aeroSpikeClient = new AerospikeClient(serverIp, port);
+		log.info("Aerospike client created for {}:{}", serverIp, port);
+		return aeroSpikeClient;
+	}
 
-        Key[] keys = new Key[pkList.size()];
-        for (int i = 0; i < pkList.size(); i++) {
-            keys[i] = new Key(nameSpace, set, pkList.get(i));
-        }
-        BatchPolicy policy = new BatchPolicy();
-        Record[] records = client.get(policy, keys, binName);
-        return records;
+	@Override
+	public Record[] getMultipleRecordFromPKList(AerospikeClient client, String nameSpace, String set, List<String> pkList,
+			String binName) {
+		Objects.requireNonNull(client, "client");
+		Objects.requireNonNull(pkList, "pkList");
+		Key[] keys = pkList.stream().map(pk -> new Key(nameSpace, set, pk)).toArray(Key[]::new);
+		return client.get(new BatchPolicy(), keys, binName);
+	}
 
-    }
+	@Override
+	public Record getRecordForAkey(AerospikeClient client, String namespace, String setName, String value,
+			String binName) {
+		Objects.requireNonNull(client, "client");
+		return client.get(null, new Key(namespace, setName, value), binName);
+	}
 
-    public Record getRecordForAkey(AerospikeClient client, String namespace, String setName, String value,
-                                   String binName) {
+	@Override
+	public void writeRecordForAKey(AerospikeClient client, String namespace, String setName, String value,
+			List<Bin> binList) {
+		Objects.requireNonNull(client, "client");
+		if (binList == null || binList.isEmpty()) {
+			return;
+		}
+		client.put(new WritePolicy(), new Key(namespace, setName, value), binList.toArray(Bin[]::new));
+	}
 
-        Key key = new Key(namespace, setName, value);
-        Record record = client.get(null, key, binName);
-        return record;
-    }
+	@Override
+	public Boolean deleteRecordForAkey(AerospikeClient client, String namespace, String setName, String value) {
+		Objects.requireNonNull(client, "client");
+		return client.delete(new WritePolicy(), new Key(namespace, setName, value));
+	}
 
-    public void writeRecordForAKey(AerospikeClient client, String namespace, String setName, String value,
-                                   List<Bin> binList) {
-        WritePolicy writePolicy = new WritePolicy();
-        Key key = new Key(namespace, setName, value);
+	@Override
+	public List<Map<String, Object>> parseAerospikeRecordForaBin(Record[] records) {
+		return extractBins(records, false);
+	}
 
-        if (!binList.isEmpty())
-            client.put(writePolicy, key, binList.toArray(new Bin[]{}));
+	@Override
+	public List<Map<String, Object>> parseMultipleRecord(Record[] records) {
+		return extractBins(records, true);
+	}
 
-    }
+	@Override
+	public Map<String, Object> parseSingleRecord(Record record) {
+		return record != null ? record.bins : null;
+	}
 
-    public Boolean deleteRecordForAkey(AerospikeClient client, String namespace, String setName, String value) {
+	@Override
+	public Record getAllBinsForAKey(AerospikeClient client, String namespace, String setName, String value) {
+		Objects.requireNonNull(client, "client");
+		return client.get(null, new Key(namespace, setName, value));
+	}
 
-        Key key = new Key(namespace, setName, value);
-        WritePolicy writePolicy = new WritePolicy();
-
-        boolean deleteStatus = client.delete(writePolicy, key);
-        return deleteStatus;
-
-    }
-
-    public List<Map<String, Object>> parseAerospikeRecordForaBin(Record[] record) {
-
-        List<Map<String, Object>> hashMapListOfRecord = new ArrayList<Map<String, Object>>();
-        for (int i = 0; i < record.length; i++) {
-            hashMapListOfRecord.add(record[i].bins);
-        }
-
-        return hashMapListOfRecord;
-
-    }
-
-    public List<Map<String, Object>> parseMultipleRecord(Record[] record) {
-
-        List<Map<String, Object>> queryData = new ArrayList<Map<String, Object>>();
-
-        for (int i = 0; i < record.length; i++) {
-            if (record[i] != null)
-                queryData.add(record[i].bins);
-        }
-
-        return queryData;
-    }
-
-    public Map<String, Object> parseSingleRecord(Record record) {
-        if (record != null)
-            return record.bins;
-        else
-            return null;
-    }
-
-    public Record getAllBinsForAKey(AerospikeClient client, String namespace, String setName, String value) {
-        Key key = new Key(namespace, setName, value);
-        Record record = client.get(null, key);
-        return record;
-    }
-
+	private static List<Map<String, Object>> extractBins(Record[] records, boolean skipNulls) {
+		if (records == null || records.length == 0) {
+			return Collections.emptyList();
+		}
+		List<Map<String, Object>> result = new ArrayList<>(records.length);
+		for (Record record : records) {
+			if (record == null) {
+				if (!skipNulls) {
+					result.add(null);
+				}
+				continue;
+			}
+			result.add(record.bins);
+		}
+		return result;
+	}
 }

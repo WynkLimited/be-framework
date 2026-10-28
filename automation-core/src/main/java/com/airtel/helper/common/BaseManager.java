@@ -23,7 +23,8 @@ import com.airtel.helper.data.JsonParser;
 import com.airtel.helper.data.MongoHelper;
 import com.airtel.validator.GenericComparator;
 import com.google.gson.JsonArray;
-import com.mongodb.BasicDBObject;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import net.minidev.json.JSONArray;
@@ -98,30 +99,45 @@ public abstract class BaseManager extends WiremockHelper
 	public MongoClient getMongoClient(String serverIp, Integer port) {
 		return this._mongoHelper.getMongoClient(serverIp, port);
 	}
-	
+
 	@Override
-	public MongoCollection getCollection(MongoClient mongoClient, String dataBase, String collectionName) {
+	public MongoClient getMongoClient(String connectionString) {
+		return this._mongoHelper.getMongoClient(connectionString);
+	}
+
+	@Override
+	public MongoClient getMongoClientByUri(String mongoUri) {
+		return this._mongoHelper.getMongoClientByUri(mongoUri);
+	}
+
+	@Override
+	public MongoCollection<Document> getCollection(MongoClient mongoClient, String dataBase, String collectionName) {
 		return this._mongoHelper.getCollection(mongoClient, dataBase, collectionName);
 	}
 
 	@Override
-	public BasicDBObject getMongoDBQuery(String key, Object value) {
+	public MongoCollection<Document> getCollectionByUri(String mongoUri, String collectionName) {
+		return this._mongoHelper.getCollectionByUri(mongoUri, collectionName);
+	}
+
+	@Override
+	public Document getMongoDBQuery(String key, Object value) {
 		return this._mongoHelper.getMongoDBQuery(key, value);
 	}
 
 	@Override
-	public BasicDBObject prepareMongoQueryFromMultipleKeys(Map<String, String> map) {
+	public Bson prepareMongoQueryFromMultipleKeys(Map<String, String> map) {
 		return this._mongoHelper.prepareMongoQueryFromMultipleKeys(map);
 	}
 
 	@Override
-	public List<Object> getResultFromMongo(MongoCollection mongoCollection, BasicDBObject searchQuery) {
+	public List<Document> getResultFromMongo(MongoCollection<Document> mongoCollection, Bson searchQuery) {
 		return this._mongoHelper.getResultFromMongo(mongoCollection, searchQuery);
 	}
 
 	@Override
-	public List<JSONObject> parseMongoDocuments(List<Object> resultFromMongoAsObject) {
-		return this._mongoHelper.parseMongoDocuments(resultFromMongoAsObject);
+	public List<JSONObject> parseMongoDocuments(List<Document> documents) {
+		return this._mongoHelper.parseMongoDocuments(documents);
 	}
 
 	@Override
@@ -134,23 +150,21 @@ public abstract class BaseManager extends WiremockHelper
 	@Override
 	public boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
 			String searchKey, String searchValue, Object mongoNewUpdatedObject) {
-
 		return this._mongoHelper.updateMongoDocument(mongoClient, collectionName, dataBaseName, searchKey, searchValue,
 				mongoNewUpdatedObject);
 	}
 
 	@Override
 	public boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
-			String searchKey, String searchValue, Map mongoNewUpdatedObject) {
-
+			String searchKey, String searchValue, Map<String, Object> mongoNewUpdatedObject) {
 		return this._mongoHelper.updateMongoDocument(mongoClient, collectionName, dataBaseName, searchKey, searchValue,
 				mongoNewUpdatedObject);
 	}
 
 	@Override
 	public boolean updateMongoDocuments(MongoClient mongoClient, String collectionName, String dataBaseName,
-			String searchKey, String searchValue, Map mongoNewUpdatedObject, boolean updateMultipleDocuments) {
-
+			String searchKey, String searchValue, Map<String, Object> mongoNewUpdatedObject,
+			boolean updateMultipleDocuments) {
 		return this._mongoHelper.updateMongoDocuments(mongoClient, collectionName, dataBaseName, searchKey, searchValue,
 				mongoNewUpdatedObject, updateMultipleDocuments);
 	}
@@ -346,7 +360,7 @@ public abstract class BaseManager extends WiremockHelper
 
 	@Override
 	public boolean isStringFeildNotBlankInsideJSONObject(JSONObject jsonObject, String field) {
-		return this._jsonHelper.isListFieldBlank(jsonObject, field);
+		return this._jsonHelper.isStringFeildNotBlankInsideJSONObject(jsonObject, field);
 	}
 
 	@Override

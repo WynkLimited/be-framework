@@ -1,233 +1,231 @@
 package com.airtel.helper.data;
 
-import com.airtel.helper.Interfaces.IMongoHelper;
-import com.airtel.helper.common.BaseTestClass;
-import com.airtel.helper.report.ReportHelper;
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
-import com.mongodb.client.MongoDatabase;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import com.airtel.helper.Interfaces.IMongoHelper;
+import com.airtel.helper.report.ReportHelper;
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 
 /**
- * Created by b0200202 on 12/6/17.
+ * MongoDB helper using the modern sync driver ({@link Document}, {@link Filters}).
  */
-public class MongoHelper extends BaseTestClass  implements IMongoHelper {
+public class MongoHelper implements IMongoHelper {
 
-	public  MongoClient getMongoClient (String serverIp, Integer port) {
-		if (mongoClient ==null){
-			synchronized (MongoHelper.class){
-				if (mongoClient ==null){
-					mongoClient = MongoClients.create("mongodb://" + serverIp + ":" + port);
-				}
-			}
-		}
-		return mongoClient;
+	private static final Logger log = LoggerFactory.getLogger(MongoHelper.class);
+
+	private final JsonParser jsonHelper = new JsonParser();
+	private volatile MongoClient mongoClient;
+	private volatile String activeConnectionString;
+
+	@Override
+	public MongoClient getMongoClient(String serverIp, Integer port) {
+		return getMongoClientByUri("mongodb://" + serverIp + ":" + port);
 	}
 
-	@SuppressWarnings("rawtypes")
-	public MongoCollection getCollection(MongoClient mongoClient, String dataBase, String collection) {
-
-		MongoDatabase mongoDatabase = mongoClient.getDatabase(dataBase);
-		return mongoDatabase.getCollection(collection);
-
-	}
-
-	public BasicDBObject getMongoDBQuery(String key, Object value) {
-		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.put(key, value);
-		return searchQuery;
-	}
-
-	public  BasicDBObject prepareMongoQueryFromMultipleKeys(Map<String, String> map) {
-
-		BasicDBObject andQuery = new BasicDBObject();
-		BasicDBList basicDBList = new BasicDBList();
-		for (Map.Entry<String, String> entry : map.entrySet())
-			basicDBList.add(new BasicDBObject(entry.getKey(), entry.getValue()));
-
-		andQuery.put("$and", basicDBList);
-		return andQuery;
-	}
-
-	@SuppressWarnings("rawtypes")
-	
-	public List<Object> getResultFromMongo(MongoCollection mongoCollection, BasicDBObject searchQuery) {
-		FindIterable findIterable = mongoCollection.find(searchQuery);
-		MongoCursor mongoCursor = findIterable.iterator();
-		List<Object> mongoAsObjectResult = new ArrayList<>();
-
-		while (mongoCursor.hasNext())
-			mongoAsObjectResult.add(mongoCursor.next());
-
-		return mongoAsObjectResult;
-	}
-
-	@SuppressWarnings("rawtypes")
-	public  List<JSONObject> parseMongoDocuments(List<Object> resultFromMongoAsObject) {
-
-		List<JSONObject> jsonObjectListOfMongo = new ArrayList<>();
-		Iterator<Object> mongoResultIterator = resultFromMongoAsObject.iterator();
-		while (mongoResultIterator.hasNext()) {
-			JSONObject jsonObject = new JSONObject(jsonHelper.convertToJson(mongoResultIterator.next()));
-			jsonObjectListOfMongo.add(jsonObject);
-		}
-
-		return jsonObjectListOfMongo;
+	@Override
+	public MongoClient getMongoClient(String connectionString) {
+		return getMongoClientByUri(connectionString);
 	}
 
 	/**
-	 * This method delete mongo document
-	 *
-	 * @param mongoClient
-	 * @param mongoValue
-	 * @param dataBaseName
-	 * @param collectionName
-	 * @return
+	 * Preferred connection API. Supports replica-set / auth URIs, e.g.
+	 * {@code mongodb://user:pass@host1:27017,host2:27017,host3:27017/dbName}
 	 */
+	@Override
+	public MongoClient getMongoClientByUri(String mongoUri) {
+		Objects.requireNonNull(mongoUri, "mongoUri");
+		String uri = mongoUri.trim();
+		if (!(uri.startsWith("mongodb://") || uri.startsWith("mongodb+srv://"))) {
+			throw new IllegalArgumentException(
+					"Invalid Mongo URI. Expected mongodb:// or mongodb+srv:// but got: " + maskUri(uri));
+		}
 
-	public  boolean findMongoDocumentAndDeleteIt(MongoClient mongoClient, String key, Object mongoValue,
-													   String dataBaseName, String collectionName) {
-		boolean mongoDeleteion = true;
-		BasicDBObject query = getMongoDBQuery(key, mongoValue);
-		MongoCollection mongoCollection = getCollection(mongoClient, dataBaseName, collectionName);
-		List<Object> resultFromMongoAsObject = getResultFromMongo(mongoCollection, query);
+		MongoClient local = mongoClient;
+		if (local != null && uri.equals(activeConnectionString)) {
+			return local;
+		}
 
-		if (!resultFromMongoAsObject.isEmpty()) {
-			Document mongoDocument;
-			Iterator<Object> mongoListIterator = resultFromMongoAsObject.iterator();
-			while (mongoListIterator.hasNext()) {
-				mongoDocument = (Document) mongoListIterator.next();
+		synchronized (this) {
+			if (mongoClient != null && uri.equals(activeConnectionString)) {
+				return mongoClient;
+			}
+			if (mongoClient != null) {
 				try {
-					mongoCollection.deleteOne(mongoDocument);
-
+					mongoClient.close();
 				} catch (Exception e) {
-					mongoDeleteion = false;
-					ReportHelper.logValidationFailure("MongoDeletion", "to delete", "not able to delete",
-							"Error In Deleting Mongo Document from DB : " + dataBaseName + "collectionName :"
-									+ collectionName);
+					log.warn("Error closing previous MongoClient", e);
 				}
 			}
-		} else
-			mongoDeleteion = false;
+			ConnectionString connectionString = new ConnectionString(uri);
+			MongoClientSettings settings = MongoClientSettings.builder()
+					.applyConnectionString(connectionString)
+					.build();
+			mongoClient = MongoClients.create(settings);
+			activeConnectionString = uri;
+			log.info("MongoClient created via URI {}", maskUri(uri));
+			return mongoClient;
+		}
+	}
 
-		return mongoDeleteion;
-
+	@Override
+	public MongoCollection<Document> getCollection(MongoClient client, String dataBase, String collection) {
+		return client.getDatabase(dataBase).getCollection(collection);
 	}
 
 	/**
-	 * this method find a document on the basis of search key & value and then
-	 * update a mongo document which is passed in parameter as mongoNewUpdatedObject
-	 *
-	 * @param mongoClient
-	 * @param collectionName
-	 * @param dataBaseName
-	 * @param searchKey
-	 * @param searchValue
-	 * @param mongoNewUpdatedObject
-	 * @return
+	 * Connects with the URI and opens the collection on the database named in the URI path
+	 * (e.g. {@code .../uclm_audience_manager_preprod}).
 	 */
-	public  boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
-											  String searchKey, String searchValue, Object mongoNewUpdatedObject) {
-		boolean updateStatus = true;
-		MongoCollection mongoCollection = null;
-		try {
-			mongoCollection = getCollection(mongoClient, dataBaseName, collectionName);
-			BasicDBObject query = new BasicDBObject();
-			query.append(searchKey, searchValue);
-			BasicDBObject updatedDocument = BasicDBObject.parse(mongoNewUpdatedObject.toString());
-			Bson newDocument = new Document("$set", updatedDocument);
+	@Override
+	public MongoCollection<Document> getCollectionByUri(String mongoUri, String collectionName) {
+		MongoClient client = getMongoClientByUri(mongoUri);
+		String databaseName = extractDatabaseName(mongoUri);
+		if (databaseName == null || databaseName.isBlank()) {
+			throw new IllegalArgumentException(
+					"Mongo URI has no database name in the path. Example: mongodb://user:pass@host:27017/myDb");
+		}
+		return getCollection(client, databaseName, collectionName);
+	}
 
-			mongoCollection.findOneAndUpdate(query, newDocument);
+	/** Database segment from URI path, or {@code null} if absent. */
+	public String extractDatabaseName(String mongoUri) {
+		return new ConnectionString(mongoUri).getDatabase();
+	}
+
+	private static String maskUri(String uri) {
+		return uri.replaceAll("://([^:/@]+):([^@/]+)@", "://$1:****@");
+	}
+
+	@Override
+	public Document getMongoDBQuery(String key, Object value) {
+		return new Document(key, value);
+	}
+
+	@Override
+	public Bson prepareMongoQueryFromMultipleKeys(Map<String, String> map) {
+		if (map == null || map.isEmpty()) {
+			return new Document();
+		}
+		List<Bson> filters = map.entrySet().stream()
+				.map(e -> Filters.eq(e.getKey(), e.getValue()))
+				.collect(Collectors.toList());
+		return filters.size() == 1 ? filters.get(0) : Filters.and(filters);
+	}
+
+	@Override
+	public List<Document> getResultFromMongo(MongoCollection<Document> mongoCollection, Bson searchQuery) {
+		List<Document> results = new ArrayList<>();
+		mongoCollection.find(searchQuery).into(results);
+		return results;
+	}
+
+	@Override
+	public List<JSONObject> parseMongoDocuments(List<Document> documents) {
+		List<JSONObject> jsonObjects = new ArrayList<>();
+		if (documents == null) {
+			return jsonObjects;
+		}
+		for (Document document : documents) {
+			jsonObjects.add(new JSONObject(jsonHelper.convertToJson(document)));
+		}
+		return jsonObjects;
+	}
+
+	@Override
+	public boolean findMongoDocumentAndDeleteIt(MongoClient client, String key, Object mongoValue, String dataBaseName,
+			String collectionName) {
+		try {
+			MongoCollection<Document> collection = getCollection(client, dataBaseName, collectionName);
+			DeleteResult result = collection.deleteMany(Filters.eq(key, mongoValue));
+			boolean deleted = result.getDeletedCount() > 0;
+			if (!deleted) {
+				ReportHelper.logValidationFailure("MongoDeletion", "to delete", "not able to delete",
+						"No document matched key=" + key + " in " + dataBaseName + "." + collectionName);
+			}
+			return deleted;
 		} catch (Exception e) {
-			updateStatus = false;
+			log.error("Mongo delete failed for {}.{} key={}", dataBaseName, collectionName, key, e);
+			ReportHelper.logValidationFailure("MongoDeletion", "to delete", "not able to delete",
+					"Error deleting from " + dataBaseName + "." + collectionName + ": " + e.getMessage());
+			return false;
+		}
+	}
+
+	@Override
+	public boolean updateMongoDocument(MongoClient client, String collectionName, String dataBaseName, String searchKey,
+			String searchValue, Object mongoNewUpdatedObject) {
+		try {
+			Document setFields = Document.parse(String.valueOf(mongoNewUpdatedObject));
+			return applyUpdate(client, dataBaseName, collectionName, searchKey, searchValue, setFields, false);
+		} catch (Exception e) {
+			log.error("Mongo update (object) failed for {}.{}", dataBaseName, collectionName, e);
 			ReportHelper.logValidationFailure("MongoUpdation", "to update", "not able to updated",
-					"Error In updating Mongo Document datatabase " + dataBaseName + " collection  :  "
-							+ mongoCollection);
+					"Error updating " + dataBaseName + "." + collectionName + ": " + e.getMessage());
+			return false;
 		}
-
-		return updateStatus;
 	}
 
-
-	/**
-	 *
-	 * This method find a document on the basis of search key & value and then
-	 * update only single mongo document for the Map passed as mongoNewUpdatedObject(key value pair ) in request
-	 * @param mongoClient
-	 * @param collectionName
-	 * @param dataBaseName
-	 * @param searchKey
-	 * @param searchValue
-	 * @param mongoNewUpdatedObject
-	 * @return
-	 */
-	public  boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
-											  String searchKey, String searchValue, Map mongoNewUpdatedObject) {
-		return updateMongoDocuments(mongoClient,collectionName,dataBaseName,searchKey,searchValue,mongoNewUpdatedObject,false);
+	@Override
+	public boolean updateMongoDocument(MongoClient client, String collectionName, String dataBaseName, String searchKey,
+			String searchValue, Map<String, Object> mongoNewUpdatedObject) {
+		return updateMongoDocuments(client, collectionName, dataBaseName, searchKey, searchValue, mongoNewUpdatedObject,
+				false);
 	}
 
-
-
-	/**
-	 * this method find a document on the basis of search key & value and then
-	 * update either single  mongo document or multiple mongo documents
-	 * which is passed in parameter as mongoNewUpdatedObject as it is without converting it to string
-	 * @param mongoClient
-	 * @param collectionName
-	 * @param dataBaseName
-	 * @param searchKey
-	 * @param searchValue
-	 * @param mongoNewUpdatedObject
-	 * @return
-	 */
-	public  boolean updateMongoDocuments(MongoClient mongoClient, String collectionName, String dataBaseName,
-											   String searchKey, String searchValue, Map mongoNewUpdatedObject,boolean updateMultipleDocuments) {
-		boolean updateStatus = true;
-		MongoCollection mongoCollection = null;
+	@Override
+	public boolean updateMongoDocuments(MongoClient client, String collectionName, String dataBaseName, String searchKey,
+			String searchValue, Map<String, Object> mongoNewUpdatedObject, boolean updateMultipleDocuments) {
 		try {
-			mongoCollection = getCollection(mongoClient, dataBaseName, collectionName);
-			BasicDBObject query = new BasicDBObject();
-			query.append(searchKey, searchValue);
-			Bson newDocument = new Document("$set", mongoNewUpdatedObject);
-			if (updateMultipleDocuments)mongoCollection.updateMany(query, newDocument);
-			else
-				mongoCollection.findOneAndUpdate(query, newDocument);
+			Document setFields = new Document(mongoNewUpdatedObject);
+			return applyUpdate(client, dataBaseName, collectionName, searchKey, searchValue, setFields,
+					updateMultipleDocuments);
 		} catch (Exception e) {
-			updateStatus = false;
-			ReportHelper.reporterLogging(false,
-					"Error In updating Mongo Document datatabase " + dataBaseName + " collection  :  "
-							+ mongoCollection +" with exception -> "+e);
+			log.error("Mongo update (map) failed for {}.{}", dataBaseName, collectionName, e);
+			ReportHelper.reporterLogging(false, "Error updating " + dataBaseName + "." + collectionName + ": " + e);
+			return false;
 		}
-
-		return updateStatus;
 	}
 
-	/**
-	 * This method will fetch data from mongo for multiple keys
-	 * @param mongoClient
-	 * @param map
-	 * @param dataBaseName
-	 * @param collectionName
-	 * @return
-	 */
-	public List<JSONObject> fetchDataFromMongoForMultipleKeys(MongoClient mongoClient,Map<String,String> map, String dataBaseName, String collectionName) {
-
-		BasicDBObject query =prepareMongoQueryFromMultipleKeys(map);
-		MongoCollection mongoCollection = getCollection(mongoClient, dataBaseName, collectionName);
-		List<Object> mongoResult = getResultFromMongo(mongoCollection, query);
-		return parseMongoDocuments(mongoResult);
+	@Override
+	public List<JSONObject> fetchDataFromMongoForMultipleKeys(MongoClient client, Map<String, String> map,
+			String dataBaseName, String collectionName) {
+		Bson query = prepareMongoQueryFromMultipleKeys(map);
+		MongoCollection<Document> collection = getCollection(client, dataBaseName, collectionName);
+		return parseMongoDocuments(getResultFromMongo(collection, query));
 	}
 
+	private boolean applyUpdate(MongoClient client, String dataBaseName, String collectionName, String searchKey,
+			String searchValue, Document setFields, boolean updateMany) {
+		if (setFields == null || setFields.isEmpty()) {
+			return false;
+		}
+		MongoCollection<Document> collection = getCollection(client, dataBaseName, collectionName);
+		Bson filter = Filters.eq(searchKey, searchValue);
+		// Same semantics as legacy: { $set: { ...fields } }
+		Bson update = new Document("$set", setFields);
+
+		if (updateMany) {
+			UpdateResult result = collection.updateMany(filter, update);
+			return result.getModifiedCount() > 0 || result.getMatchedCount() > 0;
+		}
+		Document updated = collection.findOneAndUpdate(filter, update);
+		return updated != null;
+	}
 }

@@ -5,8 +5,9 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.airtel.api-automation</groupId>
-		<artifactId>backend-automation-framework</artifactId>
-		<version>1.0.0</version>
+		<artifactId>api-automation</artifactId>
+		<version>1.0.1</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>automation-report</artifactId>
 	<name>automation-report</name>
@@ -17,8 +18,8 @@
 			<artifactId>automation-exceptions</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.airtel.api-automation</groupId>
-			<artifactId>automation-logging</artifactId>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.testng</groupId>
@@ -37,10 +38,6 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.influxdb</groupId>
-			<artifactId>influxdb-java</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.airtel.sentinelModels</groupId>

@@ -5,9 +5,11 @@ import java.lang.reflect.Method;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.airtel.helper.exception.CatchException;
 import com.airtel.helper.exception.GenericException;
-import com.airtel.helper.logging.AirtelLoggingMgr;
 
 /**
  * TestNG listener for {@link CatchException}: on failure, logs framework
@@ -15,8 +17,7 @@ import com.airtel.helper.logging.AirtelLoggingMgr;
  */
 public class CatchExceptionListener implements ITestListener {
 
-	private static final org.apache.logging.log4j.Logger LOGGER =
-			AirtelLoggingMgr.getLogger(CatchExceptionListener.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CatchExceptionListener.class);
 
 	@Override
 	public void onTestFailure(ITestResult result) {

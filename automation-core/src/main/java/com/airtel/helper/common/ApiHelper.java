@@ -332,6 +332,67 @@ public class ApiHelper extends DataHelper {
 	}
 
 	/**
+	 * PATCH without headers. Fails on non-2xx when status check is enabled (default).
+	 */
+	public Response patchResponse(String body, ContentType contentType, String url) {
+		return patchResponseWithHeaders(body, null, contentType, url, true);
+	}
+
+	/**
+	 * PATCH without headers. Pass/fail non-2xx based on {@code checkStatus}.
+	 */
+	public Response patchResponse(String body, ContentType contentType, String url, boolean checkStatus) {
+		return patchResponseWithHeaders(body, null, contentType, url, checkStatus);
+	}
+
+	/**
+	 * PATCH with headers. Fails on non-2xx.
+	 */
+	public Response patchResponseWithHeaders(String body, List<Header> headers, ContentType contentType, String url) {
+		return patchResponseWithHeaders(body, headers, contentType, url, true);
+	}
+
+	/**
+	 * PATCH with headers. Pass/fail non-2xx based on {@code checkStatus}.
+	 */
+	public Response patchResponseWithHeaders(String body, List<Header> headers, ContentType contentType, String url,
+			boolean checkStatus) {
+		return fetchApiResponse(url, "PATCH", body, null, headers, contentType, checkStatus, null);
+	}
+
+	/**
+	 * PATCH with headers and query params. Pass/fail non-2xx based on {@code checkStatus}.
+	 */
+	public Response patchResponseWithHeaders(String body, List<Header> headers, ContentType contentType, String url,
+			Map<String, String> queryParams, boolean checkStatus) {
+		return fetchApiResponse(url, "PATCH", body, queryParams, headers, contentType, checkStatus, null);
+	}
+
+	/**
+	 * PATCH with headers, query params and form params. Pass/fail non-2xx based on {@code checkStatus}.
+	 */
+	public Response patchResponseWithHeaders(String body, List<Header> headers, ContentType contentType, String url,
+			Map<String, String> queryParams, boolean checkStatus, Map<String, String> formParams) {
+		return fetchApiResponse(url, "PATCH", body, queryParams, headers, contentType, checkStatus, formParams);
+	}
+
+	/**
+	 * PATCH with headers and expected status code (exact match).
+	 */
+	public Response patchResponseWithHeaders(String body, List<Header> headers, ContentType contentType, String url,
+			int statusCode, Map<String, String> formParams) {
+		return fetchApiResponse(url, "PATCH", body, null, headers, contentType, statusCode, formParams);
+	}
+
+	/**
+	 * PATCH with query params, headers and form params. Pass/fail non-2xx based on {@code checkStatus}.
+	 */
+	public Response patchResponseWithHeaders(String body, Map<String, String> queryParams, List<Header> headers,
+			ContentType contentType, String url, boolean checkStatus, Map<String, String> formParams) {
+		return fetchApiResponse(url, "PATCH", body, queryParams, headers, contentType, checkStatus, formParams);
+	}
+
+	/**
 	 * This method will be used for getting response of POST request w/o headers.
 	 * This method will always fail non 200 response.
 	 *

@@ -4,7 +4,7 @@ Multi-module Java **21** API automation library for LOB projects (TestNG or BDD/
 
 ```
 GroupId:  com.airtel.api-automation
-Version:  1.0.0
+Version:  1.0.1
 Artifact: automation-bundle | automation-core | …
 ```
 
@@ -12,13 +12,14 @@ Artifact: automation-bundle | automation-core | …
 
 | Module | Contents |
 |--------|----------|
-| `automation-exceptions` | `GenericException`, `ErrorCode`, `@CatchException` |
-| `automation-logging` | `AirtelLoggingMgr`, `AirtelConfigService`, `Constants` |
+| `automation-exceptions` | `GenericException`, `ErrorCode`, `@CatchException`, `Constants`, `AirtelConfigService` |
 | `automation-report` | HTML `ReportHelper`, ChainTest, `ReportSelector` (TESTNG/BDD), FileHelper, Influx, SentinelLogger |
 | `automation-data` | Excel / DB / Mongo / Aerospike / JSON / Data helpers |
 | `automation-validator` | JSON compare & schema validators |
 | `automation-core` | `ApiHelper`, `BaseManager`, WireMock, DTOs |
 | `automation-bundle` | Aggregator POM — single LOB dependency |
+
+Logging uses **SLF4J** (`LoggerFactory` / `@Slf4j`). LOBs provide the binding (Logback, Log4j2, etc.).
 
 Source lives under each module (`automation-*/src/main/...`). There is **no** root `src/main`. IDE folders (`.settings`, `.classpath`, `.project`, `.vscode`) are gitignored.
 
@@ -30,18 +31,18 @@ Source lives under each module (`automation-*/src/main/...`). There is **no** ro
 <dependency>
   <groupId>com.airtel.api-automation</groupId>
   <artifactId>automation-bundle</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <type>pom</type>
 </dependency>
 ```
 
-**Or core only** (pulls data / validator / report / logging transitively):
+**Or core only** (pulls data / validator / report / exceptions transitively):
 
 ```xml
 <dependency>
   <groupId>com.airtel.api-automation</groupId>
   <artifactId>automation-core</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
 </dependency>
 ```
 
@@ -60,35 +61,37 @@ Replace:
 <version>1.4.x</version>
 ```
 
-with `automation-bundle` or `automation-core` at `1.0.0`. Packages remain under `com.airtel.helper.*`.
+with `automation-bundle` or `automation-core` at `1.0.1`. Packages remain under `com.airtel.helper.*`.
 
-## Reporting (TESTNG vs BDD)
+## Reporting walkthrough (ChainTest only)
 
-LOB chooses once:
+```mermaid
+flowchart TD
+  A[LOB sets automation.report.framework] --> B{TESTNG or BDD?}
+  B -->|TESTNG| C[AirtelReportListener]
+  C --> D[chaintest-testng]
+  D --> E[target/chaintest/Index.html]
+  B -->|BDD| F[LOB adds chaintest-cucumber-jvm]
+  F --> G["@CucumberOptions plugin = CUCUMBER_CHAINTEST_PLUGIN"]
+  G --> H[ChainTestCucumberListener]
+  H --> E
+```
 
+### 1. Config (LOB)
 ```properties
 # src/test/resources/automation-report.properties
 automation.report.framework=TESTNG
-# or
-automation.report.framework=BDD
+# or BDD
 ```
 
-Or: `-Dautomation.report.framework=BDD`
-
-| Mode | What runs |
-|------|-----------|
-| `TESTNG` | HTML `ReportHelper` + ChainTest via `AirtelReportListener` |
-| `BDD` | ChainTest Cucumber plugin; HTML suite lifecycle skipped |
-
-**TestNG LOB**
-
+### 2. TestNG LOB
 ```java
 @Listeners(AirtelReportListener.class)
-public class BaseTest extends ReportHelper { }
+public class BaseTest { }
 ```
+Dep `chaintest-testng` comes from `automation-report`.
 
-**BDD LOB** (add Cucumber plugin dep if needed):
-
+### 3. BDD LOB (extra dep required)
 ```xml
 <dependency>
   <groupId>com.aventstack</groupId>
@@ -96,42 +99,50 @@ public class BaseTest extends ReportHelper { }
   <version>1.0.12</version>
 </dependency>
 ```
-
 ```java
-@CucumberOptions(plugin = {
-  ReportFrameworkConfig.CUCUMBER_CHAINTEST_PLUGIN
-})
+@CucumberOptions(plugin = { ReportFrameworkConfig.CUCUMBER_CHAINTEST_PLUGIN })
 public class RunCukes extends AbstractTestNGCucumberTests { }
 ```
 
-| Report | Output |
-|--------|--------|
-| Custom HTML | `./Results/...` |
-| ChainTest | `target/chaintest/Index.html` |
+### 4. Output
+`target/chaintest/Index.html`
 
-### Exception reporting
+### What stays in `automation-report`
+| Keep | Role |
+|------|------|
+| `ReportFrameworkConfig` / `FrameworkType` / `ReportSelector` | Pick TESTNG vs BDD ChainTest |
+| `AirtelReportListener` | ChainTest TestNG + optional `@CatchException` |
+| `CatchExceptionListener` | Log framework exceptions on `@Test` failure |
+| `ReportHelper` (slim) | Step logging used by ApiHelper / DB / Mongo (not suite HTML) |
+| `FileHelper` / `ComparatorReportGenerator` / `ReportConstants` | Request-response files & JSON diff links |
+| `SentinelLogger` | Sentinel debug items |
+| `chaintest.properties` | Default ChainTest generator config |
 
+### Removed
+- Suite HTML lifecycle (`@BeforeSuite` / charts / suite summary) from `ReportHelper`
+- `InfluxDbHelper` + `influxdb-java` (was only for old suite stats)
+
+### Exception reporting (TestNG only)
 ```java
-@Listeners(AirtelReportListener.class) // or CatchExceptionListener alone
+@Listeners(AirtelReportListener.class)
 @CatchException
-public class BaseTest extends ReportHelper { }
+public class BaseTest { }
 ```
-
-On failure, framework `GenericException` / `ErrorCode` are logged to the HTML report. The test still fails.
+For Cucumber steps, use `@After` — `@CatchException` does not apply to step methods.
 
 ## Suggested LOB layout
 
 ```
 src/main/java/.../constants
-src/main/java/.../controller   # API flows (use ApiHelper / BaseManager)
+src/main/java/.../controller
 src/main/java/.../helper
 src/main/java/.../dto
-src/main/resources/            # configs; override automation-report.properties / chaintest.properties
-src/test/java/...              # thin tests or Cucumber glue — no heavy business logic
+src/main/resources/   # automation-report.properties, chaintest.properties
+src/test/java/...
 ```
 
-- **TestNG:** test classes extend `ReportHelper` and register `AirtelReportListener`.
-- **BDD:** features → step defs → controllers/helpers; reporting via ChainTest plugin + hooks as needed.
+- **TestNG:** `@Listeners(AirtelReportListener.class)`
+- **BDD:** ChainTest Cucumber plugin + `chaintest-cucumber-jvm`
 
 ## Main capabilities
 
@@ -141,7 +152,8 @@ src/test/java/...              # thin tests or Cucumber glue — no heavy busine
 | Mocks | `WiremockHelper` |
 | Validations | `ApiResponseValidator`, `GenericComparator` |
 | Data | `DbHelper`, `MongoHelper`, `AerospikeHelper`, `ExcelHelper`, `TestDataHelper` |
-| Config | `AirtelConfigService`, `Constants` |
+| Config | `AirtelConfigService`, `Constants` (in `automation-exceptions`) |
+| Logging | SLF4J (`@Slf4j` / `LoggerFactory`) — binding supplied by LOB |
 | Reports | `ReportHelper`, `AirtelReportListener`, ChainTest |
 
 ## Sentinel libraries

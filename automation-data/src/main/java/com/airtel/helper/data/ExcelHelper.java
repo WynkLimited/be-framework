@@ -1,14 +1,10 @@
-
 package com.airtel.helper.data;
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -16,166 +12,116 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class ExcelHelper {
+/**
+ * Excel (.xlsx) reader using Apache POI try-with-resources.
+ */
+public final class ExcelHelper {
+
+	private static final Logger log = LoggerFactory.getLogger(ExcelHelper.class);
+
+	private ExcelHelper() {
+	}
 
 	/**
-	 * This method returns the values present in excel in a List of Map. Key of map
-	 * is the name of the column and value is corresponding to the value of a cell
-	 * at the row.
-	 * 
-	 * @param fileName
-	 * @param sheetNo
-	 * @return
+	 * Returns sheet rows as list of maps (header row → column names).
 	 */
 	public static List<Map<String, String>> fetchDataExcel(String fileName, int sheetNo) {
-		File dataFile = new File(fileName);
 		List<Map<String, String>> resultantData = new ArrayList<>();
-
-		Map<Integer, String> columnMapping = new HashMap<>();
-		try {
-			int startRow = 1;
-			int startCol = 0;
-			FileInputStream fileInputStream = new FileInputStream(dataFile);
-			XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
-			XSSFSheet datatypeSheet = workbook.getSheetAt(sheetNo);
-			Iterator<Row> rowIterator = datatypeSheet.iterator();
-			int totalRows = datatypeSheet.getLastRowNum();
-			int totalcolumns = getTotalColoumnNumberInExcel(rowIterator.next());
-
-			// Mapping column data with index
-			for (startCol = 0; startCol < totalcolumns; startCol++) {
-				String columnName = datatypeSheet.getRow(0).getCell(startCol).getStringCellValue();
-				columnMapping.put(startCol, columnName);
+		try (FileInputStream in = new FileInputStream(fileName); Workbook workbook = new XSSFWorkbook(in)) {
+			Sheet sheet = workbook.getSheetAt(sheetNo);
+			Row header = sheet.getRow(0);
+			if (header == null) {
+				return resultantData;
 			}
-			for (startRow = 1; startRow <= totalRows; startRow++) {
+			int totalColumns = header.getLastCellNum();
+			Map<Integer, String> columnMapping = new HashMap<>();
+			for (int col = 0; col < totalColumns; col++) {
+				Cell cell = header.getCell(col);
+				columnMapping.put(col, cell != null ? cell.getStringCellValue() : "COL_" + col);
+			}
+
+			int totalRows = sheet.getLastRowNum();
+			for (int rowIdx = 1; rowIdx <= totalRows; rowIdx++) {
+				Row row = sheet.getRow(rowIdx);
 				Map<String, String> rowLevelData = new HashMap<>();
-				for (startCol = 0; startCol < totalcolumns; startCol++) {
-					String columnName = columnMapping.get(startCol);
-					String dataValue = "";
-					Cell cellValue = datatypeSheet.getRow(startRow).getCell(startCol);
-					if (cellValue == null || cellValue.getCellType() == CellType.BLANK) {
-						dataValue = null;
-					} else {
-						dataValue = getCellValueAsString(cellValue);
-					}
+				for (int col = 0; col < totalColumns; col++) {
+					String columnName = columnMapping.get(col);
+					Cell cell = row != null ? row.getCell(col) : null;
+					String dataValue = (cell == null || cell.getCellType() == CellType.BLANK)
+							? null
+							: getCellValueAsString(cell);
 					rowLevelData.put(columnName, dataValue);
 				}
 				resultantData.add(rowLevelData);
 			}
-			workbook.close();
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException("File " + fileName + " was not found" + e.getStackTrace());
-
 		} catch (IOException e) {
-			throw new RuntimeException("Can't Read Excel " + fileName + e.getStackTrace());
+			log.error("Cannot read excel {}", fileName, e);
+			throw new RuntimeException("Can't read Excel " + fileName, e);
 		}
 		return resultantData;
 	}
 
 	public static Object[][] getDataFromExcel(String fileName) {
-		File file = new File(fileName);
+		try (FileInputStream in = new FileInputStream(fileName); Workbook workbook = new XSSFWorkbook(in)) {
+			Sheet sheet = workbook.getSheetAt(0);
+			Row header = sheet.getRow(0);
+			if (header == null) {
+				return new Object[0][0];
+			}
+			int totalColumns = header.getLastCellNum();
+			int totalRows = sheet.getLastRowNum();
+			Object[][] testDataObject = new Object[totalRows][totalColumns];
 
-		Object[][] testDataObject = null;
-
-		try {
-			FileInputStream fileInputStream = new FileInputStream(file);
-
-			XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
-			XSSFSheet datatypeSheet = workbook.getSheetAt(0);
-
-			int startRow = 1;
-			int startCol = 0;
-
-			int ci = 0, cj = 0;
-			Iterator<Row> rowIterator = datatypeSheet.iterator();
-			int totalRows = datatypeSheet.getLastRowNum();
-			int totalcolumns = getTotalColoumnNumberInExcel(rowIterator.next());
-
-			testDataObject = new Object[totalRows][totalcolumns];
-
-			for (startRow = 1; startRow <= totalRows; startRow++, ci++) {
-				cj = 0;
-				for (startCol = 0; startCol < totalcolumns; startCol++, cj++) {
-
-					Cell cell = datatypeSheet.getRow(startRow).getCell(startCol);
-					testDataObject[ci][cj] = null;
-					if (cell != null) {
-						switch (cell.getCellType()) {
-						case STRING:
-							testDataObject[ci][cj] = cell.getStringCellValue().equalsIgnoreCase("null") ? null
-									: cell.getStringCellValue();
-							break;
-						case NUMERIC:
-							testDataObject[ci][cj] = cell.getNumericCellValue();
-							break;
-						case BOOLEAN:
-							testDataObject[ci][cj] = cell.getBooleanCellValue();
-							break;
-						case BLANK:
-							testDataObject[ci][cj] = "";
-							break;
-						default:
-							break;
-						}
-					}
-
+			for (int rowIdx = 1, ci = 0; rowIdx <= totalRows; rowIdx++, ci++) {
+				Row row = sheet.getRow(rowIdx);
+				for (int col = 0; col < totalColumns; col++) {
+					Cell cell = row != null ? row.getCell(col) : null;
+					testDataObject[ci][col] = cellValue(cell);
 				}
-				workbook.close();
 			}
-
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException("File " + fileName + " was not found" + e.getStackTrace().toString());
-
+			return testDataObject;
 		} catch (IOException e) {
-			throw new RuntimeException("Can't Read Excel " + fileName + e.getStackTrace().toString());
+			log.error("Cannot read excel {}", fileName, e);
+			throw new RuntimeException("Can't read Excel " + fileName, e);
 		}
-		return testDataObject;
 	}
 
-	private static int getTotalColoumnNumberInExcel(Row row) {
-		Iterator<Cell> cellIterator = row.cellIterator();
-		int totalcolumnsInExcel = 0;
-		while (cellIterator.hasNext()) {
-			cellIterator.next();
-			totalcolumnsInExcel++;
+	private static Object cellValue(Cell cell) {
+		if (cell == null) {
+			return null;
 		}
-		return totalcolumnsInExcel;
-	}
-
-	/**
-	 * This method for the type of data in the cell, extracts the data and returns
-	 * it as a string.
-	 */
-	private static String getCellValueAsString(Cell cell) {
-		String strCellValue = null;
-
-		switch (cell.getCellType()) {
-		case STRING:
-			strCellValue = cell.toString();
-			break;
-		case NUMERIC:
-			if (DateUtil.isCellDateFormatted(cell)) {
-				SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-				strCellValue = dateFormat.format(cell.getDateCellValue());
-			} else {
-				Double value = cell.getNumericCellValue();
-				Long longValue = value.longValue();
-				strCellValue = longValue.toString();
+		return switch (cell.getCellType()) {
+			case STRING -> {
+				String value = cell.getStringCellValue();
+				yield "null".equalsIgnoreCase(value) ? null : value;
 			}
-			break;
-		case BOOLEAN:
-			strCellValue = Boolean.toString(cell.getBooleanCellValue());
-			break;
-		case BLANK:
-			strCellValue = "";
-			break;
-		default:
-			break;
-		}
-		return strCellValue;
+			case NUMERIC -> DateUtil.isCellDateFormatted(cell)
+					? cell.getDateCellValue()
+					: cell.getNumericCellValue();
+			case BOOLEAN -> cell.getBooleanCellValue();
+			case BLANK -> "";
+			default -> null;
+		};
 	}
 
+	private static String getCellValueAsString(Cell cell) {
+		return switch (cell.getCellType()) {
+			case STRING -> cell.toString();
+			case NUMERIC -> {
+				if (DateUtil.isCellDateFormatted(cell)) {
+					yield new SimpleDateFormat("dd/MM/yyyy").format(cell.getDateCellValue());
+				}
+				yield Long.toString((long) cell.getNumericCellValue());
+			}
+			case BOOLEAN -> Boolean.toString(cell.getBooleanCellValue());
+			case BLANK -> "";
+			default -> null;
+		};
+	}
 }

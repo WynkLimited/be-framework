@@ -1,5 +1,7 @@
 package com.airtel.helper.report;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.ISuite;
 import org.testng.ISuiteListener;
 import org.testng.ITestContext;
@@ -7,29 +9,17 @@ import org.testng.ITestListener;
 import org.testng.ITestResult;
 
 import com.aventstack.chaintest.plugins.ChainTestListener;
-import com.airtel.helper.logging.AirtelLoggingMgr;
 
 /**
- * Single TestNG entry-point for LOBs. Picks reporters from
- * {@link ReportFrameworkConfig}:
- * <ul>
- * <li>{@link FrameworkType#TESTNG} — ChainTest TestNG + {@link CatchExceptionListener};
- * HTML lifecycle comes from extending {@link ReportHelper}</li>
- * <li>{@link FrameworkType#BDD} — skips ChainTest TestNG (use Cucumber plugin instead);
- * still runs {@link CatchExceptionListener} if scenarios run under TestNG</li>
- * </ul>
- *
- * <pre>
- * {@code
- * @Listeners(AirtelReportListener.class)
- * public class ClmBaseTest extends ReportHelper { }
- * }
- * </pre>
+ * TestNG wiring for ChainTest when {@code automation.report.framework=TESTNG}.
+ * <p>
+ * For BDD, do <b>not</b> rely on this for reporting — use
+ * {@link ReportFrameworkConfig#CUCUMBER_CHAINTEST_PLUGIN} in {@code @CucumberOptions}
+ * and depend on {@code chaintest-cucumber-jvm}.
  */
 public class AirtelReportListener implements ITestListener, ISuiteListener {
 
-	private static final org.apache.logging.log4j.Logger LOGGER =
-			AirtelLoggingMgr.getLogger(AirtelReportListener.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(AirtelReportListener.class);
 
 	private final CatchExceptionListener catchExceptionListener = new CatchExceptionListener();
 	private final ChainTestListener chainTestListener;
@@ -37,11 +27,14 @@ public class AirtelReportListener implements ITestListener, ISuiteListener {
 	public AirtelReportListener() {
 		if (ReportFrameworkConfig.isChainTestTestNgEnabled()) {
 			chainTestListener = new ChainTestListener();
-			LOGGER.info("AirtelReportListener: TESTNG mode — ChainTest TestNG + CatchException active");
+			LOGGER.info("ChainTest (TestNG) active — dependency {}",
+					ReportFrameworkConfig.CHAINTTEST_TESTNG_ARTIFACT);
 		} else {
 			chainTestListener = null;
 			LOGGER.info(
-					"AirtelReportListener: BDD mode — register Cucumber plugin '{}' in @CucumberOptions; CatchException still active",
+					"BDD mode: ChainTest Cucumber plugin expected ({}). Add dependency {} and plugin '{}'",
+					ReportFrameworkConfig.getFrameworkType(),
+					ReportFrameworkConfig.CHAINTTEST_CUCUMBER_ARTIFACT,
 					ReportFrameworkConfig.CUCUMBER_CHAINTEST_PLUGIN);
 		}
 	}

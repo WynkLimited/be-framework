@@ -3,23 +3,26 @@ package com.airtel.helper.report;
 import java.io.InputStream;
 import java.util.Properties;
 
-import com.airtel.helper.logging.AirtelLoggingMgr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Resolves which report stack to use for the LOB.
- * <p>
- * Priority (highest first):
- * <ol>
- * <li>System property {@value #SYSTEM_PROPERTY}</li>
- * <li>Classpath {@value #PROPERTIES_FILE} key {@value #PROPERTY_KEY}</li>
- * <li>Default: {@link FrameworkType#TESTNG}</li>
- * </ol>
+ * Single reporting engine: <b>ChainTest</b>.
+ * LOB picks style once; the matching ChainTest plugin is used.
+ * <ul>
+ * <li>{@link FrameworkType#TESTNG} → {@code chaintest-testng}
+ * ({@link AirtelReportListener})</li>
+ * <li>{@link FrameworkType#BDD} → {@code chaintest-cucumber-jvm}
+ * (Cucumber plugin {@link #CUCUMBER_CHAINTEST_PLUGIN})</li>
+ * </ul>
  *
- * Example {@code automation-report.properties}:
  * <pre>
+ * # src/test/resources/automation-report.properties
+ * automation.report.framework=TESTNG
+ * # or
  * automation.report.framework=BDD
  * </pre>
- * Or: {@code -Dautomation.report.framework=BDD}
+ *
  */
 public final class ReportFrameworkConfig {
 
@@ -27,36 +30,41 @@ public final class ReportFrameworkConfig {
 	public static final String PROPERTIES_FILE = "automation-report.properties";
 	public static final String PROPERTY_KEY = "automation.report.framework";
 
-	/** Cucumber plugin entry for ChainTest (use in {@code @CucumberOptions}). */
+	/** Maven artifact for TestNG LOBs (already on framework classpath). */
+	public static final String CHAINTTEST_TESTNG_ARTIFACT = "com.aventstack:chaintest-testng";
+
+	/** Maven artifact for BDD LOBs — add explicitly (optional in framework POM). */
+	public static final String CHAINTTEST_CUCUMBER_ARTIFACT = "com.aventstack:chaintest-cucumber-jvm";
+
+	/** Cucumber {@code @CucumberOptions(plugin = ...)} value when framework=BDD. */
 	public static final String CUCUMBER_CHAINTEST_PLUGIN =
 			"com.aventstack.chaintest.plugins.ChainTestCucumberListener:";
 
-	private static final org.apache.logging.log4j.Logger LOGGER =
-			AirtelLoggingMgr.getLogger(ReportFrameworkConfig.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ReportFrameworkConfig.class);
 
-	private static volatile FrameworkType cached;
+	private static volatile FrameworkType cachedType;
 
 	private ReportFrameworkConfig() {
 	}
 
 	public static FrameworkType getFrameworkType() {
-		FrameworkType local = cached;
+		FrameworkType local = cachedType;
 		if (local == null) {
 			synchronized (ReportFrameworkConfig.class) {
-				local = cached;
+				local = cachedType;
 				if (local == null) {
-					local = resolve();
-					cached = local;
-					LOGGER.info("Report framework type resolved to: {}", local);
+					local = resolveType();
+					cachedType = local;
+					LOGGER.info("ChainTest mode: {} ({})", local,
+							local == FrameworkType.BDD ? CHAINTTEST_CUCUMBER_ARTIFACT : CHAINTTEST_TESTNG_ARTIFACT);
 				}
 			}
 		}
 		return local;
 	}
 
-	/** Clears cache — for tests or when LOB sets the system property late. */
 	public static void reload() {
-		cached = null;
+		cachedType = null;
 	}
 
 	public static boolean isTestNg() {
@@ -67,37 +75,37 @@ public final class ReportFrameworkConfig {
 		return getFrameworkType() == FrameworkType.BDD;
 	}
 
-	/**
-	 * HTML {@link ReportHelper} suite/method lifecycle is intended for TestNG LOBs.
-	 * Helper methods ({@code reporterLogging}, etc.) remain usable in both modes.
-	 */
-	public static boolean isHtmlLifecycleEnabled() {
-		return isTestNg();
-	}
-
-	/** ChainTest TestNG listener — for {@link FrameworkType#TESTNG}. */
+	/** ChainTest TestNG listener — when {@code automation.report.framework=TESTNG}. */
 	public static boolean isChainTestTestNgEnabled() {
 		return isTestNg();
 	}
 
-	/** ChainTest Cucumber plugin — for {@link FrameworkType#BDD}. */
+	/** ChainTest Cucumber plugin — when {@code automation.report.framework=BDD}. */
 	public static boolean isChainTestCucumberEnabled() {
 		return isBdd();
 	}
 
-	private static FrameworkType resolve() {
+	/** Old suite HTML lifecycle removed — ChainTest is the only suite report. */
+	public static boolean isHtmlLifecycleEnabled() {
+		return false;
+	}
+
+	private static FrameworkType resolveType() {
 		String fromSystem = System.getProperty(SYSTEM_PROPERTY);
 		if (fromSystem != null && !fromSystem.isBlank()) {
 			return FrameworkType.from(fromSystem);
 		}
-		String fromFile = loadFromClasspath();
-		if (fromFile != null && !fromFile.isBlank()) {
-			return FrameworkType.from(fromFile);
+		Properties props = loadProperties();
+		if (props != null) {
+			String fromFile = props.getProperty(PROPERTY_KEY);
+			if (fromFile != null && !fromFile.isBlank()) {
+				return FrameworkType.from(fromFile);
+			}
 		}
 		return FrameworkType.TESTNG;
 	}
 
-	private static String loadFromClasspath() {
+	private static Properties loadProperties() {
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
 		if (loader == null) {
 			loader = ReportFrameworkConfig.class.getClassLoader();
@@ -108,7 +116,7 @@ public final class ReportFrameworkConfig {
 			}
 			Properties props = new Properties();
 			props.load(in);
-			return props.getProperty(PROPERTY_KEY);
+			return props;
 		} catch (Exception e) {
 			LOGGER.warn("Could not read {}: {}", PROPERTIES_FILE, e.getMessage());
 			return null;

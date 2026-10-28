@@ -8,9 +8,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.airtel.helper.Interfaces.IJsonParser;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -30,188 +34,129 @@ import com.jayway.jsonpath.Option;
 
 import net.minidev.json.JSONArray;
 
+/**
+ * JSON convert / JsonPath helpers. Uses a shared {@link Gson} instance.
+ */
 public class JsonParser implements IJsonParser {
 
-	/**
-	 * This method convert a particular object to JSON. This is mostly used for
-	 * comparator.
-	 *
-	 * @param obj
-	 * @return
-	 */
+	private static final Logger log = LoggerFactory.getLogger(JsonParser.class);
+
+	private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
+	private static final Configuration JSON_PATH_CONFIG = Configuration.defaultConfiguration()
+			.addOptions(Option.SUPPRESS_EXCEPTIONS);
+
+	@Override
 	public String convertToJson(Object obj) {
-		Gson gsonConverter = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
-		return gsonConverter.toJson(obj);
+		return GSON.toJson(obj);
 	}
 
-	/**
-	 * This method convert a json string to a particular DTO type specified as
-	 * input. This method returns object of a generic type and therefore casting is
-	 * not required with this method.
-	 *
-	 * @param jsonData
-	 * @param classType
-	 * @return Object of type specified as input class
-	 */
+	@Override
 	public <T> T convertFromJson(String jsonData, Class<T> classType) {
-		Gson gsonConverter = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
-		return gsonConverter.fromJson(jsonData, classType);
+		return GSON.fromJson(jsonData, classType);
 	}
 
-	/**
-	 * This method will be used to convert a dynamic class response from JSON
-	 *
-	 * @param jsonData
-	 * @param type
-	 * @return
-	 * @author b0201347
-	 */
+	@Override
 	public <T> T convertFromJson(String jsonData, Type type) {
-		Gson gsonConverter = (new GsonBuilder()).disableHtmlEscaping().setPrettyPrinting().create();
-		return gsonConverter.fromJson(jsonData, type);
+		return GSON.fromJson(jsonData, type);
 	}
 
-	/**
-	 * Returns list of object converted from a JSON array string. Input of this
-	 * method is the Type of list and JSON Array string.
-	 *
-	 * @param jsonArray
-	 * @param listType
-	 * @return
-	 */
+	@Override
 	public <T> List<T> convertFromJsonArray(String jsonArray, Type listType) {
-		Gson gsonConverter = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
-		return gsonConverter.fromJson(jsonArray, listType);
+		return GSON.fromJson(jsonArray, listType);
 	}
 
-	/**
-	 * This method will fetch value from JSON at a particular JSON path. Value be
-	 * returned as an Object as the class type is not defined
-	 *
-	 * @param inputJson
-	 * @param keyName
-	 * @return
-	 */
+	@Override
 	public Object fetchJPathVal(String inputJson, String keyName) {
-		Configuration config = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
-		return Optional.ofNullable(inputJson).map(body -> JsonPath.using(config).parse(body).read(keyName.trim()))
+		if (keyName == null) {
+			return null;
+		}
+		return Optional.ofNullable(inputJson)
+				.map(body -> JsonPath.using(JSON_PATH_CONFIG).parse(body).read(keyName.trim()))
 				.orElse(null);
 	}
 
-	/**
-	 * This method will fetch value from JSON at a particular JSON path. Value be
-	 * returned for the class provided as input.
-	 *
-	 * @param inputJson
-	 * @param keyName
-	 * @return
-	 */
+	@Override
 	public <T> T fetchJPathVal(String inputJson, String keyName, Class<T> classType) {
-		Configuration config = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
-		return classType.cast(Optional.ofNullable(inputJson)
-				.map(body -> JsonPath.using(config).parse(body).read(keyName.trim())).orElse(null));
+		Object value = fetchJPathVal(inputJson, keyName);
+		return value == null ? null : classType.cast(value);
 	}
 
-	/**
-	 * This method sort array of object fetched from jspath and on the bases of
-	 * value of json
-	 *
-	 * @param unsortedArrayObj
-	 * @return
-	 */
+	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object sortArray(Object unsortedArrayObj) {
 		Set sortedArray = new TreeSet<>();
 		JSONArray unsortedArray = (JSONArray) unsortedArrayObj;
-		for (int arrayIterator = 0; arrayIterator < unsortedArray.size(); arrayIterator++) {
-			sortedArray.add(unsortedArray.get(arrayIterator));
+		for (int i = 0; i < unsortedArray.size(); i++) {
+			sortedArray.add(unsortedArray.get(i));
 		}
 		return sortedArray;
 	}
 
+	@Override
 	public boolean isStringFeildNotBlankInsideJSONObject(JSONObject jsonObject, String field) {
-
-		return (!jsonObject.getString(field).isEmpty() && jsonObject.getString(field) != null);
+		if (jsonObject == null || field == null || !jsonObject.has(field) || jsonObject.isNull(field)) {
+			return false;
+		}
+		String value = jsonObject.optString(field, null);
+		return value != null && !value.isEmpty();
 	}
 
+	@Override
 	public boolean isJsonObjectInsideJsonObjectNotBlank(JSONObject jsonObject, String field) {
-		return (jsonObject.getJSONObject(field) != null && jsonObject.getJSONObject(field).length() != 0);
+		if (jsonObject == null || field == null || !jsonObject.has(field) || jsonObject.isNull(field)) {
+			return false;
+		}
+		JSONObject nested = jsonObject.optJSONObject(field);
+		return nested != null && nested.length() != 0;
 	}
 
+	@Override
 	public boolean isJsonArrayNotBlank(JsonArray jsonArray) {
-		return ((jsonArray != null) && jsonArray.size() > 0);
-
+		return jsonArray != null && jsonArray.size() > 0;
 	}
 
+	@Override
 	public boolean isListFieldBlank(JSONObject jsonObject, String field) {
-		return ((jsonObject.getJSONArray(field).length() != 0) && (jsonObject.getJSONArray(field) != null));
+		if (jsonObject == null || field == null || !jsonObject.has(field) || jsonObject.isNull(field)) {
+			return false;
+		}
+		org.json.JSONArray array = jsonObject.optJSONArray(field);
+		return array != null && array.length() != 0;
 	}
 
-	/**
-	 * This method is used to convert object to jsonArray if it is JsonArray else it
-	 * will return null.
-	 *
-	 * @param object
-	 * @return
-	 */
+	@Override
 	public org.json.JSONArray objectToJSONArray(Object object) {
-		Object json = null;
-		org.json.JSONArray jsonArray = null;
+		if (object == null) {
+			return null;
+		}
 		try {
-			json = new JSONTokener(object.toString()).nextValue();
+			Object json = new JSONTokener(object.toString()).nextValue();
+			if (json instanceof org.json.JSONArray) {
+				return (org.json.JSONArray) json;
+			}
 		} catch (JSONException e) {
-			// apiHelperLog.log(Level.ERROR, "Json is not valid " + e.getStackTrace());
-			e.printStackTrace();
+			log.error("Invalid JSON for array conversion", e);
 		}
-		if (json instanceof org.json.JSONArray) {
-			jsonArray = (org.json.JSONArray) json;
-		}
-		return jsonArray;
+		return null;
 	}
 
-	/**
-	 * This method is used to convert Json Array Object and its values to String
-	 * Object
-	 *
-	 * @param object
-	 * @return
-	 */
+	@Override
 	public Object convertJsonArrayObjToStringObj(Object object) {
 		org.json.JSONArray jsonArray = objectToJSONArray(object);
-		org.json.JSONArray destJsonarray = new org.json.JSONArray();
-
-		if (jsonArray != null) {
-
-			for (int i = 0; i < jsonArray.length(); i++) {
-				destJsonarray.put(jsonArray.get(i).toString());
-			}
-			return destJsonarray.toString();
-		} else {
-			return object.toString();
+		if (jsonArray == null) {
+			return object == null ? null : object.toString();
 		}
+		org.json.JSONArray destJsonarray = new org.json.JSONArray();
+		for (int i = 0; i < jsonArray.length(); i++) {
+			destJsonarray.put(String.valueOf(jsonArray.get(i)));
+		}
+		return destJsonarray.toString();
 	}
 
-	/**
-	 * Parses the specified JSON string into a parse tree
-	 *
-	 * @param json JSON text
-	 * @return a parse tree of {@link JsonElement}s corresponding to the specified
-	 *         JSON
-	 * @throws JsonParseException if the specified text is not valid JSON
-	 * @since 1.3
-	 */
 	public JsonElement parse(String json) throws JsonSyntaxException {
 		return parse(new StringReader(json));
 	}
 
-	/**
-	 * Parses the specified JSON string into a parse tree
-	 *
-	 * @param json JSON text
-	 * @return a parse tree of {@link JsonElement}s corresponding to the specified
-	 *         JSON
-	 * @throws JsonParseException if the specified text is not valid JSON
-	 * @since 1.3
-	 */
 	public JsonElement parse(Reader json) throws JsonIOException, JsonSyntaxException {
 		try {
 			JsonReader jsonReader = new JsonReader(json);
@@ -229,44 +174,27 @@ public class JsonParser implements IJsonParser {
 		}
 	}
 
-	/**
-	 * Returns the next value from the JSON stream as a parse tree.
-	 *
-	 * @throws JsonParseException if there is an IOException or if the specified
-	 *                            text is not valid JSON
-	 * @since 1.6
-	 */
 	public JsonElement parse(JsonReader json) throws JsonIOException, JsonSyntaxException {
 		boolean lenient = json.isLenient();
 		json.setLenient(true);
 		try {
 			return Streams.parse(json);
-		} catch (StackOverflowError e) {
-			throw new JsonParseException("Failed parsing JSON source: " + json + " to Json", e);
-		} catch (OutOfMemoryError e) {
+		} catch (StackOverflowError | OutOfMemoryError e) {
 			throw new JsonParseException("Failed parsing JSON source: " + json + " to Json", e);
 		} finally {
 			json.setLenient(lenient);
 		}
 	}
 
-	/**
-	 * Format response json String in pretty Print
-	 *
-	 * @param responseString
-	 * @return
-	 */
+	@Override
 	public String formatResponse(String apiResponse) {
-		String responseString = null;
-		JsonElement jsonElement = parse(apiResponse);
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		if (jsonElement instanceof JsonObject) {
-			JsonObject json = jsonElement.getAsJsonObject();
-			responseString = gson.toJson(json);
-		} else if (jsonElement instanceof JsonArray) {
-			JsonArray json = jsonElement.getAsJsonArray();
-			responseString = gson.toJson(json);
+		if (apiResponse == null || apiResponse.isBlank()) {
+			return apiResponse;
 		}
-		return responseString;
+		JsonElement jsonElement = parse(apiResponse);
+		if (jsonElement instanceof JsonObject || jsonElement instanceof JsonArray) {
+			return GSON.toJson(jsonElement);
+		}
+		return apiResponse;
 	}
 }

@@ -6,13 +6,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.UUID;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-
-import com.airtel.helper.logging.AirtelLoggingMgr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ComparatorReportGenerator implements ReportConstants {
-	Logger logger = AirtelLoggingMgr.getLogger(ComparatorReportGenerator.class);
+	private static final Logger logger = LoggerFactory.getLogger(ComparatorReportGenerator.class);
 
 	public void appendresultHTMLReport(String resultFileStringPath, String operationType, String fieldName,
 			String liveValue, String qaValue) {
@@ -26,7 +24,7 @@ public class ComparatorReportGenerator implements ReportConstants {
 			resultFile.append("</tr>");
 			resultFile.close();
 		} catch (IOException e) {
-			logger.log(Level.ERROR, "Error with adding Html report" + e);
+			logger.error("Error with adding Html report" + e);
 
 		}
 	}
@@ -53,7 +51,7 @@ public class ComparatorReportGenerator implements ReportConstants {
 			}
 			resultFile.close();
 		} catch (IOException e) {
-			logger.log(Level.ERROR, "Error with compartor report creation" + e);
+			logger.error("Error with compartor report creation" + e);
 
 		}
 		return resultFileStringPath;
@@ -67,7 +65,7 @@ public class ComparatorReportGenerator implements ReportConstants {
 			resultFile.append("</div></body></html>");
 			resultFile.close();
 		} catch (IOException e) {
-			logger.log(Level.ERROR, "Not able to close report" + e);
+			logger.error("Not able to close report" + e);
 
 		}
 

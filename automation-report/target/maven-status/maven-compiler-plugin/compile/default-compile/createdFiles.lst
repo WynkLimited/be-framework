@@ -2,10 +2,9 @@ com/report/SentinelLogger.class
 com/airtel/helper/report/FrameworkType.class
 com/airtel/helper/report/CatchExceptionListener.class
 com/airtel/helper/report/FileHelper.class
-com/airtel/helper/report/ReportHelper.class
-com/airtel/helper/data/InfluxDbHelper.class
 com/airtel/helper/report/AirtelReportListener.class
 com/airtel/helper/report/ReportFrameworkConfig.class
 com/airtel/helper/report/ComparatorReportGenerator.class
 com/airtel/helper/report/ReportSelector.class
 com/airtel/helper/report/ReportConstants.class
+com/airtel/helper/report/ReportHelper.class

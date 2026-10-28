@@ -1,38 +1,52 @@
 package com.airtel.helper.Interfaces;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoCollection;
-import org.json.JSONObject;
-
 import java.util.List;
 import java.util.Map;
 
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.json.JSONObject;
+
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoCollection;
+
 public interface IMongoHelper {
 
-    MongoClient getMongoClient (String serverIp, Integer port);
+	MongoClient getMongoClient(String serverIp, Integer port);
 
-    MongoCollection getCollection(MongoClient mongoClient, String dataBase, String collectionName);
+	MongoClient getMongoClient(String connectionString);
 
-    BasicDBObject getMongoDBQuery(String key, Object value);
+	/**
+	 * Connect using a full MongoDB URI, e.g.
+	 * {@code mongodb://user:pass@host1:27017,host2:27017/databaseName}
+	 */
+	MongoClient getMongoClientByUri(String mongoUri);
 
-    BasicDBObject prepareMongoQueryFromMultipleKeys(Map<String, String> map);
+	MongoCollection<Document> getCollection(MongoClient mongoClient, String dataBase, String collectionName);
 
-    List<Object> getResultFromMongo(MongoCollection mongoCollection, BasicDBObject searchQuery);
+	/** Uses the database name embedded in the URI path. */
+	MongoCollection<Document> getCollectionByUri(String mongoUri, String collectionName);
 
-    List<JSONObject> parseMongoDocuments(List<Object> resultFromMongoAsObject);
+	Document getMongoDBQuery(String key, Object value);
 
-    boolean findMongoDocumentAndDeleteIt(MongoClient mongoClient, String key, Object mongoValue,
-                                         String dataBaseName, String collectionName);
+	Bson prepareMongoQueryFromMultipleKeys(Map<String, String> map);
 
-    boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
-                                String searchKey, String searchValue, Object mongoNewUpdatedObject);
+	List<Document> getResultFromMongo(MongoCollection<Document> mongoCollection, Bson searchQuery);
 
-   boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName,
-                        String searchKey, String searchValue, Map mongoNewUpdatedObject);
+	List<JSONObject> parseMongoDocuments(List<Document> documents);
 
-    List<JSONObject> fetchDataFromMongoForMultipleKeys(MongoClient mongoClient, Map<String, String> map, String dataBaseName, String collectionName);
+	boolean findMongoDocumentAndDeleteIt(MongoClient mongoClient, String key, Object mongoValue, String dataBaseName,
+			String collectionName);
 
-    boolean updateMongoDocuments(MongoClient mongoClient, String collectionName, String dataBaseName,
-                                 String searchKey, String searchValue, Map mongoNewUpdatedObject,boolean updateMultipleDocuments);
+	boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName, String searchKey,
+			String searchValue, Object mongoNewUpdatedObject);
+
+	boolean updateMongoDocument(MongoClient mongoClient, String collectionName, String dataBaseName, String searchKey,
+			String searchValue, Map<String, Object> mongoNewUpdatedObject);
+
+	boolean updateMongoDocuments(MongoClient mongoClient, String collectionName, String dataBaseName, String searchKey,
+			String searchValue, Map<String, Object> mongoNewUpdatedObject, boolean updateMultipleDocuments);
+
+	List<JSONObject> fetchDataFromMongoForMultipleKeys(MongoClient mongoClient, Map<String, String> map,
+			String dataBaseName, String collectionName);
 }

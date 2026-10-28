@@ -5,8 +5,9 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.airtel.api-automation</groupId>
-		<artifactId>backend-automation-framework</artifactId>
-		<version>1.0.0</version>
+		<artifactId>api-automation</artifactId>
+		<version>1.0.1</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>automation-core</artifactId>
 	<name>automation-core</name>

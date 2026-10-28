@@ -13,16 +13,15 @@ import java.util.zip.ZipOutputStream;
 
 import javax.crypto.SecretKey;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.Reporter;
 
-import com.airtel.helper.logging.AirtelLoggingMgr;
 
 public class FileHelper {
 
 	static final String DESEDE_ENCRYPTION_SCHEME = "DESede";
-	private static Logger logger = AirtelLoggingMgr.getLogger(FileHelper.class);
+	private static final Logger logger = LoggerFactory.getLogger(FileHelper.class);
 	byte[] keyAsBytes;
 	SecretKey key;
 
@@ -37,7 +36,7 @@ public class FileHelper {
 			writer.close();
 
 		} catch (IOException e) {
-			logger.log(Level.ERROR, "Not able to write to a file - " + e);
+			logger.error("Not able to write to a file - " + e);
 		}
 	}
 
@@ -69,13 +68,13 @@ public class FileHelper {
 			}
 
 		} catch (IOException e) {
-			logger.log(Level.ERROR, "Error while reading from a file - " + e);
+			logger.error("Error while reading from a file - " + e);
 		} finally {
 			try {
 				if (br != null)
 					br.close();
 			} catch (IOException ex) {
-				logger.log(Level.ERROR, "Error while closing file to read - " + ex);
+				logger.error("Error while closing file to read - " + ex);
 			}
 		}
 		finalStr = str.toString();
@@ -100,7 +99,7 @@ public class FileHelper {
 			requestFilePath = "." + requestFilePath.split(ReportHelper.getResultFolderpath())[1];
 			Reporter.log("<br><a href='" + requestFilePath + "'>Request_" + fileName + "</a><br>");
 		} catch (Exception e) {
-			logger.log(Level.ERROR, "Error while creating JSON file - " + e);
+			logger.error("Error while creating JSON file - " + e);
 		}
 		return requestFilePath;
 	}
@@ -123,7 +122,7 @@ public class FileHelper {
 			responseFilePath = "." + responseFilePath.split(ReportHelper.getResultFolderpath())[1];
 			Reporter.log("<br><a href='" + responseFilePath + "'>Response_" + fileName + "</a><br>");
 		} catch (Exception e) {
-			logger.log(Level.ERROR, "Error while creating reponse JSON file - " + e);
+			logger.error("Error while creating reponse JSON file - " + e);
 		}
 		return responseFilePath;
 	}
